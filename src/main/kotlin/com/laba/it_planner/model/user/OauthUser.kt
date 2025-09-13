@@ -1,0 +1,24 @@
+package com.laba.it_planner.model.user
+
+import jakarta.persistence.*
+
+@Entity
+@Table(name = "oauth_user")
+@Inheritance(strategy = InheritanceType.JOINED)
+class OauthUser (
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
+
+    @Column(unique = true, name = "username")
+    var username: String? = null,
+
+    @Column(name = "password")
+    var password: String? = null,
+
+    @Column(name = "enabled")
+    var enabled: Boolean? = null,
+
+    @Column(name = "verification_code")
+    var verificationCode: String? = null
+)
