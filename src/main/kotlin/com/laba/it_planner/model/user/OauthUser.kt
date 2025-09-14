@@ -17,8 +17,12 @@ class OauthUser (
     var password: String? = null,
 
     @Column(name = "enabled")
-    var enabled: Boolean? = null,
+    var enabled: Boolean = false,
 
     @Column(name = "verification_code")
-    var verificationCode: String? = null
+    var verificationCode: String? = null,
+
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    var role: OauthRole = OauthRole.USER
 )

@@ -1,6 +1,6 @@
 package com.laba.it_planner.model.user
 
-enum class Role(title: String) {
+enum class ProjectRole(title: String) {
     PROJECT_MANAGER("Project manager"),
     FRONTEND_DEVELOPER("Frontend developer"),
     BACKEND_DEVELOPER("Backend developer"),

@@ -1,7 +1,7 @@
 package com.laba.it_planner.model.project
 
 import com.laba.it_planner.model.user.OauthUser
-import com.laba.it_planner.model.user.Role
+import com.laba.it_planner.model.user.ProjectRole
 import jakarta.persistence.*
 
 @Entity
@@ -16,7 +16,7 @@ data class Employee(
     val project: Project,
 
     @Enumerated(EnumType.STRING)
-    var role: Role? = null,
+    var projectRole: ProjectRole? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
