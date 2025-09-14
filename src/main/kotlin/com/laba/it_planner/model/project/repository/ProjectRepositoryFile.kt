@@ -27,6 +27,6 @@ class ProjectRepositoryFile {
     @Enumerated(EnumType.STRING)
     var type: FileType? = null
 
-    @Column(name = "path", columnDefinition = "TEXT")
+    @Column(name = "name", columnDefinition = "TEXT")
     var name: String? = null
 }

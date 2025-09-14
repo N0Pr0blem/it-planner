@@ -6,6 +6,13 @@ spring:
     url: jdbc:postgresql://postgres-user:5433/planner_db
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
 
 jwt:
   password:
