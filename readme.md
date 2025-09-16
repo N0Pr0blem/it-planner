@@ -23,3 +23,5 @@ JWT_EXPIRATION=7200
 6) вставляем сгенерированные ключи в .env в поля MINIO_ACCESS_KEY и MINIO_SECRET_KEY
 
 # Готово =)
+
+### Здесь найдешь доку к api - http://localhost:8080/api/v1/swagger-ui/index.html
