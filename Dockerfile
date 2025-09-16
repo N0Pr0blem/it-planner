@@ -1,11 +1,10 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
+FROM gradle:8.7-jdk17-alpine AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon -x test
 
-FROM eclipse-temurin:17-jre-alpine
-WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+FROM openjdk:17-jdk-alpine
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+RUN mkdir /app
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/app.jar
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

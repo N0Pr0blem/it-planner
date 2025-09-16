@@ -1,43 +1,10 @@
-CREATE TYPE project_role_enum AS ENUM (
-    'PROJECT_MANAGER',
-    'FRONTEND_DEVELOPER',
-    'BACKEND_DEVELOPER',
-    'TESTER',
-    'UI_UX_DESIGNER',
-    'DEVOPS',
-    'ANOTHER'
-);
-
-CREATE TYPE oauth_role_enum AS ENUM(
-    'ADMIN',
-    'USER'
-);
-
-CREATE TYPE task_complexity_enum AS ENUM (
-    'HARD',
-    'MEDIUM',
-    'EASY'
-);
-
-CREATE TYPE task_urgency_enum AS ENUM (
-    'URGENT',
-    'MEDIUM',
-    'NOT_URGENT'
-);
-
-CREATE TYPE file_type_enum AS ENUM (
-    'IMAGE',
-    'TASK',
-    'REPOSITORY'
-);
-
 CREATE TABLE oauth_user (
     id BIGSERIAL PRIMARY KEY,
     username VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     enabled BOOLEAN DEFAULT true,
     verification_code VARCHAR(255),
-    oauth_role oauth_role_enum
+    oauth_role VARCHAR(32)
 );
 
 CREATE TABLE user_info (
@@ -60,7 +27,7 @@ CREATE TABLE project (
 CREATE TABLE employee (
     id BIGSERIAL PRIMARY KEY,
     project_id BIGINT NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-    project_role project_role_enum,
+    project_role VARCHAR(32),
     user_id BIGINT NOT NULL REFERENCES oauth_user(id) ON DELETE CASCADE,
     UNIQUE(project_id, user_id)
 );
@@ -74,7 +41,7 @@ CREATE TABLE project_repository (
 CREATE TABLE project_repository_file (
     id BIGSERIAL PRIMARY KEY,
     project_repository_id BIGINT NOT NULL REFERENCES project_repository(id) ON DELETE CASCADE,
-    type file_type_enum NOT NULL,
+    type VARCHAR(32) NOT NULL,
     name TEXT
 );
 
@@ -82,8 +49,8 @@ CREATE TABLE task_info (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     is_completed BOOLEAN DEFAULT false,
-    complexity task_complexity_enum,
-    urgency task_urgency_enum,
+    complexity VARCHAR(32),
+    urgency VARCHAR(32),
     creation_date TIMESTAMP,
     project_id BIGINT NOT NULL REFERENCES project(id) ON DELETE CASCADE
 );

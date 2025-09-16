@@ -12,7 +12,7 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "project_repository")
-class ProjectRepository(createdProject: Project) {
+class ProjectRepo(createdProject: Project) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null

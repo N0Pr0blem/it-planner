@@ -40,7 +40,7 @@ class SecurityServiceImpl(
     }
 
     private fun generateToken(claims: Map<String, Any>, subject: String): TokenDetails {
-        val expirationTimeInMillis: Long = (expirationInSeconds as Long) * 1000L
+        val expirationTimeInMillis: Long = expirationInSeconds.toLong() * 1000L
         val expirationDate = Date(System.currentTimeMillis() + expirationTimeInMillis)
 
         return generateToken(expirationDate, claims, subject)

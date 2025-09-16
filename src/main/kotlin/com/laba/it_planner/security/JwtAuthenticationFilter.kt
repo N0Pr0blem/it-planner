@@ -34,7 +34,7 @@ class JwtAuthenticationFilter(
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request);
                 SecurityContextHolder.getContext().authentication = authentication;
             }
-            filterChain.doFilter(request, response);
         }
+        filterChain.doFilter(request, response)
     }
 }

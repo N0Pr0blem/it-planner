@@ -9,6 +9,8 @@ import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 import org.springframework.web.cors.CorsConfiguration
+import org.springframework.web.cors.CorsConfigurationSource
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 @Configuration
 class SecurityConfig(
@@ -16,8 +18,7 @@ class SecurityConfig(
 ) {
 
     private val publicRoutes = arrayOf(
-            "/api/v1/auth/register",
-            "/api/v1/auth/login",
+            "/api/v1/auth/**",
             "/api/v1/auth/activate",
             "/api/v1/swagger-ui/*",
             "/api/v1/swagger-ui.html",
@@ -28,37 +29,44 @@ class SecurityConfig(
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
-        http.csrf{it.disable()}
-                .cors { cors ->
-                cors.configurationSource { request ->
-                CorsConfiguration().apply {
-            allowedOrigins = listOf(
-                    "http://localhost:5173",
-                    "http://frontend:80",
-                    "capacitor://localhost",
-                    "ionic://localhost",
-                    "http://localhost",
-                    "http://10.0.2.2:8080"
-            )
-            allowedMethods = listOf("*")
-            allowedHeaders = listOf("*")
-            allowCredentials = true
-            exposedHeaders = listOf("Authorization")
-            maxAge = 3600L
-        }
-        }
-        }
+        http
+            .csrf { it.disable() }
+            .cors { it.configurationSource(corsConfigurationSource()) }
             .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        }
+            }
             .authorizeHttpRequests { auth ->
-                auth.requestMatchers(*publicRoutes).permitAll()
-                .requestMatchers("/api/v1/users/**").hasAuthority("ADMIN")
-                .requestMatchers("/api/v1/profile/**").authenticated()
-                .anyRequest().authenticated()
-        }
+                auth
+                    .requestMatchers(*publicRoutes).permitAll()
+                    .requestMatchers("/api/v1/users/**").hasAuthority("ADMIN")
+                    .requestMatchers("/api/v1/profile/**").authenticated()
+                    .anyRequest().authenticated()
+            }
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
         return http.build()
+    }
+
+    @Bean
+    fun corsConfigurationSource(): CorsConfigurationSource {
+        val configuration = CorsConfiguration()
+        configuration.allowedOrigins = listOf(
+            "http://localhost:5173",
+            "http://localhost:3000",
+            "http://frontend:80",
+            "capacitor://localhost",
+            "ionic://localhost",
+            "http://localhost:8080",
+            "http://10.0.2.2:8080"
+        )
+        configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+        configuration.allowedHeaders = listOf("*")
+        configuration.allowCredentials = true
+        configuration.exposedHeaders = listOf("Authorization", "Content-Type")
+        configuration.maxAge = 3600L
+
+        val source = UrlBasedCorsConfigurationSource()
+        source.registerCorsConfiguration("/**", configuration)
+        return source
     }
 }

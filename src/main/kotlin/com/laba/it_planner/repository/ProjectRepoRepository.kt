@@ -1,9 +1,9 @@
 package com.laba.it_planner.repository
 
-import com.laba.it_planner.model.project.Project
+import com.laba.it_planner.model.project.repository.ProjectRepo
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ProjectRepository: JpaRepository<Project, Long> {
+interface ProjectRepoRepository: JpaRepository<ProjectRepo, Long> {
 }

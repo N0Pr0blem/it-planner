@@ -6,7 +6,9 @@ import com.laba.it_planner.exception.AuthException
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.user.OauthRole
 import com.laba.it_planner.model.user.OauthUser
+import com.laba.it_planner.model.user.UserInfo
 import com.laba.it_planner.repository.OauthUserRepository
+import com.laba.it_planner.repository.UserInfoRepository
 import com.laba.it_planner.security.TokenDetails
 import com.laba.it_planner.service.OauthService
 import com.laba.it_planner.service.SecurityService
@@ -15,29 +17,34 @@ import org.springframework.stereotype.Service
 
 @Service
 class OauthServiceImpl(
-    private val oauthUserRepository: OauthUserRepository,
+    private val userInfoRepository: UserInfoRepository,
+    private val oauthRepository: OauthUserRepository,
     private val securityService: SecurityService
 ) : OauthService {
 
     override fun getByUsername(username: String): OauthUser {
-        return oauthUserRepository.findByUsername(username)
+        return oauthRepository.findByUsername(username)
             .orElseThrow {
                 DataException("User with username $username not found", "USER_NOT_FOUND")
             }
     }
 
-    override fun register(registerRequestDto: RegisterRequestDto): OauthUser {
-        if(oauthUserRepository.findByUsername(registerRequestDto.username).isPresent){
+    override fun register(registerRequestDto: RegisterRequestDto): UserInfo {
+        if(userInfoRepository.findByUsername(registerRequestDto.username).isPresent){
             val username = registerRequestDto.username
             throw DataException("User with username $username already exist", "USER_ALREADY_EXIST")
         }
-        return oauthUserRepository.save(OauthUser(
-            username = registerRequestDto.username,
-            password = securityService.hashPassword(registerRequestDto.password),
-            enabled = true,
-            verificationCode = generate6DigitCode(),
+        val userInfo = UserInfo().apply{
+            email = registerRequestDto.username
+            firstName = registerRequestDto.firstName
+
+            username = registerRequestDto.username
+            password = securityService.hashPassword(registerRequestDto.password)
+            enabled = true
+            verificationCode = generate6DigitCode()
             role = OauthRole.USER
-        ))
+        }
+        return userInfoRepository.save(userInfo)
     }
 
     override fun authenticate(oauthRequestDto: AuthRequestDto): TokenDetails {

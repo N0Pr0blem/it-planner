@@ -1,10 +1,12 @@
 package com.laba.it_planner.model.user
 
 import jakarta.persistence.*
+import org.hibernate.annotations.Proxy
 
 @Entity
 @Table(name = "oauth_user")
 @Inheritance(strategy = InheritanceType.JOINED)
+@Proxy(lazy = false)
 open class OauthUser (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

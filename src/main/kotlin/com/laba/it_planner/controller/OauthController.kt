@@ -8,11 +8,13 @@ import com.laba.it_planner.mapper.RegisterMapper
 import com.laba.it_planner.service.OauthService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
-@Controller
+@RestController
+@RequestMapping("/api/v1/auth")
 class OauthController(
     private val oauthService: OauthService,
     private val registerMapper: RegisterMapper
@@ -20,6 +22,7 @@ class OauthController(
     @PostMapping("/register")
     @Operation(summary = "Register new user")
     fun register(@RequestBody registerRequestDto: RegisterRequestDto): ResponseEntity<RegisterResponseDto> {
+        println("Request received for user ${registerRequestDto.username}")
         return ResponseEntity.ok(registerMapper.toDto(oauthService.register(registerRequestDto)))
     }
 
