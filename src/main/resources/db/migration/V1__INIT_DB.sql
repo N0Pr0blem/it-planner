@@ -1,4 +1,4 @@
-CREATE TYPE role_enum AS ENUM (
+CREATE TYPE project_role_enum AS ENUM (
     'PROJECT_MANAGER',
     'FRONTEND_DEVELOPER',
     'BACKEND_DEVELOPER',
@@ -6,6 +6,11 @@ CREATE TYPE role_enum AS ENUM (
     'UI_UX_DESIGNER',
     'DEVOPS',
     'ANOTHER'
+);
+
+CREATE TYPE oauth_role_enum AS ENUM(
+    'ADMIN',
+    'USER'
 );
 
 CREATE TYPE task_complexity_enum AS ENUM (
@@ -31,7 +36,8 @@ CREATE TABLE oauth_user (
     username VARCHAR(255) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     enabled BOOLEAN DEFAULT true,
-    verification_code VARCHAR(255)
+    verification_code VARCHAR(255),
+    oauth_role oauth_role_enum
 );
 
 CREATE TABLE user_info (
@@ -54,7 +60,7 @@ CREATE TABLE project (
 CREATE TABLE employee (
     id BIGSERIAL PRIMARY KEY,
     project_id BIGINT NOT NULL REFERENCES project(id) ON DELETE CASCADE,
-    role role_enum,
+    project_role project_role_enum,
     user_id BIGINT NOT NULL REFERENCES oauth_user(id) ON DELETE CASCADE,
     UNIQUE(project_id, user_id)
 );

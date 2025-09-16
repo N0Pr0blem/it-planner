@@ -5,7 +5,7 @@ import jakarta.persistence.*
 @Entity
 @Table(name = "oauth_user")
 @Inheritance(strategy = InheritanceType.JOINED)
-class OauthUser (
+open class OauthUser (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -22,7 +22,7 @@ class OauthUser (
     @Column(name = "verification_code")
     var verificationCode: String? = null,
 
-    @Column(name = "role")
+    @Column(name = "oauth_role")
     @Enumerated(EnumType.STRING)
     var role: OauthRole = OauthRole.USER
 )

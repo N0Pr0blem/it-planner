@@ -16,6 +16,7 @@ data class Employee(
     val project: Project,
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "project_role")
     var projectRole: ProjectRole? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
