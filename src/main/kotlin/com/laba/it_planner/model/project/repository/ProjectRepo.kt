@@ -12,15 +12,15 @@ import jakarta.persistence.Table
 
 @Entity
 @Table(name = "project_repository")
-class ProjectRepo(createdProject: Project) {
+class ProjectRepo(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null
+    val id: Long? = null,
 
     @OneToOne
     @JoinColumn(name = "project_id")
-    val project: Project = createdProject
+    val project: Project,
 
     @Column(name = "path")
-    val path: String? = createdProject.createdUser?.username+"/"+createdProject.name+"/"
-}
+    val path: String
+)

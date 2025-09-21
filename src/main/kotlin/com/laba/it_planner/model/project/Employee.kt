@@ -17,10 +17,10 @@ data class Employee(
 
     @Enumerated(EnumType.STRING)
     @Column(name = "project_role")
-    var projectRole: ProjectRole? = null,
+    var projectRole: ProjectRole,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    var user: OauthUser? = null
+    var user: OauthUser
 
 )
