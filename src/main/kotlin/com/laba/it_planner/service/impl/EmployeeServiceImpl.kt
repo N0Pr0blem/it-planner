@@ -12,7 +12,7 @@ class EmployeeServiceImpl(
 ) : EmployeeService {
 
     override fun createEmployee(employee: Employee): Employee {
-        if(employeeRepository.findByProjectIdAndByUserId(employee.project,employee.user).isPresent){
+        if(employeeRepository.findByProjectIdAndUserId(employee.project.id,employee.user.id).isPresent){
             throw DataException("User already in project team","ADD_EMPLOYEE_ERROR");
         }
         else return employeeRepository.save(employee)

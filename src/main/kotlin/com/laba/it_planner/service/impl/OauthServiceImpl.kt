@@ -14,6 +14,7 @@ import com.laba.it_planner.service.OauthService
 import com.laba.it_planner.service.SecurityService
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class OauthServiceImpl(
@@ -43,6 +44,7 @@ class OauthServiceImpl(
             enabled = true
             verificationCode = generate6DigitCode()
             role = OauthRole.USER
+            registrationDate = LocalDateTime.now()
         }
         return userInfoRepository.save(userInfo)
     }

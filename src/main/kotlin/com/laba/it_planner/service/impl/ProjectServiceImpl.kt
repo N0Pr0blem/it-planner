@@ -27,7 +27,7 @@ class ProjectServiceImpl(
         username: String
     ): Project {
         val user = oauthService.getByUsername(username)
-        if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, user).isPresent) {
+        if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, user.id).isPresent) {
             throw DataException(
                 "Project with name ${projectCreateRequestDto.name} already exists",
                 "PROJECT_CREATION_ERROR"
