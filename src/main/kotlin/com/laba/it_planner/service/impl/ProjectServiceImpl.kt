@@ -1,5 +1,7 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.dto.employee.EmployeeInviteDto
+import com.laba.it_planner.dto.employee.EmployeeUpdateRoleDto
 import com.laba.it_planner.dto.project.ProjectCreateRequestDto
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.project.Employee
@@ -47,9 +49,11 @@ class ProjectServiceImpl(
                 projectRole = ProjectRole.PROJECT_MANAGER
             )
 
-            projectRepoService.createProjectRepo(ProjectRepo(
-                project = result,
-                path = result.createdUser?.username + "/" + result.name + "/")
+            projectRepoService.createProjectRepo(
+                ProjectRepo(
+                    project = result,
+                    path = result.createdUser?.username + "/" + result.name + "/"
+                )
             )
 
             employeeService.createEmployee(employee)
@@ -57,4 +61,52 @@ class ProjectServiceImpl(
             return result
         }
     }
+
+    override fun inviteEmployee(
+        projectId: Long,
+        employeeInviteDto: EmployeeInviteDto,
+        username: String
+    ): Employee {
+        val projects = getAllUsersProjects(username)
+        val project = projectRepository.findById(projectId)
+        if (project.isPresent && projects.contains(project.get())) {
+            val user = oauthService.getByUsername(employeeInviteDto.username)
+            return employeeService.createEmployee(
+                Employee(
+                    user = user,
+                    project = project.get(),
+                    projectRole = employeeInviteDto.projectRole
+                )
+            )
+        } else throw DataException("Project with id $projectId does not exist", "PROJECT_NOT_FOUND_ERROR")
+    }
+
+    override fun deleteEmployee(projectId: Long, employeeId: Long, username: String) {
+        val projects = getAllUsersProjects(username)
+        val project = projectRepository.findById(projectId)
+        if (project.isPresent && projects.contains(project.get())) {
+            employeeService.deleteEmployee(employeeId)
+        }
+    }
+
+    override fun changeRole(
+        projectId: Long,
+        employeeId: Long,
+        employeeUpdateRoleDto: EmployeeUpdateRoleDto,
+        name: String
+    ) : Employee{
+        val project = projectRepository.findById(projectId)
+        if(project.isPresent && project.get().createdUser?.username.equals(name)) {
+           return employeeService.changeRole(employeeId,employeeUpdateRoleDto.projectRole)
+        }
+        else{
+            throw DataException("Project with id $projectId does not exist or it's not your's", "PROJECT_NOT_FOUND_ERROR")
+        }
+    }
+
+    override fun getAllUsersProjects(username: String): List<Project> {
+        val user = oauthService.getByUsername(username)
+        return projectRepository.findAllByCreatedUser(user)
+    }
+
 }

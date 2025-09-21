@@ -3,6 +3,7 @@ package com.laba.it_planner.service.impl
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.project.Employee
 import com.laba.it_planner.model.user.OauthUser
+import com.laba.it_planner.model.user.ProjectRole
 import com.laba.it_planner.repository.EmployeeRepository
 import com.laba.it_planner.service.EmployeeService
 import com.laba.it_planner.service.OauthService
@@ -32,11 +33,26 @@ class EmployeeServiceImpl(
         }
     }
 
+    override fun deleteEmployee(employeeId: Long) {
+        if(employeeRepository.existsById(employeeId)){
+            employeeRepository.deleteById(employeeId)
+        }
+    }
+
+    override fun changeRole(employeeId: Long, newRole: ProjectRole) :Employee{
+        val foundedEmployee = employeeRepository.findById(employeeId)
+        if(foundedEmployee.isPresent){
+            val employee = foundedEmployee.get()
+            employee.projectRole = newRole
+            return employeeRepository.save(employee)
+        }
+        throw DataException("No such employee exception","EMPLOYEE_NOT_FOUND_ERROR")
+    }
+
     private fun isContainUser(employees: List<Employee>, user: OauthUser): Boolean {
         for(employee in employees){
             if(employee.user == user)return true
         }
         return false
     }
-
 }

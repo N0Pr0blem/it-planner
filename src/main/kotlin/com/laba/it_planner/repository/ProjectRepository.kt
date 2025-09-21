@@ -1,6 +1,7 @@
 package com.laba.it_planner.repository
 
 import com.laba.it_planner.model.project.Project
+import com.laba.it_planner.model.user.OauthUser
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
@@ -17,4 +18,6 @@ interface ProjectRepository: JpaRepository<Project, Long> {
         @Param("name") name: String,
         @Param("userId") userId: Long?
     ): Optional<Project>
+
+    fun findAllByCreatedUser(user: OauthUser): List<Project>
 }
