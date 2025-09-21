@@ -4,6 +4,7 @@ import com.laba.it_planner.dto.project.ProjectCreateRequestDto
 import com.laba.it_planner.dto.project.ProjectCreateResponseDto
 import com.laba.it_planner.mapper.ProjectCreationMapper
 import com.laba.it_planner.service.ProjectService
+import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,6 +19,7 @@ class ProjectController(
     private val projectMapper: ProjectCreationMapper
 ) {
     @PostMapping()
+    @Operation(summary = "Create new project")
     fun createProject(@RequestBody projectRequestDto: ProjectCreateRequestDto, principal: Principal): ResponseEntity<ProjectCreateResponseDto> {
         val response = projectService.createProject(projectRequestDto, principal.name)
         return ResponseEntity.ok(projectMapper.toDto(response))

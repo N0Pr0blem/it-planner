@@ -17,4 +17,6 @@ interface EmployeeRepository: JpaRepository<Employee, Long> {
         @Param("projectId") projectId: Long?,
         @Param("userId") userId: Long?
     ): Optional<Employee>
+
+    fun findAllByProjectId(projectId: Long):List<Employee>
 }
