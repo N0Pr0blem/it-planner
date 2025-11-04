@@ -130,7 +130,7 @@ fun VerifyScreen(
                 elevation = ButtonDefaults.buttonElevation(0.dp),
                 modifier = Modifier
                     .offset(y = (-24).dp)
-                    .fillMaxWidth(0.45f)
+                    .fillMaxWidth(0.4f)
                     .height(46.dp)
             ) {
                 Text(

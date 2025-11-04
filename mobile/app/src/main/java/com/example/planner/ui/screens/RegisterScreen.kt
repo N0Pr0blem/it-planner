@@ -179,7 +179,7 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
                 elevation = ButtonDefaults.buttonElevation(0.dp),
                 modifier = Modifier
                     .offset(y = (-24).dp)      // легкое наложение на карточку
-                    .fillMaxWidth(0.5f)
+                    .fillMaxWidth(0.4f)
                     .height(46.dp)
             ) {
                 Text(
