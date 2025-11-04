@@ -81,7 +81,6 @@ fun LoginScreen(onTabSwitch: (String) -> Unit) {
 
             Spacer(Modifier.height(36.dp))
 
-            // Карточка компактная, по контенту
             Card(
                 shape = RoundedCornerShape(32.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
