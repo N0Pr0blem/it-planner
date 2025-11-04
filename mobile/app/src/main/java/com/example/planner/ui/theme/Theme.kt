@@ -5,11 +5,11 @@ import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.example.planner.R
-import androidx.compose.ui.text.font.Font
 
 private val LightColors = lightColorScheme(
     primary = BlueBackground,
@@ -19,19 +19,19 @@ private val LightColors = lightColorScheme(
     onBackground = White
 )
 
-private val NunitoFamily = FontFamily(
+// ✅ убираем private → делаем глобально доступным
+val NunitoFamily = FontFamily(
     Font(R.font.nunito_black,  FontWeight.Normal),
 )
 
-private val AppTypography = Typography(
-    // Заголовок карточки
+// ✅ Твоя типографика
+val AppTypography = Typography(
     titleMedium = TextStyle(
         fontFamily = NunitoFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 22.sp,
         lineHeight = 28.sp
     ),
-    // Текст полей/лейблов/кнопок
     bodyMedium = TextStyle(
         fontFamily = NunitoFamily,
         fontWeight = FontWeight.Medium,
@@ -39,7 +39,7 @@ private val AppTypography = Typography(
         lineHeight = 22.sp,
         letterSpacing = 0.15.sp
     ),
-    labelLarge = TextStyle( // текст на кнопке
+    labelLarge = TextStyle(
         fontFamily = NunitoFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 16.sp

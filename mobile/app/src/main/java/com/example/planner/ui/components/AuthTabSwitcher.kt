@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.draw.clip
+import com.example.planner.ui.theme.NunitoFamily
+
 
 @Composable
 fun AuthTabSwitcher(
@@ -77,7 +79,8 @@ fun AuthTabSwitcher(
                         text = tab,
                         color = Color.White,
                         fontSize = 18.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        fontFamily = NunitoFamily
                     )
                 }
             }

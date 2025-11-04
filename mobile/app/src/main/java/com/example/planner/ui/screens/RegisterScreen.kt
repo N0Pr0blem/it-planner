@@ -18,6 +18,53 @@ import com.example.planner.ui.components.AuthTabSwitcher
 import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 
+import android.content.res.Configuration
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.Devices
+import com.example.planner.ui.theme.PlannerTheme
+import androidx.compose.ui.text.style.TextAlign
+import com.example.planner.ui.theme.NunitoFamily
+
+@Preview(
+    name = "Register – Default",
+    showBackground = true,
+    backgroundColor = 0xFF1B3A5C,
+    device = Devices.PIXEL_6
+)
+@Composable
+fun PreviewRegisterScreen() {
+    PlannerTheme {
+        // фон на всякий случай дублируем, чтобы в превью точно был синий
+        Box(Modifier.fillMaxSize().background(BlueBackground)) {
+            RegisterScreen(onTabSwitch = {})  // заглушка для колбэка
+        }
+    }
+}
+
+@Preview(
+    name = "Register – System UI",
+    showBackground = true,
+    showSystemUi = true,
+    backgroundColor = 0xFF1B3A5C,
+    device = Devices.PIXEL_6
+)
+@Composable
+fun PreviewRegisterSystemUi() {
+    PlannerTheme { RegisterScreen(onTabSwitch = {}) }
+}
+
+@Preview(
+    name = "Register – Dark",
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+    backgroundColor = 0xFF1B3A5C,
+    device = Devices.PIXEL_6
+)
+@Composable
+fun PreviewRegisterDark() {
+    PlannerTheme { RegisterScreen(onTabSwitch = {}) }
+}
+
 @Composable
 fun RegisterScreen(onTabSwitch: (String) -> Unit) {
     var username by remember { mutableStateOf("") }
@@ -35,15 +82,15 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
         ) {
             AuthTabSwitcher(selectedTab = "Register", onTabSelected = onTabSwitch)
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(36.dp))
 
             // --- Карточка регистрации ---
             Card(
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(32.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(0.dp),
                 modifier = Modifier
-                    .fillMaxWidth(0.82f)
+                    .fillMaxWidth(0.72f)
                     .wrapContentHeight()
             ) {
                 Column(
@@ -54,10 +101,13 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
                 ) {
                     Text(
                         text = "Task Planner",
-                        style = MaterialTheme.typography.titleMedium.copy(color = Color.Black)
+                        style = MaterialTheme.typography.titleMedium.copy(color = Color.Black),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        fontFamily = NunitoFamily
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(40.dp))
 
                     // --- Username ---
                     TextField(
@@ -77,7 +127,7 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
                         shape = RoundedCornerShape(0.dp)
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(36.dp))
 
                     // --- Email ---
                     TextField(
@@ -97,7 +147,7 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
                         shape = RoundedCornerShape(0.dp)
                     )
 
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(36.dp))
 
                     // --- Password ---
                     TextField(
@@ -117,7 +167,7 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
                         shape = RoundedCornerShape(0.dp)
                     )
 
-                    Spacer(Modifier.height(48.dp)) // чуть больше воздуха, карточка длиннее
+                    Spacer(Modifier.height(60.dp))
                 }
             }
 
