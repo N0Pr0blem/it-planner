@@ -14,6 +14,7 @@ import com.laba.it_planner.service.OauthService
 import com.laba.it_planner.service.ProjectRepoService
 import com.laba.it_planner.service.ProjectService
 import org.springframework.stereotype.Service
+import java.security.Principal
 import java.time.LocalDateTime
 
 @Service
@@ -102,6 +103,11 @@ class ProjectServiceImpl(
         else{
             throw DataException("Project with id $projectId does not exist or it's not your's", "PROJECT_NOT_FOUND_ERROR")
         }
+    }
+
+    override fun get(projectId: Long): Project {
+        return projectRepository.findById(projectId)
+            .orElseThrow { DataException("Project with id $projectId not found","NOT_FOUND_ERROR") }
     }
 
     override fun getAllUsersProjects(username: String): List<Project> {

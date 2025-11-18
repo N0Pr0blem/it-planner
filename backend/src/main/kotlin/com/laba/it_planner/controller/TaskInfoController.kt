@@ -1,0 +1,65 @@
+package com.laba.it_planner.controller
+
+import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
+import com.laba.it_planner.dto.task.TaskInfoResponseDto
+import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
+import com.laba.it_planner.mapper.TaskInfoMapper
+import com.laba.it_planner.service.TaskInfoService
+import io.swagger.v3.oas.annotations.Operation
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import java.security.Principal
+
+@RestController
+@RequestMapping("/api/v1")
+class TaskInfoController(
+    private val taskInfoService: TaskInfoService,
+    private val mapper: TaskInfoMapper
+) {
+    @Operation(summary = "Get all task of project")
+    @GetMapping("/project/{projectId}/browse")
+    fun getAll(
+        @PathVariable(name = "projectId") projectId: Long,
+        principal: Principal
+    ): ResponseEntity<List<TaskInfoResponseDto>> {
+        return ResponseEntity.ok(mapper.toDtos(taskInfoService.getAll(projectId, principal)))
+    }
+
+    @Operation(summary = "Get all task of project")
+    @PostMapping("/task")
+    fun add(
+        @RequestBody createTaskInfoRequestDto: CreateTaskInfoRequestDto,
+        principal: Principal
+    ): ResponseEntity<TaskInfoResponseDto> {
+        val res = taskInfoService.add(createTaskInfoRequestDto, principal)
+        return ResponseEntity.ok(mapper.toDto(res))
+    }
+
+    @Operation(summary = "Get task by id")
+    @GetMapping("/task/{taskId}")
+    fun get(
+        @PathVariable(name = "taskId") taskId: Long,
+        principal: Principal
+    ): ResponseEntity<TaskInfoResponseDto> {
+        val res = taskInfoService.get(taskId, principal)
+        return ResponseEntity.ok(mapper.toDto(res))
+    }
+
+    @Operation(summary = "Update task")
+    @PatchMapping("/task/{taskId}")
+    fun patch(
+        @PathVariable(name = "taskId") taskId: Long,
+        @RequestBody updateTaskInfoRequestDto: UpdateTaskInfoRequestDto,
+        principal: Principal
+    ): ResponseEntity<TaskInfoResponseDto> {
+        val res = taskInfoService.update(taskId, updateTaskInfoRequestDto, principal)
+        return ResponseEntity.ok(mapper.toDto(res))
+    }
+
+    @Operation(summary = "Delete task of project")
+    @DeleteMapping("/task/{taskId}")
+    fun delete(@PathVariable(name = "taskId") taskId: Long, principal: Principal): ResponseEntity<String> {
+        taskInfoService.delete(taskId, principal)
+        return ResponseEntity.ok("Successfully deleted the task")
+    }
+}

@@ -8,6 +8,7 @@ import com.laba.it_planner.repository.EmployeeRepository
 import com.laba.it_planner.service.EmployeeService
 import com.laba.it_planner.service.OauthService
 import org.springframework.stereotype.Service
+import java.security.Principal
 
 @Service
 class EmployeeServiceImpl(
@@ -16,42 +17,44 @@ class EmployeeServiceImpl(
 ) : EmployeeService {
 
     override fun createEmployee(employee: Employee): Employee {
-        if(employeeRepository.findByProjectIdAndUserId(employee.project.id,employee.user.id).isPresent){
-            throw DataException("User already in project team","ADD_EMPLOYEE_ERROR");
-        }
-        else return employeeRepository.save(employee)
+        if (employeeRepository.findByProjectIdAndUserId(employee.project.id, employee.user.id).isPresent) {
+            throw DataException("User already in project team", "ADD_EMPLOYEE_ERROR");
+        } else return employeeRepository.save(employee)
     }
 
-    override fun getAllProjectEmployee(projectId: Long, username: String) :List<Employee>{
+    override fun getAllProjectEmployee(projectId: Long, username: String): List<Employee> {
         val user = oauthService.getByUsername(username)
         val result = employeeRepository.findAllByProjectId(projectId)
-        if(isContainUser(result,user)) {
+        if (isContainUser(result, user)) {
             return result
-        }
-        else {
+        } else {
             throw DataException("You can't see not yours team", "MEMBER_EMPLOYEE_ERROR")
         }
     }
 
     override fun deleteEmployee(employeeId: Long) {
-        if(employeeRepository.existsById(employeeId)){
+        if (employeeRepository.existsById(employeeId)) {
             employeeRepository.deleteById(employeeId)
         }
     }
 
-    override fun changeRole(employeeId: Long, newRole: ProjectRole) :Employee{
+    override fun changeRole(employeeId: Long, newRole: ProjectRole): Employee {
         val foundedEmployee = employeeRepository.findById(employeeId)
-        if(foundedEmployee.isPresent){
+        if (foundedEmployee.isPresent) {
             val employee = foundedEmployee.get()
             employee.projectRole = newRole
             return employeeRepository.save(employee)
         }
-        throw DataException("No such employee exception","EMPLOYEE_NOT_FOUND_ERROR")
+        throw DataException("No such employee exception", "EMPLOYEE_NOT_FOUND_ERROR")
+    }
+
+    override fun checkPermission(projectId: Long, principal: Principal): Boolean {
+        return employeeRepository.existsByProjectIdAndUsername(projectId, principal.name)
     }
 
     private fun isContainUser(employees: List<Employee>, user: OauthUser): Boolean {
-        for(employee in employees){
-            if(employee.user == user)return true
+        for (employee in employees) {
+            if (employee.user == user) return true
         }
         return false
     }

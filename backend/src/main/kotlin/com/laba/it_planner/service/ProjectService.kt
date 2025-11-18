@@ -5,6 +5,7 @@ import com.laba.it_planner.dto.employee.EmployeeUpdateRoleDto
 import com.laba.it_planner.dto.project.ProjectCreateRequestDto
 import com.laba.it_planner.model.project.Employee
 import com.laba.it_planner.model.project.Project
+import java.security.Principal
 
 interface ProjectService {
     fun createProject(projectCreateRequestDto: ProjectCreateRequestDto, username: String): Project
@@ -15,5 +16,12 @@ interface ProjectService {
 
     fun deleteEmployee(projectId: Long, employeeId: Long, username: String)
 
-    fun changeRole(projectId: Long, employeeId: Long, employeeUpdateRoleDto: EmployeeUpdateRoleDto, name: String): Employee
+    fun changeRole(
+        projectId: Long,
+        employeeId: Long,
+        employeeUpdateRoleDto: EmployeeUpdateRoleDto,
+        name: String
+    ): Employee
+
+    fun get(projectId: Long): Project
 }

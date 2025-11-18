@@ -2,12 +2,10 @@ server:
   port: 8080
 
 spring:
-  profiles:
-    active: local
   datasource:
-    url: jdbc:postgresql://postgres-user:5433/planner_db
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    url: jdbc:postgresql://localhost:5433/planner_db
+    username: root
+    password: root
   jpa:
     hibernate:
       ddl-auto: validate
@@ -19,18 +17,18 @@ spring:
 jwt:
   password:
     encoder:
-      secret: ${JWT_PASSWORD_SECRET}
+      secret: F2K2DZ82odq$13e8aENggaMbb_fAkl-nJL4AEVBX43g
       iteration: 64
       key-length: 256
-  secret: ${JWT_SECRET}
-  expiration: ${JWT_EXPIRATION}
+  secret: b5f59337a612a2a7dc07328f3e7d1a04722967c7f86df20a499a7d3f91ff2a7c
+  expiration: 7200
   issuer: PLANNER
 
 minio:
-  endpoint: ${MINIO_ENDPOINT}
-  access-key: ${MINIO_ACCESS_KEY}
-  secret-key: ${MINIO_SECRET_KEY}
-  bucket-name: ${MINIO_BUCKET_NAME}
+  endpoint: http://minio:9000
+  access-key: laUeEl4q29fhaqQhd76d
+  secret-key: 9nlPYGoplkbbd61uCU88GDXBWQf3TY18dkeZEx3m
+  bucket-name: it-planner
   region: us-east-1
   secure: false
 
