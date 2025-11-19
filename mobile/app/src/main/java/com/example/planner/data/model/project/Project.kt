@@ -1,25 +1,35 @@
 package com.example.planner.data.model.project
 
-
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 import com.example.planner.data.model.user.OauthUser
-import com.laba.it_planner.model.user.OauthUser
-import jakarta.persistence.*
 import java.time.LocalDateTime
 
-@Entity
-@Table(name = "project")
-class Project(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
 
-    @Column(name = "name")
-    var name: String? = null,
+@Entity(
+    tableName = "project",
+    foreignKeys = [
+        ForeignKey(
+            entity = OauthUser::class,
+            parentColumns = ["id"], // Поле в родительской таблице (OauthUser)
+            childColumns = ["created_user_id"], // Поле в этой таблице (Project)
+            onDelete = ForeignKey.SET_NULL // Например, если пользователь удален, обнулить ID создателя
+        )
+    ]
+)
+data class Project(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
 
-    @Column(name = "creation_date")
-    var creationDate: LocalDateTime? = null,
+    @ColumnInfo(name = "name")
+    var name: String,
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_user", nullable = false)
-    var createdUser: OauthUser? = null
+    @ColumnInfo(name = "creation_date")
+    var creationDate: LocalDateTime?, // Понадобится TypeConverter
+
+
+    @ColumnInfo(name = "created_user_id", index = true)
+    var createdUserId: Long?
 )

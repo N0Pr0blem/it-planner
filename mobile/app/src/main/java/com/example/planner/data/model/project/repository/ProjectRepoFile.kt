@@ -1,20 +1,34 @@
 package com.example.planner.data.model.project.repository
 
-@Entity
-@Table(name = "project_repository_file")
-class ProjectRepoFile(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_repository_id", nullable = false)
-    var projectRepo: ProjectRepo,
+@Entity(
+    tableName = "project_repository_file",
+    foreignKeys = [
+        ForeignKey(
+            entity = ProjectRepo::class,
+            parentColumns = ["id"],
+            childColumns = ["project_repository_id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class ProjectRepoFile(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
 
-    @Column(nullable = false, name = "type")
-    @Enumerated(EnumType.STRING)
+    // 1. Вместо объекта ProjectRepo храним только его ID
+    @ColumnInfo(name = "project_repository_id", index = true)
+    var projectRepoId: Long,
+
+    // 2. Храним Enum как строку. Потребуется TypeConverter.
+    @ColumnInfo(name = "type")
     var type: FileType,
 
-    @Column(name = "name", columnDefinition = "TEXT")
+    @ColumnInfo(name = "name")
     var name: String?
 )
+

@@ -1,28 +1,33 @@
 package com.example.planner.data.model.project
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
 import com.example.planner.data.model.user.OauthUser
-import com.example.planner.data.model.user.ProjectRole
-import com.laba.it_planner.model.user.OauthUser
-import com.laba.it_planner.model.user.ProjectRole
-import jakarta.persistence.*
 
-@Entity
-@Table(name = "employee")
+
+@Entity(
+    tableName = "project_employee",
+    primaryKeys = ["user_id", "project_id"],
+    foreignKeys = [
+        ForeignKey(
+            entity = OauthUser::class,
+            parentColumns = ["id"],
+            childColumns = ["user_id"],
+            onDelete = ForeignKey.CASCADE // Если пользователь удален, удалить и его связь с проектом
+        ),
+        ForeignKey(
+            entity = Project::class,
+            parentColumns = ["id"],
+            childColumns = ["project_id"],
+            onDelete = ForeignKey.CASCADE // Если проект удален, удалить и всех его участников
+        )
+    ]
+)
 data class Employee(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @ColumnInfo(name = "user_id", index = true)
+    val userId: Long,
 
-    @OneToOne
-    @JoinColumn(name = "project_id")
-    val project: Project,
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "project_role")
-    var projectRole: ProjectRole,
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: OauthUser
-
+    @ColumnInfo(name = "project_id", index = true)
+    val projectId: Long
 )

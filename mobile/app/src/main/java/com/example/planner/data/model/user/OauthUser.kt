@@ -1,28 +1,28 @@
 package com.example.planner.data.model.user
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-@Entity
-@Table(name = "oauth_user")
-@Inheritance(strategy = InheritanceType.JOINED)
-@Proxy(lazy = false)
-open class OauthUser (
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = null,
 
-    @Column(unique = true, name = "username")
-    var username: String? = null,
+@Entity(tableName = "oauth_user")
+data class OauthUser(
 
-    @Column(name = "password")
-    var password: String? = null,
+    @PrimaryKey(autoGenerate = true)
+    var id: Long = 0,
 
-    @Column(name = "enabled")
+    @ColumnInfo(name = "username")
+    var username: String?,
+
+    @ColumnInfo(name = "password")
+    var password: String?,
+
+    @ColumnInfo(name = "enabled")
     var enabled: Boolean = false,
 
-    @Column(name = "verification_code")
-    var verificationCode: String? = null,
+    @ColumnInfo(name = "verification_code")
+    var verificationCode: String?,
 
-    @Column(name = "oauth_role")
-    @Enumerated(EnumType.STRING)
+    @ColumnInfo(name = "oauth_role")
     var role: OauthRole = OauthRole.USER
 )

@@ -1,27 +1,33 @@
 package com.example.planner.data.model.user
 
 import java.time.LocalDateTime
+import androidx.room.Entity
+import androidx.room.ColumnInfo
+import androidx.room.PrimaryKey
+import androidx.room.parser.Table
 
+@Entity(tableName = "user_info")
+data class UserInfo(
 
-@Entity
-@Table(name = "user_info")
-@PrimaryKeyJoinColumn(name = "id")
-class UserInfo(
-    @Column(name = "first_name")
-    var firstName: String? = null,
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    val id: String,
 
-    @Column(name = "second_name")
-    var secondName: String? = null,
+    @ColumnInfo(name = "first_name")
+    var firstName: String?,
 
-    @Column(name = "last_name")
-    var lastName: String? = null,
+    @ColumnInfo(name = "second_name")
+    var secondName: String?,
 
-    @Column(name = "email", unique = true)
-    var email: String? = null,
+    @ColumnInfo(name = "last_name")
+    var lastName: String?,
 
-    @Column(name = "registration_date")
-    var registrationDate: LocalDateTime? = null,
+    @ColumnInfo(name = "email")
+    var email: String?,
 
-    @Column(name = "profile_image")
-    var profileImage: String? = null,
-) : OauthUser()
+    @ColumnInfo(name = "registration_date")
+    var registrationDate: LocalDateTime?,
+
+    @ColumnInfo(name = "profile_image")
+    var profileImage: String?
+)

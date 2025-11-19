@@ -1,34 +1,47 @@
 package com.example.planner.data.model.task
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 import com.example.planner.data.model.project.Project
 import java.time.LocalDateTime
 
 
-@Entity
-@Table(name = "task_info")
-class TaskInfo (
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+@Entity(
+    tableName = "task_info",
+    foreignKeys = [
+        ForeignKey(
+            entity = Project::class,
+            parentColumns = ["id"],
+            childColumns = ["project_id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class TaskInfo(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
 
-    @Column(name = "name")
-    var name: String? = null,
+    // 1. Храним только ID проекта, а не весь объект.
+    @ColumnInfo(name = "project_id", index = true)
+    val projectId: Long,
 
-    @Column(name = "is_completed")
+    @ColumnInfo(name = "name")
+    var name: String,
+
+    @ColumnInfo(name = "is_completed")
     var isCompleted: Boolean = false,
 
-    @Column(name = "complexity")
-    @Enumerated(EnumType.STRING)
-    var complexity: TaskComplexity? = null,
+    // 2. Храним Enum как строку. Понадобится TypeConverter.
+    @ColumnInfo(name = "complexity")
+    var complexity: TaskComplexity = TaskComplexity.MEDIUM,
 
-    @Column(name = "urgency")
-    @Enumerated(EnumType.STRING)
-    var urgency: TaskUrgency? = null,
+    // 2. Храним Enum как строку. Понадобится TypeConverter.
+    @ColumnInfo(name = "urgency")
+    var urgency: TaskUrgency = TaskUrgency.URGENT,
 
-    @Column(name = "creation_date")
-    var creationDate: LocalDateTime? = null,
-
-    @OneToOne
-    @JoinColumn(name = "project_id")
-    val project: Project,
+    @ColumnInfo(name = "creation_date")
+    var creationDate: LocalDateTime?
 )
+

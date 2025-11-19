@@ -1,19 +1,29 @@
 package com.example.planner.data.model.project.repository
 
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.PrimaryKey
 import com.example.planner.data.model.project.Project
 
+@Entity(
+    tableName = "project_repository",
+    foreignKeys = [
+        ForeignKey(
+            entity = Project::class,
+            parentColumns = ["id"],
+            childColumns = ["project_id"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
+data class ProjectRepo(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
 
-@Entity
-@Table(name = "project_repository")
-class ProjectRepo(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    @ColumnInfo(name = "project_id", index = true)
+    val projectId: Long,
 
-    @OneToOne
-    @JoinColumn(name = "project_id")
-    val project: Project,
-
-    @Column(name = "path")
+    @ColumnInfo(name = "path")
     val path: String
 )
