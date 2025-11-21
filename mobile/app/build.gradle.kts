@@ -74,9 +74,13 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     implementation(libs.androidx.room.runtime)
-    annotationProcessor("androidx.room:room-compiler:2.6.1") // Для Java
-    ksp("androidx.room:room-compiler:2.6.1") // Для Kotlin (KSP)
+    annotationProcessor(libs.room.compiler.v284) // Для Java
+    ksp(libs.room.compiler.v284) // Для Kotlin (KSP)
 
     // Kotlin Extensions и поддержка Coroutines для Room
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.androidx.room.ktx)
+
+    // Интерсептор
+    implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
+
 }

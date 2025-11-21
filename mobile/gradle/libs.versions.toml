@@ -1,5 +1,6 @@
 [versions]
 agp = "8.13.0"
+androidxRoomCompiler = "2.8.4"
 converterMoshi = "3.0.0"
 kotlin = "2.0.21"
 coreKtx = "1.17.0"
@@ -16,6 +17,7 @@ composeBom = "2024.09.00"
 lifecycleRuntimeKtxVersion = "2.9.4"
 moshi = "1.15.2"
 moshiKotlin = "1.15.2"
+roomKtx = "2.8.4"
 roomRuntime = "2.6.1"
 roomCompiler = "2.8.3"
 
@@ -23,6 +25,7 @@ roomCompiler = "2.8.3"
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx-v294 = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
 androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleRuntimeKtxVersion" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "converterMoshi" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -44,6 +47,7 @@ moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshiKotlin" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converterMoshi" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
+room-compiler-v284 = { module = "androidx.room:room-compiler", version.ref = "androidxRoomCompiler" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
