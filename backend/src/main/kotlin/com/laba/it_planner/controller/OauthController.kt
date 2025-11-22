@@ -22,13 +22,14 @@ class OauthController(
     @PostMapping("/register")
     @Operation(summary = "Register new user")
     fun register(@RequestBody registerRequestDto: RegisterRequestDto): ResponseEntity<RegisterResponseDto> {
-        println("Request received for user ${registerRequestDto.username}")
+        println("Register request received for user ${registerRequestDto.username}")
         return ResponseEntity.ok(registerMapper.toDto(oauthService.register(registerRequestDto)))
     }
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate user")
     fun login(@RequestBody authRequestDto: AuthRequestDto): AuthResponseDto {
+        println("Login request received for user ${authRequestDto.username}") //TODO make a logger
         val tokenDetails = oauthService.authenticate(authRequestDto)
         return AuthResponseDto(
             token = tokenDetails.token,
