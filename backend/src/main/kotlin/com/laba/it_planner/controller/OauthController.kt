@@ -1,5 +1,6 @@
 package com.laba.it_planner.controller
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.oauth.AuthRequestDto
 import com.laba.it_planner.dto.oauth.AuthResponseDto
 import com.laba.it_planner.dto.oauth.RegisterRequestDto
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -36,5 +38,14 @@ class OauthController(
             expiresAt = tokenDetails.expiresAt,
             issuedAt = tokenDetails.issuedAt
         )
+    }
+
+    @PostMapping("/verify")
+    @Operation(summary = "Verify user by code from email")
+    fun verify(@RequestParam("code") code: String,
+               @RequestParam("username") username: String
+    ): ResponseEntity<MessageResponseDto> {
+        println("Try verify ${username}: $code")
+        return ResponseEntity.ok(oauthService.verify(username, code))
     }
 }

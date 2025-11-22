@@ -1,5 +1,6 @@
 package com.laba.it_planner.service
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.oauth.AuthRequestDto
 import com.laba.it_planner.dto.oauth.RegisterRequestDto
 import com.laba.it_planner.model.user.OauthUser
@@ -13,5 +14,5 @@ interface OauthService {
 
     fun authenticate(oauthRequestDto: AuthRequestDto): TokenDetails
 
-    //fun activate(username: String, password: String): OauthUser
+    fun verify(username: String, code: String): MessageResponseDto
 }

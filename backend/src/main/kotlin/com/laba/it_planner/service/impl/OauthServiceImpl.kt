@@ -1,7 +1,9 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.oauth.AuthRequestDto
 import com.laba.it_planner.dto.oauth.RegisterRequestDto
+import com.laba.it_planner.exception.AccessException
 import com.laba.it_planner.exception.AuthException
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.user.OauthRole
@@ -31,18 +33,18 @@ class OauthServiceImpl(
     }
 
     override fun register(registerRequestDto: RegisterRequestDto): UserInfo {
-        if(userInfoRepository.findByUsername(registerRequestDto.username).isPresent){
+        if (userInfoRepository.findByUsername(registerRequestDto.username).isPresent) {
             val username = registerRequestDto.username
             throw DataException("User with username $username already exist", "USER_ALREADY_EXIST")
         }
-        val userInfo = UserInfo().apply{
+        val userInfo = UserInfo().apply {
             email = registerRequestDto.username
             firstName = registerRequestDto.firstName
 
             username = registerRequestDto.username
             password = securityService.hashPassword(registerRequestDto.password)
             enabled = true
-            verificationCode = generate6DigitCode()
+            verificationCode = generate4DigitCode()
             role = OauthRole.USER
             registrationDate = LocalDateTime.now()
         }
@@ -51,17 +53,30 @@ class OauthServiceImpl(
 
     override fun authenticate(oauthRequestDto: AuthRequestDto): TokenDetails {
         val user = getByUsername(oauthRequestDto.username)
-        if(!user.enabled) {
+        if (!user.enabled) {
             throw AuthException("Account disabled", "ACCOUNT_DISABLED")
         }
-        if(user.password != securityService.hashPassword(oauthRequestDto.password)){
+        if (user.password != securityService.hashPassword(oauthRequestDto.password)) {
             throw AuthException("Account password mismatch", "INVALID_PASSWORD")
         }
 
         return securityService.generateToken(user)
     }
 
-    private fun generate6DigitCode(): String {
-        return RandomStringUtils.random(6, false, true)
+    override fun verify(username: String, code: String): MessageResponseDto {
+        val user = getByUsername(username)
+        val result = if (user.verificationCode == code) {
+            user.verificationCode = null
+            user.enabled = true
+            oauthRepository.save(user)
+            "$username successfully verified"
+        }
+        else throw AccessException("Wrong verification code","VERIFICATION_CODE_EXCEPTION")
+
+        return MessageResponseDto(message = result)
+    }
+
+    private fun generate4DigitCode(): String {
+        return RandomStringUtils.random(4, false, true)
     }
 }
