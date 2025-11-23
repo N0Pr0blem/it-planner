@@ -20,11 +20,16 @@ class UserInfoController(
     @PatchMapping
     @Operation(summary = "Update user details")
     fun updateUserDetails(
-        @RequestBody userInfoPatchDto: UserInfoPatchDto,
-        @RequestPart multipartFile: MultipartFile?,
+        @RequestPart("secondName") secondName: String?,
+        @RequestPart("lastName") lastName: String?,
+        @RequestPart("file") multipartFile: MultipartFile?,
         principal: Principal
     ): ResponseEntity<UserInfoResponseDto> {
-        val result = userInfoService.update(userInfoPatchDto,multipartFile,principal)
+        val result = userInfoService.update(
+            UserInfoPatchDto(secondName = secondName, lastName = lastName),
+            multipartFile,
+            principal
+        )
         return ResponseEntity.ok(userInfoMapper.toDto(result))
     }
 

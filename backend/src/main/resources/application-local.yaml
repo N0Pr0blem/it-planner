@@ -25,9 +25,9 @@ jwt:
   issuer: PLANNER
 
 minio:
-  endpoint: http://minio:9000
-  access-key: laUeEl4q29fhaqQhd76d
-  secret-key: 9nlPYGoplkbbd61uCU88GDXBWQf3TY18dkeZEx3m
+  endpoint: http://localhost:9000
+  access-key: LUYD0xiZIO6ixLfXbSUr
+  secret-key: 5LfovDMENCIwit8TQ6nONt1JGQDXQOtr6bN2OrnK
   bucket-name: it-planner
   region: us-east-1
   secure: false
