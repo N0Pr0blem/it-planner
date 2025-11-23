@@ -1,7 +1,7 @@
 package com.laba.it_planner.model.project
 
-import com.laba.it_planner.model.user.OauthUser
 import com.laba.it_planner.model.user.ProjectRole
+import com.laba.it_planner.model.user.UserInfo
 import jakarta.persistence.*
 
 @Entity
@@ -21,6 +21,6 @@ data class Employee(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    var user: OauthUser
+    var user: UserInfo
 
 )

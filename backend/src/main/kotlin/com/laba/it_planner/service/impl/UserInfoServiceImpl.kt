@@ -40,6 +40,15 @@ class UserInfoServiceImpl(
 
     override fun getInfo(principal: Principal) : UserInfo{
         val userInfoOpt = userInfoRepository.findByUsername(principal.name)
+        return getUserInfo(userInfoOpt)
+    }
+
+    override fun getInfo(id: Long): UserInfo {
+        val userInfoOpt = userInfoRepository.findById(id)
+        return getUserInfo(userInfoOpt)
+    }
+
+    private fun getUserInfo(userInfoOpt: Optional<UserInfo>): UserInfo {
         if (userInfoOpt.isPresent) {
             val userInfo = userInfoOpt.get()
             if(userInfo.profileImage!=null) {

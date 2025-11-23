@@ -25,7 +25,7 @@ class EmployeeController(
         @PathVariable(name = "projectId") projectId: Long,
         principal: Principal
     ): ResponseEntity<List<EmployeeResponseDto>> {
-        val employees = employeeService.getAllProjectEmployee(projectId, principal.name)
+        val employees = employeeService.getAllProjectEmployee(projectId, principal)
         return ResponseEntity.ok().body(employeeMapper.toDtos(employees))
     }
 

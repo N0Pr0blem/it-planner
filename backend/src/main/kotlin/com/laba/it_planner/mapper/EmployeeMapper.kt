@@ -5,6 +5,6 @@ import com.laba.it_planner.mapper.base.Mappable
 import com.laba.it_planner.model.project.Employee
 import org.mapstruct.Mapper
 
-@Mapper(componentModel = "spring")
-interface EmployeeMapper: Mappable<Employee, EmployeeResponseDto> {
+@Mapper(componentModel = "spring", uses = [UserMainInfoMapper::class])
+interface EmployeeMapper : Mappable<Employee, EmployeeResponseDto> {
 }

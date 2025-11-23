@@ -8,4 +8,5 @@ import java.security.Principal
 interface UserInfoService {
     fun update(userInfoPatchDto: UserInfoPatchDto, multipartFile: MultipartFile?, principal: Principal): UserInfo
     fun getInfo(principal: Principal):UserInfo
+    fun getInfo(id: Long):UserInfo
 }

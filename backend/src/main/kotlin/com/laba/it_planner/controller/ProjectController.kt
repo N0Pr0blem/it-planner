@@ -26,7 +26,7 @@ class ProjectController(
     @PostMapping()
     @Operation(summary = "Create new project")
     fun createProject(@RequestBody projectRequestDto: ProjectCreateRequestDto, principal: Principal): ResponseEntity<ProjectCreateResponseDto> {
-        val response = projectService.createProject(projectRequestDto, principal.name)
+        val response = projectService.createProject(projectRequestDto, principal)
         return ResponseEntity.ok(projectMapper.toDto(response))
     }
 

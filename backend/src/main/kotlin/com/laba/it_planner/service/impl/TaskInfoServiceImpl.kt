@@ -53,7 +53,7 @@ class TaskInfoServiceImpl(
                     urgency = createTaskInfoRequestDto.urgency,
                     complexity = createTaskInfoRequestDto.complexity,
                     project = projectService.get(createTaskInfoRequestDto.projectId),
-                    taskDetails = taskDetailService.getEmpty(principal),
+                    taskDetails = taskDetailService.getEmpty(createTaskInfoRequestDto.projectId,principal),
                     creationDate = LocalDateTime.now(),
                 )
             )

@@ -7,13 +7,14 @@ import com.laba.it_planner.model.user.ProjectRole
 import com.laba.it_planner.repository.EmployeeRepository
 import com.laba.it_planner.service.EmployeeService
 import com.laba.it_planner.service.OauthService
+import com.laba.it_planner.service.UserInfoService
 import org.springframework.stereotype.Service
 import java.security.Principal
 
 @Service
 class EmployeeServiceImpl(
     private val employeeRepository: EmployeeRepository,
-    private val oauthService: OauthService
+    private val userInfoService: UserInfoService
 ) : EmployeeService {
 
     override fun createEmployee(employee: Employee): Employee {
@@ -22,8 +23,8 @@ class EmployeeServiceImpl(
         } else return employeeRepository.save(employee)
     }
 
-    override fun getAllProjectEmployee(projectId: Long, username: String): List<Employee> {
-        val user = oauthService.getByUsername(username)
+    override fun getAllProjectEmployee(projectId: Long, principal: Principal): List<Employee> {
+        val user = userInfoService.getInfo(principal)
         val result = employeeRepository.findAllByProjectId(projectId)
         if (isContainUser(result, user)) {
             return result
@@ -50,6 +51,17 @@ class EmployeeServiceImpl(
 
     override fun checkPermission(projectId: Long, principal: Principal): Boolean {
         return employeeRepository.existsByProjectIdAndUsername(projectId, principal.name)
+    }
+
+    override fun getByUserNameAndProjectId(
+        name: String,
+        projectId: Long
+    ): Employee {
+        val employeeOpt = employeeRepository.findByUsernameAndProjectId(projectId,name)
+        if(employeeOpt.isPresent) {
+            return employeeOpt.get()
+        }
+        else throw DataException("No such employee exception", "EMPLOYEE_NOT_FOUND_ERROR")
     }
 
     private fun isContainUser(employees: List<Employee>, user: OauthUser): Boolean {

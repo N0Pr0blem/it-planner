@@ -13,6 +13,7 @@ import com.laba.it_planner.service.EmployeeService
 import com.laba.it_planner.service.OauthService
 import com.laba.it_planner.service.ProjectRepoService
 import com.laba.it_planner.service.ProjectService
+import com.laba.it_planner.service.UserInfoService
 import org.springframework.stereotype.Service
 import java.security.Principal
 import java.time.LocalDateTime
@@ -22,14 +23,15 @@ class ProjectServiceImpl(
     private val projectRepository: ProjectRepository,
     private val oauthService: OauthService,
     private val employeeService: EmployeeService,
-    private val projectRepoService: ProjectRepoService
+    private val projectRepoService: ProjectRepoService,
+    private val userInfoService: UserInfoService
 ) : ProjectService {
 
     override fun createProject(
         projectCreateRequestDto: ProjectCreateRequestDto,
-        username: String
+        principal: Principal
     ): Project {
-        val user = oauthService.getByUsername(username)
+        val user = userInfoService.getInfo (principal)
         if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, user.id).isPresent) {
             throw DataException(
                 "Project with name ${projectCreateRequestDto.name} already exists",
@@ -71,7 +73,8 @@ class ProjectServiceImpl(
         val projects = getAllUsersProjects(username)
         val project = projectRepository.findById(projectId)
         if (project.isPresent && projects.contains(project.get())) {
-            val user = oauthService.getByUsername(employeeInviteDto.username)
+            val oauth = oauthService.getByUsername(employeeInviteDto.username)
+            val user = userInfoService.getInfo(oauth.id!!)
             return employeeService.createEmployee(
                 Employee(
                     user = user,

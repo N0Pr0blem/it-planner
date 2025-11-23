@@ -8,7 +8,7 @@ import com.laba.it_planner.model.project.Project
 import java.security.Principal
 
 interface ProjectService {
-    fun createProject(projectCreateRequestDto: ProjectCreateRequestDto, username: String): Project
+    fun createProject(projectCreateRequestDto: ProjectCreateRequestDto, principal: Principal): Project
 
     fun getAllUsersProjects(username: String): List<Project>
 
