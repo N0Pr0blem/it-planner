@@ -6,6 +6,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
@@ -37,6 +38,11 @@ class TaskInfo (
     @Enumerated(EnumType.STRING)
     var urgency: TaskUrgency? = null,
 
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    var status: TaskStatus? = null,
+
+
     @Column(name = "creation_date")
     var creationDate: LocalDateTime? = null,
 
@@ -44,7 +50,7 @@ class TaskInfo (
     @JoinColumn(name = "project_id")
     val project: Project,
 
-    @OneToOne(cascade = [CascadeType.REMOVE])
-    @JoinColumn(name = "task_details_id")
-    val taskDetails: TaskDetails? = null,
+    @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
+    @JoinColumn(name = "task_details_id", referencedColumnName = "id")
+    val taskDetails: TaskDetails? = null
 )

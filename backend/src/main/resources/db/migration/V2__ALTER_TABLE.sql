@@ -1,1 +1,0 @@
-ALTER TABLE task_info ADD COLUMN task_details_id BIGINT;

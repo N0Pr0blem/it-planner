@@ -36,12 +36,11 @@ SELECT EXISTS(SELECT 1
 
 
     @Query("""
-    select * from employee e 
+    select e.* from employee e 
     join user_info u ON e.user_id = u.id
     where e.project_id = :projectId and u.email = :username
     """, nativeQuery = true
     )
-    @EntityGraph(attributePaths = ["user"])
     fun findByUsernameAndProjectId(@Param("projectId") projectId: Long?,
                                    @Param("username") username: String?): Optional<Employee>
 }

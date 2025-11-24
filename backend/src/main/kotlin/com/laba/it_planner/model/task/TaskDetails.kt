@@ -1,7 +1,6 @@
 package com.laba.it_planner.model.task
 
 import com.laba.it_planner.model.project.Employee
-import com.laba.it_planner.model.user.OauthUser
 import jakarta.persistence.*
 
 @Entity
@@ -20,5 +19,8 @@ class TaskDetails(
     val toUser: Employee? = null,
 
     @Column(name = "description_file")
-    val descriptionFile: String? = null
+    val descriptionFile: String? = null,
+
+    @OneToOne(mappedBy = "taskDetails")
+    val taskInfo: TaskInfo? = null
 )

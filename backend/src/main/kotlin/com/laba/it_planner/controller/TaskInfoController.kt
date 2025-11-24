@@ -1,6 +1,8 @@
 package com.laba.it_planner.controller
 
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
+import com.laba.it_planner.dto.task.TaskDetailsInfo
+import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.TaskInfoResponseDto
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.mapper.TaskInfoMapper
@@ -21,11 +23,11 @@ class TaskInfoController(
     fun getAll(
         @PathVariable(name = "projectId") projectId: Long,
         principal: Principal
-    ): ResponseEntity<List<TaskInfoResponseDto>> {
-        return ResponseEntity.ok(mapper.toDtos(taskInfoService.getAll(projectId, principal)))
+    ): ResponseEntity<List<TaskInfoListing>> {
+        return ResponseEntity.ok(taskInfoService.getAll(projectId, principal))
     }
 
-    @Operation(summary = "Get all task of project")
+    @Operation(summary = "Create task for project")
     @PostMapping("/task")
     fun add(
         @RequestBody createTaskInfoRequestDto: CreateTaskInfoRequestDto,

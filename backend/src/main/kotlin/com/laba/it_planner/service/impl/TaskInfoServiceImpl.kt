@@ -1,17 +1,23 @@
 package com.laba.it_planner.service.impl
 
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
+import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.exception.AccessException
 import com.laba.it_planner.model.task.TaskInfo
+import com.laba.it_planner.model.task.TaskStatus
 import com.laba.it_planner.repository.TaskInfoRepository
 import com.laba.it_planner.service.EmployeeService
+import com.laba.it_planner.service.FileService
 import com.laba.it_planner.service.ProjectService
 import com.laba.it_planner.service.TaskDetailsService
 import com.laba.it_planner.service.TaskInfoService
 import org.springframework.stereotype.Service
+import java.nio.charset.StandardCharsets
 import java.security.Principal
 import java.time.LocalDateTime
+import java.util.Base64
+import java.util.stream.Collectors
 
 @Service
 class TaskInfoServiceImpl(
@@ -19,6 +25,7 @@ class TaskInfoServiceImpl(
     private val employeeService: EmployeeService,
     private val projectService: ProjectService,
     private val taskDetailService: TaskDetailsService,
+    private val fileService: FileService
 ) : TaskInfoService {
     override fun get(id: Long, principal: Principal): TaskInfo {
         val taskInfoOpt = taskInfoRepository.findById(id)
@@ -37,9 +44,25 @@ class TaskInfoServiceImpl(
     override fun getAll(
         projectId: Long,
         principal: Principal
-    ): List<TaskInfo> {
+    ): List<TaskInfoListing> {
         if (employeeService.checkPermission(projectId, principal)) {
-            return taskInfoRepository.findAllByProjectId(projectId)
+            val dbResponse = taskInfoRepository.findAllByProjectId(projectId)
+            dbResponse.forEach { taskInfo -> println("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
+            return dbResponse.stream().map { projection ->
+                TaskInfoListing(
+                    id = projection.getId(),
+                    name = projection.getName(),
+                    isCompleted = projection.getIsCompleted()?:false,
+                    assignBy = "${projection.getFirstName()} ${projection.getSecondName()}",
+                    assignByImage = if(projection.getProfileImage()!=null) {
+                        val image = fileService.getFile(projection.getProfileImage()!!)
+                        val encoded: ByteArray = Base64.getEncoder().encode(image)
+                        String(encoded, StandardCharsets.UTF_8)
+                    }
+                    else "null"
+                )
+            }
+                .collect(Collectors.toList())
         } else {
             throw AccessException("Access denied", "FORBIDDEN")
         }
@@ -53,8 +76,9 @@ class TaskInfoServiceImpl(
                     urgency = createTaskInfoRequestDto.urgency,
                     complexity = createTaskInfoRequestDto.complexity,
                     project = projectService.get(createTaskInfoRequestDto.projectId),
-                    taskDetails = taskDetailService.getEmpty(createTaskInfoRequestDto.projectId,principal),
+                    taskDetails = taskDetailService.getEmpty(createTaskInfoRequestDto.projectId, principal),
                     creationDate = LocalDateTime.now(),
+                    status = TaskStatus.TO_DO,
                 )
             )
         } else {
@@ -72,6 +96,7 @@ class TaskInfoServiceImpl(
         if (updateTaskInfoRequestDto.isCompleted != null) task.isCompleted = updateTaskInfoRequestDto.isCompleted!!
         if (updateTaskInfoRequestDto.complexity != null) task.complexity = updateTaskInfoRequestDto.complexity!!
         if (updateTaskInfoRequestDto.urgency != null) task.urgency = updateTaskInfoRequestDto.urgency!!
+        if (updateTaskInfoRequestDto.status != null) task.status = updateTaskInfoRequestDto.status!!
 
         return taskInfoRepository.save(task)
     }

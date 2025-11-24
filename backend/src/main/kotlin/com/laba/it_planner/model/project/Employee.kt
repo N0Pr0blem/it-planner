@@ -22,5 +22,4 @@ data class Employee(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     var user: UserInfo
-
 )
