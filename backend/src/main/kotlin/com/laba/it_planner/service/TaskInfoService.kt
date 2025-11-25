@@ -3,6 +3,7 @@ package com.laba.it_planner.service
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
 import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
+import com.laba.it_planner.model.task.TaskDetails
 import com.laba.it_planner.model.task.TaskInfo
 import java.security.Principal
 

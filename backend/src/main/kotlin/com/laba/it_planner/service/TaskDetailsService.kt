@@ -5,5 +5,6 @@ import java.security.Principal
 
 interface TaskDetailsService {
     fun getEmpty(projectId: Long, principal: Principal): TaskDetails
+    fun getByTaskId(taskId: Long): TaskDetails
 
 }

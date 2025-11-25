@@ -4,6 +4,7 @@ import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
 import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.exception.AccessException
+import com.laba.it_planner.model.task.TaskDetails
 import com.laba.it_planner.model.task.TaskInfo
 import com.laba.it_planner.model.task.TaskStatus
 import com.laba.it_planner.repository.TaskInfoRepository

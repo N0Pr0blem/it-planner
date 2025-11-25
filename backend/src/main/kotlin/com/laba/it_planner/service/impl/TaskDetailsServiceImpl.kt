@@ -18,4 +18,8 @@ class TaskDetailsServiceImpl(
         return taskDetailsRepository.save(TaskDetails(fromUser = employee))
     }
 
+    override fun getByTaskId(taskId: Long): TaskDetails {
+        return taskDetailsRepository.getByTaskInfoId(taskId)
+    }
+
 }
