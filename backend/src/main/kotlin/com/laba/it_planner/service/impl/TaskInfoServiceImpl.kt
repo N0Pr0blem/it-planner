@@ -1,23 +1,20 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
 import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.exception.AccessException
-import com.laba.it_planner.model.task.TaskDetails
+import com.laba.it_planner.mapper.TaskDescriptionMapper
 import com.laba.it_planner.model.task.TaskInfo
 import com.laba.it_planner.model.task.TaskStatus
 import com.laba.it_planner.repository.TaskInfoRepository
-import com.laba.it_planner.service.EmployeeService
-import com.laba.it_planner.service.FileService
-import com.laba.it_planner.service.ProjectService
-import com.laba.it_planner.service.TaskDetailsService
-import com.laba.it_planner.service.TaskInfoService
+import com.laba.it_planner.service.*
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.security.Principal
 import java.time.LocalDateTime
-import java.util.Base64
+import java.util.*
 import java.util.stream.Collectors
 
 @Service
@@ -26,7 +23,8 @@ class TaskInfoServiceImpl(
     private val employeeService: EmployeeService,
     private val projectService: ProjectService,
     private val taskDetailService: TaskDetailsService,
-    private val fileService: FileService
+    private val fileService: FileService,
+    private val taskDescriptionMapper: TaskDescriptionMapper
 ) : TaskInfoService {
     override fun get(id: Long, principal: Principal): TaskInfo {
         val taskInfoOpt = taskInfoRepository.findById(id)
@@ -53,14 +51,13 @@ class TaskInfoServiceImpl(
                 TaskInfoListing(
                     id = projection.getId(),
                     name = projection.getName(),
-                    isCompleted = projection.getIsCompleted()?:false,
+                    isCompleted = projection.getIsCompleted() ?: false,
                     assignBy = "${projection.getFirstName()} ${projection.getSecondName()}",
-                    assignByImage = if(projection.getProfileImage()!=null) {
+                    assignByImage = if (projection.getProfileImage() != null) {
                         val image = fileService.getFile(projection.getProfileImage()!!)
                         val encoded: ByteArray = Base64.getEncoder().encode(image)
                         String(encoded, StandardCharsets.UTF_8)
-                    }
-                    else "null"
+                    } else "null"
                 )
             }
                 .collect(Collectors.toList())
@@ -71,17 +68,23 @@ class TaskInfoServiceImpl(
 
     override fun add(createTaskInfoRequestDto: CreateTaskInfoRequestDto, principal: Principal): TaskInfo {
         if (employeeService.checkPermission(createTaskInfoRequestDto.projectId, principal)) {
+            val project = projectService.get(createTaskInfoRequestDto.projectId)
             return taskInfoRepository.save(
                 TaskInfo(
                     name = createTaskInfoRequestDto.name,
                     urgency = createTaskInfoRequestDto.urgency,
                     complexity = createTaskInfoRequestDto.complexity,
                     project = projectService.get(createTaskInfoRequestDto.projectId),
-                    taskDetails = taskDetailService.getEmpty(createTaskInfoRequestDto.projectId, principal),
                     creationDate = LocalDateTime.now(),
                     status = TaskStatus.TO_DO,
+                    taskDetails = taskDetailService.getEmpty(
+                        project,
+                        principal,
+                        createTaskInfoRequestDto.description
+                    )
                 )
             )
+
         } else {
             throw AccessException("Access denied", "FORBIDDEN")
         }
@@ -106,5 +109,23 @@ class TaskInfoServiceImpl(
         if (taskInfoRepository.existsById(id)) {
             taskInfoRepository.deleteById(id)
         }
+    }
+
+    override fun assignToMe(taskId: Long, projectId: Long, principal: Principal) {
+        val taskInfoOpt = taskInfoRepository.findById(taskId)
+        val employee = employeeService.getByUserNameAndProjectId(principal.name, projectId)
+        if (taskInfoOpt.isPresent) {
+            val taskDetails = taskInfoOpt.get().taskDetails
+            taskDetails!!.toUser = employee
+            taskDetailService.save(taskDetails)
+        }
+    }
+
+    override fun getDescription(taskId: Long, principal: Principal): MessageResponseDto {
+        val taskDetails = taskDetailService.getByTaskId(taskId)
+        if (taskDetails != null && taskDetails.descriptionFile != null) {
+            val message = taskDescriptionMapper.toDto(taskDetails.descriptionFile!!)
+            return MessageResponseDto(message = message)
+        } else return MessageResponseDto("")
     }
 }

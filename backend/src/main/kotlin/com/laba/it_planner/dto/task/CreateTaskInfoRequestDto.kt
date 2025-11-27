@@ -11,4 +11,5 @@ data class CreateTaskInfoRequestDto(
     var urgency: TaskUrgency,
     var complexity: TaskComplexity,
     var projectId: Long,
+    var description: String,
 )

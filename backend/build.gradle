@@ -43,7 +43,7 @@ dependencies {
     // Other
     implementation 'io.github.cdimascio:java-dotenv:5.2.2'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
-
+    testImplementation 'org.springframework:spring-test'
     // MapStruct
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'

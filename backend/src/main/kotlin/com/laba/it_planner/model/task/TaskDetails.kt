@@ -16,11 +16,11 @@ class TaskDetails(
 
     @OneToOne
     @JoinColumn(name = "to_user_id")
-    val toUser: Employee? = null,
+    var toUser: Employee? = null,
 
     @Column(name = "description_file")
-    val descriptionFile: String? = null,
+    var descriptionFile: String? = null,
 
     @OneToOne(mappedBy = "taskDetails")
-    val taskInfo: TaskInfo? = null
+    var taskInfo: TaskInfo? = null
 )

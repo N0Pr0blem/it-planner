@@ -52,5 +52,5 @@ class TaskInfo (
 
     @OneToOne(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
     @JoinColumn(name = "task_details_id", referencedColumnName = "id")
-    val taskDetails: TaskDetails? = null
+    var taskDetails: TaskDetails? = null
 )

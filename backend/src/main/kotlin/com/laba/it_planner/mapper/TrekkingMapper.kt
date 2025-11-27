@@ -8,7 +8,8 @@ import org.mapstruct.Mapping
 
 @Mapper(componentModel = "spring")
 interface TrekkingMapper : Mappable<Trekking, TrekkingResponseDto> {
-    @Mapping(target = "employeeId", source = "employee.id")
+    @Mapping(target = "employeeFirstName", source = "employee.user.firstName")
+    @Mapping(target = "employeeSecondName", source = "employee.user.secondName")
     @Mapping(target = "taskDetailsId", source = "taskDetails.id")
     override fun toDto(entity: Trekking): TrekkingResponseDto
 }

@@ -48,6 +48,11 @@ class UserInfoServiceImpl(
         return getUserInfo(userInfoOpt)
     }
 
+    override fun getUserInfo(principal: Principal): UserInfo {
+        val userInfoOpt = userInfoRepository.findByUsername(principal.name)
+        return userInfoOpt.get()
+    }
+
     private fun getUserInfo(userInfoOpt: Optional<UserInfo>): UserInfo {
         if (userInfoOpt.isPresent) {
             val userInfo = userInfoOpt.get()

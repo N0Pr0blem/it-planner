@@ -1,7 +1,7 @@
 package com.laba.it_planner.controller
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
-import com.laba.it_planner.dto.task.TaskDetailsInfo
 import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.TaskInfoResponseDto
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
@@ -47,6 +47,16 @@ class TaskInfoController(
         return ResponseEntity.ok(mapper.toDto(res))
     }
 
+    @Operation(summary = "Get task description by id")
+    @GetMapping("/task/{taskId}/description")
+    fun getDescription(
+        @PathVariable(name = "taskId") taskId: Long,
+        principal: Principal
+    ): ResponseEntity<MessageResponseDto> {
+        val res = taskInfoService.getDescription(taskId, principal)
+        return ResponseEntity.ok(res)
+    }
+
     @Operation(summary = "Update task")
     @PatchMapping("/task/{taskId}")
     fun patch(
@@ -63,5 +73,16 @@ class TaskInfoController(
     fun delete(@PathVariable(name = "taskId") taskId: Long, principal: Principal): ResponseEntity<String> {
         taskInfoService.delete(taskId, principal)
         return ResponseEntity.ok("Successfully deleted the task")
+    }
+
+    @Operation(summary = "Assign task to login user")
+    @PutMapping("/project/{projectId}/task/{taskId}")
+    fun assignToMe(
+        @PathVariable(name = "taskId") taskId: Long,
+        @PathVariable(name = "projectId") projectId: Long,
+        principal: Principal
+    ): ResponseEntity<String> {
+        taskInfoService.assignToMe(taskId, projectId, principal)
+        return ResponseEntity.ok("Successfully assign the task")
     }
 }

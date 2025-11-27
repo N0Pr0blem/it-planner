@@ -6,8 +6,10 @@ import java.time.LocalDate
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class TrekkingResponseDto(
-    val date: LocalDate,
-    val hours: Double,
-    val employeeId: Long,
-    val taskDetailsId: Long
+    var id : Long,
+    var date: LocalDate,
+    var hours: Double,
+    var employeeFirstName: String?,
+    var employeeSecondName: String?,
+    var taskDetailsId: Long
 )

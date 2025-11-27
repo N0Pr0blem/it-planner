@@ -9,7 +9,9 @@ import org.springframework.stereotype.Repository
 @Repository
 interface TaskDetailsRepository: JpaRepository<TaskDetails, Long> {
     @Query("""
-        Select * from task_details td where td.id=:task_id
+        Select td.* from task_details td
+         left join task_info ti on ti.task_details_id = td.id 
+         where ti.id=:task_id
     """, nativeQuery = true)
     fun getByTaskInfoId(@Param("task_id") taskId: Long): TaskDetails
 }

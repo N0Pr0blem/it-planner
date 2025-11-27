@@ -31,8 +31,8 @@ class ProjectServiceImpl(
         projectCreateRequestDto: ProjectCreateRequestDto,
         principal: Principal
     ): Project {
-        val user = userInfoService.getInfo (principal)
-        if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, user.id).isPresent) {
+        val userInfo = userInfoService.getUserInfo (principal)
+        if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, userInfo.id).isPresent) {
             throw DataException(
                 "Project with name ${projectCreateRequestDto.name} already exists",
                 "PROJECT_CREATION_ERROR"
@@ -42,12 +42,12 @@ class ProjectServiceImpl(
                 Project(
                     name = projectCreateRequestDto.name,
                     creationDate = LocalDateTime.now(),
-                    createdUser = user
+                    createdUser = userInfo
                 )
             )
 
             val employee = Employee(
-                user = user,
+                user = userInfo,
                 project = result,
                 projectRole = ProjectRole.PROJECT_MANAGER
             )
