@@ -27,6 +27,14 @@ class TaskInfoController(
         return ResponseEntity.ok(taskInfoService.getAll(projectId, principal))
     }
 
+    @Operation(summary = "Get all my task from many projects")
+    @GetMapping("/task/my")
+    fun getMy(
+        principal: Principal
+    ): ResponseEntity<List<TaskInfoListing>> {
+        return ResponseEntity.ok(taskInfoService.getMy(principal))
+    }
+
     @Operation(summary = "Create task for project")
     @PostMapping("/task")
     fun add(

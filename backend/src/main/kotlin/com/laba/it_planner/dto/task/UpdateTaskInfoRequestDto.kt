@@ -8,9 +8,9 @@ import com.laba.it_planner.model.task.TaskUrgency
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
 data class UpdateTaskInfoRequestDto(
-    var isCompleted: Boolean? = null,
     var name: String? = null,
     var urgency: TaskUrgency? = null,
     var complexity: TaskComplexity? = null,
     var status: TaskStatus? = null,
+    var description: String? = null,
 )

@@ -73,8 +73,7 @@ class ProjectServiceImpl(
         val projects = getAllUsersProjects(username)
         val project = projectRepository.findById(projectId)
         if (project.isPresent && projects.contains(project.get())) {
-            val oauth = oauthService.getByUsername(employeeInviteDto.username)
-            val user = userInfoService.getInfo(oauth.id!!)
+            val user = userInfoService.getUserInfo (employeeInviteDto.username)
             return employeeService.createEmployee(
                 Employee(
                     user = user,
@@ -111,6 +110,16 @@ class ProjectServiceImpl(
     override fun get(projectId: Long): Project {
         return projectRepository.findById(projectId)
             .orElseThrow { DataException("Project with id $projectId not found","NOT_FOUND_ERROR") }
+    }
+
+    override fun getAllProjects(name: String): List<Project> {
+        return projectRepository.getAllUsersProjectsByUsername(name)
+    }
+
+    override fun deleteProject(projectId: Long, principal: Principal) {
+        if(employeeService.checkPermission(projectId, principal)){
+            projectRepository.deleteById(projectId)
+        }
     }
 
     override fun getAllUsersProjects(username: String): List<Project> {

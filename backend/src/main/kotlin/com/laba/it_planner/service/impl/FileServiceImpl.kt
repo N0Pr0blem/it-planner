@@ -66,6 +66,31 @@ class FileServiceImpl(
         }
     }
 
+    override fun updateFile(descriptionFile: String?, description: String?): String {
+        if (descriptionFile == null || description == null) {
+            return ""
+        }
+
+        try {
+            val tmpDir = File("tmp")
+            if (!tmpDir.exists()) tmpDir.mkdirs()
+
+            val tempFile = File(tmpDir, "update_${System.currentTimeMillis()}.txt")
+
+            try {
+                tempFile.writeText(description, Charsets.UTF_8)
+                val multipartFile = SimpleMultipartFile(tempFile)
+
+                return saveFile(descriptionFile, multipartFile)
+
+            } finally {
+                tempFile.delete()
+            }
+        } catch (e: Exception) {
+            throw RuntimeException("Ошибка при обновлении файла: ${e.message}", e)
+        }
+    }
+
     private class SimpleMultipartFile(private val file: File) : MultipartFile {
 
         override fun getName(): String = "file"

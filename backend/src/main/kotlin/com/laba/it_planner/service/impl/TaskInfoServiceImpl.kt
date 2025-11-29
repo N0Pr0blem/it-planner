@@ -9,6 +9,7 @@ import com.laba.it_planner.mapper.TaskDescriptionMapper
 import com.laba.it_planner.model.task.TaskInfo
 import com.laba.it_planner.model.task.TaskStatus
 import com.laba.it_planner.repository.TaskInfoRepository
+import com.laba.it_planner.repository.projection.TaskListingProjection
 import com.laba.it_planner.service.*
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
@@ -47,19 +48,7 @@ class TaskInfoServiceImpl(
         if (employeeService.checkPermission(projectId, principal)) {
             val dbResponse = taskInfoRepository.findAllByProjectId(projectId)
             dbResponse.forEach { taskInfo -> println("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
-            return dbResponse.stream().map { projection ->
-                TaskInfoListing(
-                    id = projection.getId(),
-                    name = projection.getName(),
-                    isCompleted = projection.getIsCompleted() ?: false,
-                    assignBy = "${projection.getFirstName()} ${projection.getSecondName()}",
-                    assignByImage = if (projection.getProfileImage() != null) {
-                        val image = fileService.getFile(projection.getProfileImage()!!)
-                        val encoded: ByteArray = Base64.getEncoder().encode(image)
-                        String(encoded, StandardCharsets.UTF_8)
-                    } else "null"
-                )
-            }
+            return dbResponse.stream().map { projection -> fromProjection(projection) }
                 .collect(Collectors.toList())
         } else {
             throw AccessException("Access denied", "FORBIDDEN")
@@ -97,10 +86,12 @@ class TaskInfoServiceImpl(
     ): TaskInfo {
         val task = get(taskId, principal)
         if (updateTaskInfoRequestDto.name != null) task.name = updateTaskInfoRequestDto.name!!
-        if (updateTaskInfoRequestDto.isCompleted != null) task.isCompleted = updateTaskInfoRequestDto.isCompleted!!
         if (updateTaskInfoRequestDto.complexity != null) task.complexity = updateTaskInfoRequestDto.complexity!!
         if (updateTaskInfoRequestDto.urgency != null) task.urgency = updateTaskInfoRequestDto.urgency!!
         if (updateTaskInfoRequestDto.status != null) task.status = updateTaskInfoRequestDto.status!!
+        if (updateTaskInfoRequestDto.description != null) {
+            fileService.updateFile(task.taskDetails!!.descriptionFile, updateTaskInfoRequestDto.description)
+        }
 
         return taskInfoRepository.save(task)
     }
@@ -127,5 +118,26 @@ class TaskInfoServiceImpl(
             val message = taskDescriptionMapper.toDto(taskDetails.descriptionFile!!)
             return MessageResponseDto(message = message)
         } else return MessageResponseDto("")
+    }
+
+    override fun getMy(principal: Principal): List<TaskInfoListing>? {
+        val dbResponse = taskInfoRepository.findAllByUsername(principal.name)
+        dbResponse.forEach { taskInfo -> println("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
+        return dbResponse.stream().map { projection -> fromProjection(projection) }
+            .collect(Collectors.toList())
+    }
+
+    private fun fromProjection(projection: TaskListingProjection): TaskInfoListing {
+        return TaskInfoListing(
+            id = projection.getId(),
+            name = projection.getName(),
+            isCompleted = projection.getIsCompleted() ?: false,
+            assignBy = "${projection.getFirstName()} ${projection.getSecondName()}",
+            assignByImage = if (projection.getProfileImage() != null) {
+                val image = fileService.getFile(projection.getProfileImage()!!)
+                val encoded: ByteArray = Base64.getEncoder().encode(image)
+                String(encoded, StandardCharsets.UTF_8)
+            } else "null"
+        )
     }
 }

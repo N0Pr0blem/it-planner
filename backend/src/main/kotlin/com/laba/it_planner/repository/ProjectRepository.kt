@@ -9,15 +9,26 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-interface ProjectRepository: JpaRepository<Project, Long> {
-    @Query("""
+interface ProjectRepository : JpaRepository<Project, Long> {
+    @Query(
+        """
     SELECT * FROM project p
     WHERE p.name = :name AND p.created_user = :userId
-""", nativeQuery = true)
+""", nativeQuery = true
+    )
     fun findByNameAndByCreatedUser(
         @Param("name") name: String,
         @Param("userId") userId: Long?
     ): Optional<Project>
 
     fun findAllByCreatedUser(user: OauthUser): List<Project>
+
+    @Query(
+        """
+    SELECT p.* FROM project p
+left join oauth_user ou ON ou.username=:username
+left join employee e ON e.user_id=ou.id
+""", nativeQuery = true
+    )
+    fun getAllUsersProjectsByUsername(@Param("username") username: String): List<Project>
 }

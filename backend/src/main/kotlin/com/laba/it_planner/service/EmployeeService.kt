@@ -11,4 +11,5 @@ interface EmployeeService {
     fun changeRole(employeeId: Long,newRole: ProjectRole): Employee
     fun checkPermission(projectId: Long, principal: Principal): Boolean
     fun getByUserNameAndProjectId(name: String, projectId: Long): Employee
+    fun getEmployeeInfo(projectId: Long, employeeId: Long, principal: Principal): Employee
 }

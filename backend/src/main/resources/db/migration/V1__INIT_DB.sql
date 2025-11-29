@@ -54,8 +54,8 @@ CREATE TABLE project_repository_file
 CREATE TABLE task_details
 (
     id               BIGSERIAL PRIMARY KEY,
-    from_user_id     BIGINT NOT NULL REFERENCES oauth_user (id) ON DELETE CASCADE,
-    to_user_id       BIGINT REFERENCES oauth_user (id) ON DELETE SET NULL,
+    from_user_id     BIGINT NOT NULL REFERENCES employee (id) ON DELETE CASCADE,
+    to_user_id       BIGINT REFERENCES employee (id) ON DELETE SET NULL,
     description_file VARCHAR(255)
 );
 

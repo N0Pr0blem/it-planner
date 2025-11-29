@@ -49,7 +49,11 @@ class UserInfoServiceImpl(
     }
 
     override fun getUserInfo(principal: Principal): UserInfo {
-        val userInfoOpt = userInfoRepository.findByUsername(principal.name)
+        return getUserInfo(principal.name)
+    }
+
+    override fun getUserInfo(username: String): UserInfo {
+        val userInfoOpt = userInfoRepository.findByUsername(username)
         return userInfoOpt.get()
     }
 

@@ -10,4 +10,5 @@ interface UserInfoService {
     fun getInfo(principal: Principal):UserInfo
     fun getInfo(id: Long):UserInfo
     fun getUserInfo(principal: Principal):UserInfo
+    fun getUserInfo(username: String):UserInfo
 }
