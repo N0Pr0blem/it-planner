@@ -122,6 +122,10 @@ class ProjectServiceImpl(
         }
     }
 
+    override fun getByTaskId(taskId: Long): Project {
+        return projectRepository.findByTaskId(taskId)
+    }
+
     override fun getAllUsersProjects(username: String): List<Project> {
         val user = oauthService.getByUsername(username)
         return projectRepository.findAllByCreatedUser(user)

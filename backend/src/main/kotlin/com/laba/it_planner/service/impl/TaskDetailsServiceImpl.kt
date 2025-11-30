@@ -1,5 +1,6 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.exception.ApiException
 import com.laba.it_planner.model.project.Project
 import com.laba.it_planner.model.task.TaskDetails
 import com.laba.it_planner.repository.TaskDetailsRepository
@@ -8,7 +9,7 @@ import com.laba.it_planner.service.FileService
 import com.laba.it_planner.service.TaskDetailsService
 import org.springframework.stereotype.Service
 import java.security.Principal
-import java.util.UUID
+import java.util.*
 
 @Service
 class TaskDetailsServiceImpl(
@@ -18,13 +19,20 @@ class TaskDetailsServiceImpl(
 ) : TaskDetailsService {
     override fun getEmpty(project: Project, principal: Principal, description: String): TaskDetails {
         val employee = employeeService.getByUserNameAndProjectId(principal.name, project.id!!)
-        return taskDetailsRepository.save(
-            TaskDetails(
-                fromUser = employee,
-                descriptionFile = fileService.createDescriptionFileForTask(project.name!!, principal, UUID.randomUUID().toString(), description)
+        val taskFolderName = UUID.randomUUID().toString()
+        try {
+            fileService.createDescriptionFileForTask(project.name!!, principal, taskFolderName, description)
+            return taskDetailsRepository.save(
+                TaskDetails(
+                    fromUser = employee,
+                    descriptionFile = taskFolderName
+                )
             )
-        )
+        } catch (e: ApiException) {
+            return TaskDetails(null,employee,null,null,null)
+        }
     }
+
 
     override fun getByTaskId(taskId: Long): TaskDetails {
         return taskDetailsRepository.getByTaskInfoId(taskId)

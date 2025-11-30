@@ -90,7 +90,10 @@ class TaskInfoServiceImpl(
         if (updateTaskInfoRequestDto.urgency != null) task.urgency = updateTaskInfoRequestDto.urgency!!
         if (updateTaskInfoRequestDto.status != null) task.status = updateTaskInfoRequestDto.status!!
         if (updateTaskInfoRequestDto.description != null) {
-            fileService.updateFile(task.taskDetails!!.descriptionFile, updateTaskInfoRequestDto.description)
+            fileService.updateFile(
+                toDescriptionPath(taskId, task.taskDetails!!.descriptionFile!!),
+                updateTaskInfoRequestDto.description
+            )
         }
 
         return taskInfoRepository.save(task)
@@ -115,7 +118,7 @@ class TaskInfoServiceImpl(
     override fun getDescription(taskId: Long, principal: Principal): MessageResponseDto {
         val taskDetails = taskDetailService.getByTaskId(taskId)
         if (taskDetails != null && taskDetails.descriptionFile != null) {
-            val message = taskDescriptionMapper.toDto(taskDetails.descriptionFile!!)
+            val message = taskDescriptionMapper.toDto(toDescriptionPath(taskId, taskDetails.descriptionFile!!))
             return MessageResponseDto(message = message)
         } else return MessageResponseDto("")
     }
@@ -139,5 +142,23 @@ class TaskInfoServiceImpl(
                 String(encoded, StandardCharsets.UTF_8)
             } else "null"
         )
+    }
+
+    fun toDescriptionPath(taskId: Long, taskFolder: String): String {
+        return getTaskFolderPath(taskId, taskFolder) + "/description.txt"
+    }
+
+    fun getTaskFolderPath(taskId: Long, taskFolder: String): String {
+        val project = projectService.getByTaskId(taskId)
+        return "projects/${project.name}/${taskFolder}"
+    }
+
+    override fun getPathForTaskFolder(taskId: Long): String? {
+        val taskInfoOpt = taskInfoRepository.findById(taskId)
+        if(taskInfoOpt.isPresent){
+            val taskDetails = taskInfoOpt.get().taskDetails
+            return getTaskFolderPath(taskId, taskDetails!!.descriptionFile!!) + "/files/"
+        }
+        return null
     }
 }

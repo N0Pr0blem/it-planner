@@ -16,4 +16,5 @@ interface TaskInfoService {
     fun assignToMe(taskId: Long, projectId: Long, principal: Principal)
     fun getDescription(taskId: Long, principal: Principal): MessageResponseDto
     fun getMy(principal: Principal): List<TaskInfoListing>?
+    fun getPathForTaskFolder(taskId: Long): String?
 }

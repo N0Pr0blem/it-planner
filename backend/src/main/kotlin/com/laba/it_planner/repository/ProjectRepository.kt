@@ -33,4 +33,13 @@ where ui.email = :username
 """, nativeQuery = true
     )
     fun getAllUsersProjectsByUsername(@Param("username") username: String): List<Project>
+
+    @Query(
+        """
+    SELECT p.* from task_info ti 
+    left join project p ON p.id = ti.project_id
+    where ti.id = :task_id
+""", nativeQuery = true
+    )
+    fun findByTaskId(@Param("task_id") taskId: Long): Project
 }

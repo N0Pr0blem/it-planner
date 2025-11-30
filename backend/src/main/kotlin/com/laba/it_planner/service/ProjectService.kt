@@ -26,4 +26,5 @@ interface ProjectService {
     fun get(projectId: Long): Project
     fun getAllProjects(name: String) :List<Project>
     fun deleteProject(projectId: Long, principal: Principal)
+    fun getByTaskId(taskId: Long): Project
 }
