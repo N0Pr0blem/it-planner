@@ -25,9 +25,11 @@ interface ProjectRepository : JpaRepository<Project, Long> {
 
     @Query(
         """
-    SELECT p.* FROM project p
-left join oauth_user ou ON ou.username=:username
-left join employee e ON e.user_id=ou.id
+    SELECT p.*
+FROM user_info ui
+         left join employee e ON e.user_id = ui.id
+         left join project p ON e.project_id = p.id
+where ui.email = :username
 """, nativeQuery = true
     )
     fun getAllUsersProjectsByUsername(@Param("username") username: String): List<Project>
