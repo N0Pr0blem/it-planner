@@ -1,7 +1,11 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.dto.MessageResponseDto
+import com.laba.it_planner.dto.repo.ProjectRepoFileDto
 import com.laba.it_planner.exception.AccessException
+import com.laba.it_planner.exception.ApiException
 import com.laba.it_planner.exception.DataException
+import com.laba.it_planner.mapper.ProjectRepoMapper
 import com.laba.it_planner.model.project.repository.FileType
 import com.laba.it_planner.model.project.repository.ProjectRepoFile
 import com.laba.it_planner.repository.ProjectRepoFileRepository
@@ -11,35 +15,46 @@ import com.laba.it_planner.service.RepoService
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.security.Principal
+import java.util.stream.Collectors
 
 @Service
 class RepoServiceImpl(
     private val repoRepository: ProjectRepoRepository,
     private val fileRepo: ProjectRepoFileRepository,
     private val fileService: FileService,
+    private val projectRepoMapper: ProjectRepoMapper
 ) : RepoService {
     override fun save(
         projectId: Long,
         file: MultipartFile,
         fileType: FileType,
         principal: Principal
-    ): String {
+    ): MessageResponseDto {
         val projectRepoOpt = repoRepository.findByProjectIdAndUsername(projectId, principal.name)
         if (projectRepoOpt.isPresent) {
             val projectRepo = projectRepoOpt.get()
             val path = projectRepo.path + fileType.prefix + file.originalFilename
 
-            if (!fileRepo.findByNameAndProjectRepoId(file.originalFilename,projectRepo.id).isPresent) {
-                fileRepo.save(
+            if (!fileRepo.findByNameAndProjectRepoId(file.originalFilename, projectRepo.id).isPresent) {
+                val repoFile = fileRepo.save(
                     ProjectRepoFile(
                         name = file.originalFilename,
                         type = fileType,
                         projectRepo = projectRepo
                     )
                 )
-                return fileService.saveFile(path, file)
-            }
-            else throw DataException("File already exists","FILE_EXIST_ERROR")
+                var result = ""
+
+                try {
+                    result = fileService.saveFile(path, file)
+                } catch (e: ApiException) {
+                    result = e.message ?: ""
+                    fileRepo.delete(repoFile)
+                }
+
+                return MessageResponseDto(message = result)
+
+            } else throw DataException("File already exists", "FILE_EXIST_ERROR")
 
 
         } else throw AccessException("You don't have permission to this repository", "PERMISSION_DENIED")
@@ -48,13 +63,13 @@ class RepoServiceImpl(
     override fun getAllRepositoryFiles(
         projectId: Long,
         principal: Principal
-    ): List<ProjectRepoFile> {
+    ): List<ProjectRepoFileDto> {
         val projectRepoOpt = repoRepository.findByProjectIdAndUsername(projectId, principal.name)
         if (projectRepoOpt.isPresent) {
             val projectRepo = projectRepoOpt.get()
             val result = fileRepo.findAllByProjectRepo(projectRepo)
 
-            return result
+            return result.stream().map(projectRepoMapper::toDto).collect(Collectors.toList())
         } else throw AccessException("You don't have permission to this repository", "PERMISSION_DENIED")
     }
 
@@ -79,5 +94,44 @@ class RepoServiceImpl(
         } else {
             "bin"
         }
+    }
+
+    override fun getMimeType(fileName: String): String {
+        val extension = fileName.substringAfterLast('.').lowercase()
+        return when (extension) {
+            "pdf" -> "application/pdf"
+            "doc" -> "application/msword"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "odt" -> "application/vnd.oasis.opendocument.text"
+            "xls" -> "application/vnd.ms-excel"
+            "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "ppt" -> "application/vnd.ms-powerpoint"
+            "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            "gif" -> "image/gif"
+            "zip" -> "application/zip"
+            "txt" -> "text/plain"
+            "html" -> "text/html"
+            "css" -> "text/css"
+            "js" -> "application/javascript"
+            "json" -> "application/json"
+            "xml" -> "application/xml"
+            else -> "application/octet-stream"
+        }
+    }
+
+    override fun getFileName(fileId: Long): String {
+        return fileRepo.findById(fileId).get().name ?: ""
+    }
+
+    override fun delete(projectId: Long, fileId: Long, principal: Principal): String {
+        var res = "File doesn't exist or you don't have permission to this project"
+        val projectRepoOpt = repoRepository.findByProjectIdAndUsername(projectId, principal.name)
+        if(projectRepoOpt.isPresent) {
+            fileRepo.deleteById(fileId)
+            res = "Successfully deleted file"
+        }
+        return res
     }
 }

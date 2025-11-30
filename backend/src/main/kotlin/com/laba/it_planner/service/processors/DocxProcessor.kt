@@ -6,7 +6,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @Component
 class DocxProcessor : AbstractFileProcessor() {
-    override fun getSupportedExtensions(): List<String> = listOf("doc", "docx", "xls", "xlsx", "ppt", "pptx")
+    override fun getSupportedExtensions(): List<String> = listOf("doc", "docx", "xls", "xlsx", "ppt", "pptx", "odt")
 
     override fun process(file: MultipartFile, minioClient: MinioClient, bucketName: String, path: String) {
         val contentType = when (getFileExtension(file.originalFilename).lowercase()) {
@@ -16,6 +16,7 @@ class DocxProcessor : AbstractFileProcessor() {
             "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             "ppt" -> "application/vnd.ms-powerpoint"
             "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "odt" -> "application/vnd.oasis.opendocument.text"
             else -> "application/octet-stream"
         }
 
