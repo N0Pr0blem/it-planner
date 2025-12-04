@@ -1,7 +1,8 @@
 package com.example.planner.data.dto.oauth
 
+import com.squareup.moshi.JsonClass
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonClass(generateAdapter = true)
 data class AuthRequestDto (
     val username: String,
     val password: String

@@ -2,9 +2,9 @@ package com.example.planner.data.dto.task
 
 import com.example.planner.data.model.task.TaskComplexity
 import com.example.planner.data.model.task.TaskUrgency
+import com.squareup.moshi.JsonClass
 
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonClass(generateAdapter = true)
 data class CreateTaskInfoRequestDto(
     var name: String,
     var urgency: TaskUrgency,

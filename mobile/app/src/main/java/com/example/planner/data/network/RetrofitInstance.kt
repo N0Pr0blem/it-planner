@@ -1,7 +1,5 @@
 package com.example.planner.data.network
 
-import android.R.attr.level
-import androidx.privacysandbox.tools.core.generator.build
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.OkHttpClient

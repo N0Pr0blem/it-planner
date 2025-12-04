@@ -1,7 +1,9 @@
 package com.example.planner.data.dto.tracking
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class AllTrekkingResponse(
-    var trekkingList :List<TrekkingResponseDto>,
-    var hourSum : Double
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
+data class AllTrackingResponse(
+    var trekkingList: List<TrackingResponseDto>,
+    var hourSum: Double
 )

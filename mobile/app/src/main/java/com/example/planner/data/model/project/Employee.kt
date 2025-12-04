@@ -27,7 +27,7 @@ import com.example.planner.data.model.user.ProjectRole
 data class Employee(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
-    val id: Long? = null,
+    val id: Long = 0,
 
     @ColumnInfo(name = "user_id", index = true)
     val userId: Long,

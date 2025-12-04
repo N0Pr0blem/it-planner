@@ -4,7 +4,6 @@ import java.time.LocalDateTime
 import androidx.room.Entity
 import androidx.room.ColumnInfo
 import androidx.room.PrimaryKey
-import androidx.room.parser.Table
 
 @Entity(tableName = "user_info")
 data class UserInfo(

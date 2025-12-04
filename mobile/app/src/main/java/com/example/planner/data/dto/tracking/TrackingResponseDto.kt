@@ -1,8 +1,9 @@
 package com.example.planner.data.dto.tracking
 
+import com.squareup.moshi.JsonClass
 import java.time.LocalDate
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonClass(generateAdapter = true)
 data class TrackingResponseDto(
     var id : Long,
     var date: LocalDate,

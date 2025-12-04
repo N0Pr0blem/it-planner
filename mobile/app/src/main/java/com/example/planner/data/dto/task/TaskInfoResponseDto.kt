@@ -1,9 +1,10 @@
 package com.example.planner.data.dto.task
 
 import com.example.planner.data.dto.userInfo.UserInfoForTaskDto
+import com.squareup.moshi.JsonClass
 import java.time.LocalDateTime
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonClass(generateAdapter = true)
 data class TaskInfoResponseDto(
     val id: Long,
     var isCompleted: Boolean,

@@ -34,3 +34,5 @@ interface UserInfoDao {
     suspend fun deleteAll()
 }
 
+
+

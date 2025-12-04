@@ -8,7 +8,7 @@ import com.example.planner.data.model.repo.FileType
 import com.example.planner.data.model.user.OauthRole
 import com.example.planner.data.model.user.ProjectRole
 
-class TypeConverters {
+class EnumTypeConverters {
 
     // TaskComplexity
     @TypeConverter
@@ -37,6 +37,7 @@ class TypeConverters {
 
     @TypeConverter
     fun toFileType(name: String?): FileType? = name?.let { FileType.valueOf(it) }
+    
     // OauthRole
     @TypeConverter
     fun fromOauthRole(role: OauthRole?): String? = role?.name
@@ -51,3 +52,4 @@ class TypeConverters {
     @TypeConverter
     fun toProjectRole(name: String?): ProjectRole? = name?.let { ProjectRole.valueOf(it) }
 }
+

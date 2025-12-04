@@ -1,6 +1,8 @@
 package com.example.planner.data.dto.task
 
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+import com.squareup.moshi.JsonClass
+
+@JsonClass(generateAdapter = true)
 data class TaskInfoListing(
     var id: Long,
     var name: String,

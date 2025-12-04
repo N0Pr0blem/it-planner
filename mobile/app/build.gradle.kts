@@ -50,7 +50,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -64,23 +63,26 @@ dependencies {
     implementation(libs.converter.moshi)
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
+    ksp(libs.moshi.kotlin)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx.v294)
-    implementation("androidx.compose.ui:ui-text-google-fonts")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.compose.ui.text.google.fonts)
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.androidx.room.runtime)
-    annotationProcessor(libs.room.compiler.v284) // Для Java
-    ksp(libs.room.compiler.v284) // Для Kotlin (KSP)
+    ksp(libs.androidx.room.compiler) // Для Kotlin (KSP)
 
     // Kotlin Extensions и поддержка Coroutines для Room
     implementation(libs.androidx.room.ktx)
 
     // Интерсептор
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
+}
 
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
 }

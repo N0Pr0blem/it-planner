@@ -37,3 +37,5 @@ interface TaskDetailsDao {
     suspend fun deleteAll()
 }
 
+
+

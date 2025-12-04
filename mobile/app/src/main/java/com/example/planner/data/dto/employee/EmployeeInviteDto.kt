@@ -1,9 +1,9 @@
 package com.example.planner.data.dto.employee
 
 import com.example.planner.data.model.user.ProjectRole
+import com.squareup.moshi.JsonClass
 
-
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+@JsonClass(generateAdapter = true)
 data class EmployeeInviteDto(
     val username: String,
     val projectRole: ProjectRole,
