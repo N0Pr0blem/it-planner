@@ -4,24 +4,22 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import com.example.planner.data.model.user.OauthUser
+import com.example.planner.data.model.project.Employee
 
 @Entity(
     tableName = "task_details",
-    // 1. Определяем внешние ключи для связи с таблицей 'oauth_user'.
-    // Room будет проверять, что `from_user_id` и `to_user_id` существуют в `oauth_user`.
     foreignKeys = [
         ForeignKey(
-            entity = OauthUser::class,
+            entity = Employee::class,
             parentColumns = ["id"],
             childColumns = ["from_user_id"],
-            onDelete = ForeignKey.CASCADE // Пример: удалить детали, если пользователь удален
+            onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = OauthUser::class,
+            entity = Employee::class,
             parentColumns = ["id"],
             childColumns = ["to_user_id"],
-            onDelete = ForeignKey.SET_NULL // Пример: обнулить поле, если пользователь удален
+            onDelete = ForeignKey.SET_NULL
         )
     ]
 )

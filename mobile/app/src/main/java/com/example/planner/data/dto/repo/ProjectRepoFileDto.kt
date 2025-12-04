@@ -1,6 +1,6 @@
 package com.example.planner.data.dto.repo
 
-import com.example.planner.data.model.project.repository.FileType
+import com.example.planner.data.model.repo.FileType
 
 class ProjectRepoFileDto (
     var id: Long? = null,

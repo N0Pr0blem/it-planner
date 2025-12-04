@@ -1,4 +1,4 @@
-package com.example.planner.data.model.project.repository
+package com.example.planner.data.model.repo
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity

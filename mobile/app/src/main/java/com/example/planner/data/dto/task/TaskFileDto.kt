@@ -1,6 +1,6 @@
 package com.example.planner.data.dto.task
 
-import com.example.planner.data.model.project.repository.FileType
+import com.example.planner.data.model.repo.FileType
 
 class TaskFileDto {
     var id: Long? = null
