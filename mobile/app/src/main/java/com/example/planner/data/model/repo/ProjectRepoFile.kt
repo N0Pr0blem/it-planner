@@ -20,7 +20,7 @@ data class ProjectRepoFile(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
-    // 1. Вместо объекта ProjectRepo храним только его ID
+    // Вместо объекта ProjectRepo храним только его ID
     @ColumnInfo(name = "project_repository_id", index = true)
     var projectRepoId: Long,
 

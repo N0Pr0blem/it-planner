@@ -1,4 +1,4 @@
-package com.example.planner.data.model.typeConverters
+package com.example.planner.data.model.converters
 
 import android.os.Build
 import androidx.annotation.RequiresApi
