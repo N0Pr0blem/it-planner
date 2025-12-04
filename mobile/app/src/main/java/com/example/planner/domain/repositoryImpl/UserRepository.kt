@@ -1,4 +1,4 @@
-package com.example.planner.domain.repository
+package com.example.planner.domain.repositoryImpl
 
 import com.example.planner.domain.model.User
 
