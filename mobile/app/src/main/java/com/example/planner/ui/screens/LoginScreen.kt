@@ -148,7 +148,7 @@ fun LoginScreen(onTabSwitch: (String) -> Unit) {
                 }
             }
 
-            // Кнопка ПОД карточкой, визуально «приклеена» к ней
+            // Кнопка под карточкой, визуально «приклеена» к ней
             Button(
                 onClick = { /* TODO */ },
                 shape = RoundedCornerShape(24.dp),

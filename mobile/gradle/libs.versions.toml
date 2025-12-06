@@ -19,6 +19,7 @@ moshiKotlin = "1.15.2"
 roomKtx = "2.8.4"
 roomRuntime = "2.8.4"
 roomCompiler = "2.8.4"
+uiText = "1.10.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -55,6 +56,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "converte
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 #noinspection SimilarGradleDependency
 room-compiler-v284 = { module = "androidx.room:room-compiler", version.ref = "androidxRoomCompiler" }
+androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

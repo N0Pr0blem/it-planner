@@ -2,6 +2,8 @@ package com.example.planner.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,22 +18,71 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import com.example.planner.ui.theme.BlueBackground
-import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
 
+private enum class EditField { Login, Password }
+
 @Composable
 fun PersonalAccountScreen() {
-    var login by remember { mutableStateOf("PersonLogin") }
-    var password by remember { mutableStateOf("password123") }
+
+    // "сохранённые" значения (пока заглушки)
+    var savedLogin by remember { mutableStateOf("PersonLogin") }
+    var savedPassword by remember { mutableStateOf("password123") }
+
+    // значения в полях (редактируемые)
+    var login by remember { mutableStateOf(savedLogin) }
+    var password by remember { mutableStateOf(savedPassword) }
+
+    // режим редактирования + какое поле нужно сфокусировать
+    var isEditing by remember { mutableStateOf(false) }
+    var focusField by remember { mutableStateOf<EditField?>(null) }
+
+    val loginFocus = remember { FocusRequester() }
+    val passFocus = remember { FocusRequester() }
+
+    // когда включили редактирование — ставим фокус в нужное поле
+    LaunchedEffect(isEditing, focusField) {
+        if (isEditing) {
+            when (focusField) {
+                EditField.Login -> loginFocus.requestFocus()
+                EditField.Password -> passFocus.requestFocus()
+                null -> Unit
+            }
+        }
+    }
+
+    fun startEditing(field: EditField) {
+        login = savedLogin
+        password = savedPassword
+        isEditing = true
+        focusField = field
+    }
+
+    fun cancelEditing() {
+        login = savedLogin
+        password = savedPassword
+        isEditing = false
+        focusField = null
+    }
+
+    fun saveEditing() {
+        savedLogin = login
+        savedPassword = password
+        isEditing = false
+        focusField = null
+    }
 
     Box(
         modifier = Modifier
@@ -42,7 +93,7 @@ fun PersonalAccountScreen() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(top = 48.dp)
         ) {
             // -------- Header --------
@@ -85,7 +136,7 @@ fun PersonalAccountScreen() {
                         )
                     }
                 }
-                IconButton(onClick = { /* Logout */ }) {
+                IconButton(onClick = { /* TODO: Logout */ }) {
                     Icon(
                         imageVector = Icons.Default.ExitToApp,
                         contentDescription = "Logout",
@@ -96,10 +147,14 @@ fun PersonalAccountScreen() {
 
             Spacer(Modifier.height(46.dp))
 
+            // -------- Form --------
             Column(
-                modifier = Modifier.fillMaxWidth(0.9f),
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .weight(1f), // чтобы нижний блок всегда был снизу
                 horizontalAlignment = Alignment.Start
             ) {
+                // -------- Login --------
                 Text(
                     "Login",
                     color = Color.White,
@@ -110,32 +165,48 @@ fun PersonalAccountScreen() {
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = login,
-                    onValueChange = { login = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
+                Box {
+                    OutlinedTextField(
+                        value = login,
+                        onValueChange = { login = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(loginFocus)
+                            .padding(top = 4.dp),
+                        leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.White) },
+                        singleLine = true,
+                        readOnly = !isEditing,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
+                            cursorColor = Color.White,
+                            disabledTextColor = Color.White
+                        ),
+                        textStyle = LocalTextStyle.current.copy(
+                            fontFamily = NunitoFamily,
+                            fontSize = 16.sp
+                        ),
+                        shape = RoundedCornerShape(15.dp)
+                    )
 
-                    leadingIcon = {
-                        Icon(Icons.Default.Person, null, tint = Color.White)
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
-                        cursorColor = Color.White
-                    ),
-                    textStyle = LocalTextStyle.current.copy(
-                        fontFamily = NunitoFamily,
-                        fontSize = 16.sp
-                    ),
-                    shape = RoundedCornerShape(15.dp)
-                )
+                    // Прозрачный слой для тапа — только когда НЕ редактируем
+                    if (!isEditing) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { startEditing(EditField.Login) }
+                        )
+                    }
+                }
 
                 Spacer(Modifier.height(26.dp))
 
+                // -------- Password --------
                 Text(
                     "Password",
                     color = Color.White,
@@ -146,41 +217,95 @@ fun PersonalAccountScreen() {
                 )
                 Spacer(Modifier.height(8.dp))
 
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.White) },
-                    singleLine = true,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedBorderColor = Color.White,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
-                        cursorColor = Color.White
-                    ),
-                    textStyle = LocalTextStyle.current.copy(
-                        fontFamily = NunitoFamily,
-                        fontSize = 16.sp
-                    ),
-                    shape = RoundedCornerShape(15.dp)
-                )
+                Box {
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.White) },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .focusRequester(passFocus)
+                            .padding(top = 4.dp),
+                        readOnly = !isEditing,
+                        visualTransformation = if (isEditing) VisualTransformation.None else PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White,
+                            focusedBorderColor = Color.White,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
+                            cursorColor = Color.White,
+                            disabledTextColor = Color.White
+                        ),
+                        textStyle = LocalTextStyle.current.copy(
+                            fontFamily = NunitoFamily,
+                            fontSize = 16.sp
+                        ),
+                        shape = RoundedCornerShape(15.dp)
+                    )
+
+                    if (!isEditing) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) { startEditing(EditField.Password) }
+                        )
+                    }
+                }
+
+                // -------- Save / Cancel (только когда редактируем) --------
+                if (isEditing) {
+                    Spacer(Modifier.height(18.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Button(
+                            onClick = { saveEditing() },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                            elevation = ButtonDefaults.buttonElevation(0.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(44.dp)
+                        ) {
+                            Text(
+                                "Save",
+                                color = Color.Black,
+                                fontFamily = NunitoFamily,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+
+                        Button(
+                            onClick = { cancelEditing() },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                            elevation = ButtonDefaults.buttonElevation(0.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(44.dp)
+                        ) {
+                            Text(
+                                "Cancel",
+                                color = Color.White,
+                                fontFamily = NunitoFamily,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                }
             }
 
-            Spacer(Modifier.weight(1f))
-
+            // -------- Bottom menu (как раньше) --------
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(160.dp)
-                    .clip(
-                        RoundedCornerShape(
-                            topStart = 80.dp,
-                            topEnd = 80.dp
-                        )
-                    )
+                    .clip(RoundedCornerShape(topStart = 80.dp, topEnd = 80.dp))
                     .background(Color(0xFFE8E8E8)),
                 contentAlignment = Alignment.Center
             ) {
@@ -189,7 +314,10 @@ fun PersonalAccountScreen() {
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable { /* TODO: go to Projects */ }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Work,
                             contentDescription = "Projects",
@@ -204,7 +332,11 @@ fun PersonalAccountScreen() {
                             fontSize = 18.sp
                         )
                     }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.clickable { /* TODO: go to Settings (Account) */ }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Setting",
