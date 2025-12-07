@@ -15,6 +15,7 @@ interface TaskInfoRepository: JpaRepository<TaskInfo, Long> {
        ti.is_completed as isCompleted,
        ui.first_name as firstName,
        ui.second_name as secondName,
+       ti.status as status,
        ui.profile_image as profileImage
 from task_info ti
          left join task_details td on td.id = ti.task_details_id

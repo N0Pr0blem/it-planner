@@ -9,5 +9,6 @@ data class TaskInfoListing(
     var name: String,
     var isCompleted: Boolean,
     var assignBy: String,
-    var assignByImage: String?
+    var assignByImage: String?,
+    var status: String?
 )

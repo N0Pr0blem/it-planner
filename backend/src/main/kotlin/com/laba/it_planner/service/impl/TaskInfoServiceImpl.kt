@@ -140,7 +140,8 @@ class TaskInfoServiceImpl(
                 val image = fileService.getFile(projection.getProfileImage()!!)
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
                 String(encoded, StandardCharsets.UTF_8)
-            } else "null"
+            } else "null",
+            status = projection.getStatus(),
         )
     }
 
