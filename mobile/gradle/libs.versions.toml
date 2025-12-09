@@ -20,6 +20,7 @@ roomKtx = "2.8.4"
 roomRuntime = "2.8.4"
 roomCompiler = "2.8.4"
 uiText = "1.10.0"
+foundation = "1.10.0"
 
 [libraries]
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -57,6 +58,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 #noinspection SimilarGradleDependency
 room-compiler-v284 = { module = "androidx.room:room-compiler", version.ref = "androidxRoomCompiler" }
 androidx-compose-ui-text = { group = "androidx.compose.ui", name = "ui-text", version.ref = "uiText" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

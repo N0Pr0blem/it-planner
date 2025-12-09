@@ -5,10 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -22,20 +25,46 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
 
 private enum class EditField { Login, Password }
 
+// ===== Заглушки данных для блоков снизу (private — не конфликтуют и не ломают проект) =====
+private data class AccountProjectItem(val id: String, val name: String)
+
+private enum class AccountTaskStatus(val label: String, val color: Color) {
+    TODO("To do", Color(0xFF6B7280)),
+    IN_REVIEW("In review", Color(0xFF8B5CF6)),
+    DONE("Done", Color(0xFF16A34A))
+}
+
+private data class AccountTaskItem(val id: String, val title: String, val status: AccountTaskStatus)
+
 @Composable
 fun PersonalAccountScreen() {
+
+    // ---- заглушки для отображения списков (потом замените на данные с бэка) ----
+    val myProjects = remember {
+        listOf(
+            AccountProjectItem("1", "Arduino"),
+            AccountProjectItem("2", "Planner Mobile"),
+        )
+    }
+    val myTasks = remember {
+        listOf(
+            AccountTaskItem("1", "PLA-4", AccountTaskStatus.TODO),
+            AccountTaskItem("2", "Taska", AccountTaskStatus.IN_REVIEW),
+            AccountTaskItem("3", "PLA", AccountTaskStatus.DONE),
+        )
+    }
 
     // "сохранённые" значения (пока заглушки)
     var savedLogin by remember { mutableStateOf("PersonLogin") }
@@ -83,6 +112,8 @@ fun PersonalAccountScreen() {
         isEditing = false
         focusField = null
     }
+
+    val formScroll = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -138,7 +169,7 @@ fun PersonalAccountScreen() {
                 }
                 IconButton(onClick = { /* TODO: Logout */ }) {
                     Icon(
-                        imageVector = Icons.Default.ExitToApp,
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout",
                         tint = Color.White
                     )
@@ -147,11 +178,12 @@ fun PersonalAccountScreen() {
 
             Spacer(Modifier.height(46.dp))
 
-            // -------- Form --------
+            // -------- Form + списки (скролл) --------
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
-                    .weight(1f), // чтобы нижний блок всегда был снизу
+                    .weight(1f) // чтобы нижний блок всегда был снизу
+                    .verticalScroll(formScroll),
                 horizontalAlignment = Alignment.Start
             ) {
                 // -------- Login --------
@@ -298,6 +330,49 @@ fun PersonalAccountScreen() {
                         }
                     }
                 }
+
+                // ====== ДОБАВИЛИ: My projects ======
+                Spacer(Modifier.height(22.dp))
+                Text(
+                    text = "My projects",
+                    color = Color.White,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+                Spacer(Modifier.height(10.dp))
+
+                myProjects.forEach { p ->
+                    AccountProjectRow(
+                        title = p.name,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
+
+                // ====== ДОБАВИЛИ: My tasks ======
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "My tasks",
+                    color = Color.White,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+                Spacer(Modifier.height(10.dp))
+
+                myTasks.forEach { t ->
+                    AccountTaskRow(
+                        title = t.title,
+                        status = t.status,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    Spacer(Modifier.height(12.dp))
+                }
+
+                Spacer(Modifier.height(12.dp))
             }
 
             // -------- Bottom menu (как раньше) --------
@@ -352,6 +427,109 @@ fun PersonalAccountScreen() {
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+// ====== маленькие UI-компоненты для списков ======
+
+@Composable
+private fun AccountProjectRow(
+    title: String,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(0.dp),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFCBD5F5)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Folder,
+                    contentDescription = null,
+                    tint = Color(0xFF2D5178)
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            Text(
+                text = title,
+                color = Color.Black,
+                fontFamily = NunitoFamily,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun AccountTaskRow(
+    title: String,
+    status: AccountTaskStatus,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(0.dp),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // индикатор статуса
+            Box(
+                modifier = Modifier
+                    .size(14.dp)
+                    .clip(CircleShape)
+                    .background(status.color.copy(alpha = 0.18f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(status.color)
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = Color.Black,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = status.label,
+                    color = status.color,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp
+                )
             }
         }
     }

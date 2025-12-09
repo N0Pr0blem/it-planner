@@ -199,12 +199,12 @@ fun ProjectsScreen(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Setting",
+                            contentDescription = "Account",
                             tint = navFg,
                             modifier = Modifier.size(32.dp)
                         )
                         Text(
-                            "Setting",
+                            "Account",
                             color = navFg,
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.Medium,
