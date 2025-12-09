@@ -81,7 +81,6 @@ fun PersonalAccountScreen() {
     val loginFocus = remember { FocusRequester() }
     val passFocus = remember { FocusRequester() }
 
-    // когда включили редактирование — ставим фокус в нужное поле
     LaunchedEffect(isEditing, focusField) {
         if (isEditing) {
             when (focusField) {
@@ -113,20 +112,25 @@ fun PersonalAccountScreen() {
         focusField = null
     }
 
-    val formScroll = rememberScrollState()
+    val scroll = rememberScrollState()
+    val bottomBarHeight = 160.dp
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BlueBackground),
-        contentAlignment = Alignment.TopCenter
+            .background(BlueBackground)
     ) {
+        // ===== ВЕСЬ КОНТЕНТ С УЧЁТОМ НИЖНЕГО МЕНЮ =====
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 48.dp)
+                // ключевое: резервируем место под нижнее меню,
+                // чтобы карточки никогда под него не залезали
+                .padding(bottom = bottomBarHeight + 16.dp)
         ) {
+            Spacer(Modifier.height(48.dp))
+
             // -------- Header --------
             Row(
                 modifier = Modifier
@@ -176,14 +180,14 @@ fun PersonalAccountScreen() {
                 }
             }
 
-            Spacer(Modifier.height(46.dp))
+            Spacer(Modifier.height(20.dp))
 
-            // -------- Form + списки (скролл) --------
+            // -------- Scroll area (форма + списки) --------
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
-                    .weight(1f) // чтобы нижний блок всегда был снизу
-                    .verticalScroll(formScroll),
+                    .weight(1f)
+                    .verticalScroll(scroll),
                 horizontalAlignment = Alignment.Start
             ) {
                 // -------- Login --------
@@ -223,7 +227,6 @@ fun PersonalAccountScreen() {
                         shape = RoundedCornerShape(15.dp)
                     )
 
-                    // Прозрачный слой для тапа — только когда НЕ редактируем
                     if (!isEditing) {
                         Box(
                             modifier = Modifier
@@ -288,7 +291,7 @@ fun PersonalAccountScreen() {
                     }
                 }
 
-                // -------- Save / Cancel (только когда редактируем) --------
+                // -------- Save / Cancel --------
                 if (isEditing) {
                     Spacer(Modifier.height(18.dp))
                     Row(
@@ -331,7 +334,7 @@ fun PersonalAccountScreen() {
                     }
                 }
 
-                // ====== ДОБАВИЛИ: My projects ======
+                // ====== My projects ======
                 Spacer(Modifier.height(22.dp))
                 Text(
                     text = "My projects",
@@ -344,14 +347,11 @@ fun PersonalAccountScreen() {
                 Spacer(Modifier.height(10.dp))
 
                 myProjects.forEach { p ->
-                    AccountProjectRow(
-                        title = p.name,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    AccountProjectRow(title = p.name, modifier = Modifier.fillMaxWidth())
                     Spacer(Modifier.height(12.dp))
                 }
 
-                // ====== ДОБАВИЛИ: My tasks ======
+                // ====== My tasks ======
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "My tasks",
@@ -364,68 +364,66 @@ fun PersonalAccountScreen() {
                 Spacer(Modifier.height(10.dp))
 
                 myTasks.forEach { t ->
-                    AccountTaskRow(
-                        title = t.title,
-                        status = t.status,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                    AccountTaskRow(title = t.title, status = t.status, modifier = Modifier.fillMaxWidth())
                     Spacer(Modifier.height(12.dp))
                 }
 
-                Spacer(Modifier.height(12.dp))
+                // небольшой хвост, чтобы последняя карточка красиво отрывалась от низа
+                Spacer(Modifier.height(24.dp))
             }
+        }
 
-            // -------- Bottom menu (как раньше) --------
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(RoundedCornerShape(topStart = 80.dp, topEnd = 80.dp))
-                    .background(Color(0xFFE8E8E8)),
-                contentAlignment = Alignment.Center
+        // ===== НИЖНЕЕ МЕНЮ ПОВЕРХ (фикс) =====
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .height(bottomBarHeight)
+                .clip(RoundedCornerShape(topStart = 80.dp, topEnd = 80.dp))
+                .background(Color(0xFFE8E8E8)),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { /* TODO: go to Projects */ }
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable { /* TODO: go to Projects */ }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Work,
-                            contentDescription = "Projects",
-                            tint = Color(0xFF2D5178),
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Text(
-                            "Projects",
-                            color = Color(0xFF2D5178),
-                            fontFamily = NunitoFamily,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 18.sp
-                        )
-                    }
+                    Icon(
+                        imageVector = Icons.Default.Work,
+                        contentDescription = "Projects",
+                        tint = Color(0xFF2D5178),
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Text(
+                        "Projects",
+                        color = Color(0xFF2D5178),
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 18.sp
+                    )
+                }
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.clickable { /* TODO: go to Settings (Account) */ }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Settings,
-                            contentDescription = "Setting",
-                            tint = Color(0xFF2D5178),
-                            modifier = Modifier.size(32.dp)
-                        )
-                        Text(
-                            "Setting",
-                            color = Color(0xFF2D5178),
-                            fontFamily = NunitoFamily,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 18.sp
-                        )
-                    }
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.clickable { /* TODO: go to Settings (Account) */ }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Setting",
+                        tint = Color(0xFF2D5178),
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Text(
+                        "Setting",
+                        color = Color(0xFF2D5178),
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 18.sp
+                    )
                 }
             }
         }
@@ -496,7 +494,6 @@ private fun AccountTaskRow(
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // индикатор статуса
             Box(
                 modifier = Modifier
                     .size(14.dp)
@@ -547,18 +544,6 @@ fun PreviewPersonalAccount() {
 }
 
 @Preview(
-    name = "Personal Account – System UI",
-    showBackground = true,
-    showSystemUi = true,
-    backgroundColor = 0xFF1B3A5C,
-    device = Devices.PIXEL_6
-)
-@Composable
-fun PreviewPersonalAccountSystemUi() {
-    PlannerTheme { PersonalAccountScreen() }
-}
-
-@Preview(
     name = "Personal Account – Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
@@ -567,5 +552,5 @@ fun PreviewPersonalAccountSystemUi() {
 )
 @Composable
 fun PreviewPersonalAccountDark() {
-    PlannerTheme { PersonalAccountScreen() }
+    PlannerTheme { PreviewPersonalAccount() }
 }

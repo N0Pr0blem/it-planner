@@ -457,7 +457,7 @@ private fun RepositoryStub(modifier: Modifier = Modifier) {
 fun PreviewProjectDetails() {
     PlannerTheme {
         ProjectDetailsScreen(
-            projectName = "My Project",
+            projectName = "Planner Mobile",
             tasks = listOf(
                 ProjectTaskUi("1", "Taska", "Vlad Shugar", TaskStatus.TODO),
                 ProjectTaskUi("2", "Taska", "Valera Pompish", TaskStatus.IN_REVIEW),
