@@ -25,6 +25,8 @@ import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
+import com.example.planner.data.dto.employee.EmployeeResponseDto
+import com.example.planner.data.dto.repo.ProjectRepoFileDto
 import com.example.planner.data.model.task.TaskStatus
 // --- модели ---
 
@@ -44,6 +46,8 @@ data class ProjectTaskUi(
 fun ProjectDetailsScreen(
     projectName: String,
     tasks: List<ProjectTaskUi>,
+    employees: List<EmployeeResponseDto> = emptyList(),
+    repoFiles: List<ProjectRepoFileDto> = emptyList(),
     activeTab: ProjectTab = ProjectTab.Tasks,
     onTabChange: (ProjectTab) -> Unit = {},
     onBack: () -> Unit = {},
@@ -97,13 +101,47 @@ fun ProjectDetailsScreen(
                     ProjectTab.Members -> {
                         SectionTitle(title = "Project members")
                         Spacer(Modifier.height(14.dp))
-                        MembersStub(modifier = Modifier.weight(1f))
+                        if (employees.isNotEmpty()) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(bottom = 12.dp)
+                            ) {
+                                items(employees, key = { it.id.toString() }) { employee ->
+                                    EmployeeCard(
+                                        employee = employee,
+                                        onClick = { /* TODO: open employee details */ }
+                                    )
+                                }
+                            }
+                        } else {
+                            MembersStub(modifier = Modifier.weight(1f))
+                        }
                     }
 
                     ProjectTab.Repository -> {
                         SectionTitle(title = "Repository")
                         Spacer(Modifier.height(14.dp))
-                        RepositoryStub(modifier = Modifier.weight(1f))
+                        if (repoFiles.isNotEmpty()) {
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(bottom = 12.dp)
+                            ) {
+                                items(repoFiles, key = { it.id.toString() }) { file ->
+                                    RepositoryFileCard(
+                                        file = file,
+                                        onClick = { /* TODO: open file */ }
+                                    )
+                                }
+                            }
+                        } else {
+                            RepositoryStub(modifier = Modifier.weight(1f))
+                        }
                     }
                 }
             }
@@ -436,6 +474,119 @@ private fun RepositoryStub(modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Medium,
                 color = Color.Black.copy(alpha = 0.6f)
             )
+        }
+    }
+}
+
+// --- компоненты для вкладок ---
+
+@Composable
+private fun EmployeeCard(
+    employee: EmployeeResponseDto,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 86.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${employee.firstName ?: ""} ${employee.secondName ?: ""}".trim(),
+                    color = Color.Black,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+
+                Text(
+                    text = employee.role.name,
+                    color = Color(0xFF6B7280),
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
+                )
+            }
+
+            Spacer(Modifier.height(6.dp))
+
+            Text(
+                text = employee.username,
+                color = Color(0xFF6B7280),
+                fontFamily = NunitoFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun RepositoryFileCard(
+    file: ProjectRepoFileDto,
+    onClick: () -> Unit,
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 64.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFCBD5F5)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Folder,
+                    contentDescription = null,
+                    tint = Color(0xFF2D5178)
+                )
+            }
+
+            Spacer(Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = file.name,
+                    color = Color.Black,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = "${file.size} bytes • ${file.uploadDate}",
+                    color = Color(0xFF6B7280),
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp
+                )
+            }
         }
     }
 }

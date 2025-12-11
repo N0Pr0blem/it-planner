@@ -66,10 +66,27 @@ fun PreviewRegisterDark() {
 }
 
 @Composable
-fun RegisterScreen(onTabSwitch: (String) -> Unit) {
+fun RegisterScreen(
+    onTabSwitch: (String) -> Unit,
+    onRegister: (String, String, String) -> Unit = { _, _, _ -> },
+    isLoading: Boolean = false,
+    error: String? = null,
+    onErrorDismiss: () -> Unit = {}
+) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    if (error != null) {
+        AlertDialog(
+            onDismissRequest = onErrorDismiss,
+            title = { Text("Error") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = onErrorDismiss) { Text("OK") }
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -171,24 +188,32 @@ fun RegisterScreen(onTabSwitch: (String) -> Unit) {
                 }
             }
 
-            // --- Кнопка Register ---
             Button(
-                onClick = { /* TODO: register logic */ },
+                onClick = { onRegister(username, email, password) },
+                enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && !isLoading,
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(GreenButton),
                 elevation = ButtonDefaults.buttonElevation(0.dp),
                 modifier = Modifier
-                    .offset(y = (-24).dp)      // легкое наложение на карточку
+                    .offset(y = (-24).dp)
                     .fillMaxWidth(0.4f)
                     .height(46.dp)
             ) {
-                Text(
-                    "Register",
-                    style = MaterialTheme.typography.labelLarge.copy(
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
                         color = Color.White,
-                        fontWeight = FontWeight.Medium
+                        strokeWidth = 2.dp
                     )
-                )
+                } else {
+                    Text(
+                        "Register",
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Medium
+                        )
+                    )
+                }
             }
         }
     }

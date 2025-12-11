@@ -38,36 +38,28 @@ import com.example.planner.data.model.task.TaskStatus
 private enum class EditField { Login, Password }
 
 // ===== Заглушки данных для блоков снизу (private — не конфликтуют и не ломают проект) =====
-private data class AccountProjectItem(val id: String, val name: String)
+data class AccountProjectItem(val id: String, val name: String)
 
 
-private data class AccountTaskItem(val id: String, val title: String, val status: TaskStatus)
+data class AccountTaskItem(val id: String, val title: String, val status: TaskStatus)
 
 @Composable
-fun PersonalAccountScreen() {
-
-    // ---- заглушки для отображения списков (потом замените на данные с бэка) ----
-    val myProjects = remember {
-        listOf(
-            AccountProjectItem("1", "Arduino"),
-            AccountProjectItem("2", "Planner Mobile"),
-        )
-    }
-    val myTasks = remember {
-        listOf(
-            AccountTaskItem("1", "PLA-4", TaskStatus.TO_DO),
-            AccountTaskItem("2", "Taska", TaskStatus.REVIEW),
-            AccountTaskItem("3", "PLA", TaskStatus.DONE),
-        )
-    }
-
-    // "сохранённые" значения (пока заглушки)
-    var savedLogin by remember { mutableStateOf("PersonLogin") }
-    var savedPassword by remember { mutableStateOf("password123") }
+fun PersonalAccountScreen(
+    myProjects: List<AccountProjectItem> = emptyList(),
+    myTasks: List<AccountTaskItem> = emptyList(),
+    savedLogin: String = "",
+    savedPassword: String = "",
+    onProjectsClick: () -> Unit = {},
+    onLogout: () -> Unit = {},
+    onSaveProfile: (String, String) -> Unit = { _, _ -> }
+) {
+    // "сохранённые" значения
+    var savedLoginState by remember { mutableStateOf(savedLogin) }
+    var savedPasswordState by remember { mutableStateOf(savedPassword) }
 
     // значения в полях (редактируемые)
-    var login by remember { mutableStateOf(savedLogin) }
-    var password by remember { mutableStateOf(savedPassword) }
+    var login by remember { mutableStateOf(savedLoginState) }
+    var password by remember { mutableStateOf(savedPasswordState) }
 
     // режим редактирования + какое поле нужно сфокусировать
     var isEditing by remember { mutableStateOf(false) }
@@ -87,24 +79,25 @@ fun PersonalAccountScreen() {
     }
 
     fun startEditing(field: EditField) {
-        login = savedLogin
-        password = savedPassword
+        login = savedLoginState
+        password = savedPasswordState
         isEditing = true
         focusField = field
     }
 
     fun cancelEditing() {
-        login = savedLogin
-        password = savedPassword
+        login = savedLoginState
+        password = savedPasswordState
         isEditing = false
         focusField = null
     }
 
     fun saveEditing() {
-        savedLogin = login
-        savedPassword = password
+        savedLoginState = login
+        savedPasswordState = password
         isEditing = false
         focusField = null
+        onSaveProfile(login, password)
     }
 
     val scroll = rememberScrollState()
@@ -166,7 +159,7 @@ fun PersonalAccountScreen() {
                         )
                     }
                 }
-                IconButton(onClick = { /* TODO: Logout */ }) {
+                IconButton(onClick = onLogout) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Logout",
@@ -329,7 +322,74 @@ fun PersonalAccountScreen() {
                     }
                 }
 
-                // ====== My projects ======
+                            Spacer(Modifier.height(22.dp))
+                Text(
+                    text = "My projects",
+                    color = Color.White,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+                Spacer(Modifier.height(10.dp))
+
+                myProjects.forEach { p ->
+                    AccountProjectRow(title = p.name, modifier = Modifier.fillMaxWidth())
+                    Spacer(Modifier.height(12.dp))
+                }
+
+                // ====== My tasks ======
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "My tasks",
+                    color = Color.White,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp,
+                    modifier = Modifier.padding(start = 6.dp)
+                )
+                Spacer(Modifier.height(10.dp))
+
+                myTasks.forEach { t ->
+                    AccountTaskRow(title = t.title, status = t.status, modifier = Modifier.fillMaxWidth())
+                    Spacer(Modifier.height(12.dp))
+                }
+
+    // ====== My projects ======
+                if (myProjects.isNotEmpty()) {
+                    Spacer(Modifier.height(22.dp))
+                    Text(
+                        text = "My projects",
+                        color = Color.White,
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    myProjects.forEach { p ->
+                        AccountProjectRow(title = p.name, modifier = Modifier.fillMaxWidth())
+                        Spacer(Modifier.height(12.dp))
+                    }
+                }
+                if (myTasks.isNotEmpty()) {
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        text = "My tasks",
+                        color = Color.White,
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+                        modifier = Modifier.padding(start = 6.dp)
+                    )
+                    Spacer(Modifier.height(10.dp))
+
+                    myTasks.forEach { t ->
+                        AccountTaskRow(title = t.title, status = t.status, modifier = Modifier.fillMaxWidth())
+                        Spacer(Modifier.height(12.dp))
+                    }
+                }
                 Spacer(Modifier.height(22.dp))
                 Text(
                     text = "My projects",
@@ -385,7 +445,7 @@ fun PersonalAccountScreen() {
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { /* TODO: go to Projects */ }
+                    modifier = Modifier.clickable { onProjectsClick() }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Work,
@@ -535,7 +595,24 @@ private fun AccountTaskRow(
 )
 @Composable
 fun PreviewPersonalAccount() {
-    PlannerTheme { PersonalAccountScreen() }
+    val sampleProjects = listOf(
+        AccountProjectItem("1", "Arduino"),
+        AccountProjectItem("2", "Planner Mobile"),
+    )
+    val sampleTasks = listOf(
+        AccountTaskItem("1", "PLA-4", TaskStatus.TO_DO),
+        AccountTaskItem("2", "Taska", TaskStatus.REVIEW),
+        AccountTaskItem("3", "PLA", TaskStatus.DONE),
+    )
+    
+    PlannerTheme { 
+        PersonalAccountScreen(
+            myProjects = sampleProjects,
+            myTasks = sampleTasks,
+            savedLogin = "PersonLogin",
+            savedPassword = "password123"
+        )
+    }
 }
 
 @Preview(
@@ -547,5 +624,5 @@ fun PreviewPersonalAccount() {
 )
 @Composable
 fun PreviewPersonalAccountDark() {
-    PlannerTheme { PreviewPersonalAccount() }
+    PreviewPersonalAccount()
 }

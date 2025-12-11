@@ -64,9 +64,26 @@ fun PreviewLoginDark() {
 }
 
 @Composable
-fun LoginScreen(onTabSwitch: (String) -> Unit) {
+fun LoginScreen(
+    onTabSwitch: (String) -> Unit,
+    onLogin: (String, String) -> Unit = { _, _ -> },
+    isLoading: Boolean = false,
+    error: String? = null,
+    onErrorDismiss: () -> Unit = {}
+) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    if (error != null) {
+        AlertDialog(
+            onDismissRequest = onErrorDismiss,
+            title = { Text("Error") },
+            text = { Text(error) },
+            confirmButton = {
+                TextButton(onClick = onErrorDismiss) { Text("OK") }
+            }
+        )
+    }
 
     Box(
         modifier = Modifier
@@ -148,9 +165,9 @@ fun LoginScreen(onTabSwitch: (String) -> Unit) {
                 }
             }
 
-            // Кнопка под карточкой, визуально «приклеена» к ней
             Button(
-                onClick = { /* TODO */ },
+                onClick = { onLogin(username, password) },
+                enabled = username.isNotBlank() && password.isNotBlank() && !isLoading,
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(GreenButton),
                 elevation = ButtonDefaults.buttonElevation(0.dp),
@@ -159,10 +176,18 @@ fun LoginScreen(onTabSwitch: (String) -> Unit) {
                     .fillMaxWidth(0.4f)
                     .height(46.dp)
             ) {
-                Text(
-                    "Login",
-                    style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Medium)
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text(
+                        "Login",
+                        style = MaterialTheme.typography.labelLarge.copy(color = Color.White, fontWeight = FontWeight.Medium)
+                    )
+                }
             }
         }
     }

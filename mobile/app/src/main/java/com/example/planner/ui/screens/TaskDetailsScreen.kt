@@ -22,7 +22,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.planner.ui.theme.BlueBackground
-import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
 import com.example.planner.data.model.task.TaskStatus
@@ -53,7 +52,7 @@ fun TaskComplexity.color(): Color = when (this) {
 
 data class TaskFileUi(
     val id: String,
-    val fileName: String,
+    val fileName: String?,
 )
 
 // ======= screen =======

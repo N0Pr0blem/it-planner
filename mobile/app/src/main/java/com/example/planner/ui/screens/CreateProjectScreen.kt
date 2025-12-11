@@ -29,7 +29,9 @@ import com.example.planner.ui.theme.PlannerTheme
 @Composable
 fun CreateProjectScreen(
     onBack: () -> Unit = {},
-    onCreate: (name: String) -> Unit = {}
+    onCreate: (name: String) -> Unit = {},
+    isLoading: Boolean,
+    error: String?
 ) {
     var name by remember { mutableStateOf("") }
 
