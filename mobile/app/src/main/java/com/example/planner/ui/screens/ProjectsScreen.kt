@@ -49,7 +49,6 @@ fun ProjectsScreen(
 
     var deleteTarget by remember { mutableStateOf<ProjectUi?>(null) }
 
-    // ---------- Delete dialog ----------
     if (deleteTarget != null) {
         AlertDialog(
             onDismissRequest = { deleteTarget = null },

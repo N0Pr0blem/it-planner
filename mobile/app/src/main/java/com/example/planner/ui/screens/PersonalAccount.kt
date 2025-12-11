@@ -34,19 +34,14 @@ import androidx.compose.ui.unit.sp
 import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
-
+import com.example.planner.data.model.task.TaskStatus
 private enum class EditField { Login, Password }
 
 // ===== Заглушки данных для блоков снизу (private — не конфликтуют и не ломают проект) =====
 private data class AccountProjectItem(val id: String, val name: String)
 
-private enum class AccountTaskStatus(val label: String, val color: Color) {
-    TODO("To do", Color(0xFF6B7280)),
-    IN_REVIEW("In review", Color(0xFF8B5CF6)),
-    DONE("Done", Color(0xFF16A34A))
-}
 
-private data class AccountTaskItem(val id: String, val title: String, val status: AccountTaskStatus)
+private data class AccountTaskItem(val id: String, val title: String, val status: TaskStatus)
 
 @Composable
 fun PersonalAccountScreen() {
@@ -60,9 +55,9 @@ fun PersonalAccountScreen() {
     }
     val myTasks = remember {
         listOf(
-            AccountTaskItem("1", "PLA-4", AccountTaskStatus.TODO),
-            AccountTaskItem("2", "Taska", AccountTaskStatus.IN_REVIEW),
-            AccountTaskItem("3", "PLA", AccountTaskStatus.DONE),
+            AccountTaskItem("1", "PLA-4", TaskStatus.TO_DO),
+            AccountTaskItem("2", "Taska", TaskStatus.REVIEW),
+            AccountTaskItem("3", "PLA", TaskStatus.DONE),
         )
     }
 
@@ -479,7 +474,7 @@ private fun AccountProjectRow(
 @Composable
 private fun AccountTaskRow(
     title: String,
-    status: AccountTaskStatus,
+    status: TaskStatus,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -498,14 +493,14 @@ private fun AccountTaskRow(
                 modifier = Modifier
                     .size(14.dp)
                     .clip(CircleShape)
-                    .background(status.color.copy(alpha = 0.18f)),
+                    .background(status.dotColor().copy(alpha = 0.18f)),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
                         .size(8.dp)
                         .clip(CircleShape)
-                        .background(status.color)
+                        .background(status.dotColor())
                 )
             }
 
@@ -521,8 +516,8 @@ private fun AccountTaskRow(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = status.label,
-                    color = status.color,
+                    text = status.title,
+                    color = status.dotColor(),
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.Medium,
                     fontSize = 13.sp

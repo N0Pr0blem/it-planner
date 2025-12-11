@@ -26,30 +26,22 @@ import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
+import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.data.model.task.TaskUrgency
+import com.example.planner.data.model.task.TaskComplexity
 
-enum class TaskPriority(val label: String) {
-    URGENT("Urgent"),
-    NORMAL("Normal"),
-    LOW("Low")
-}
-
-enum class TaskVolume(val label: String) {
-    SMALL("Small"),
-    MEDIUM("Medium"),
-    LARGE("Large")
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTaskScreen(
     onBack: () -> Unit = {},
-    onCreate: (title: String, description: String, priority: TaskPriority, volume: TaskVolume) -> Unit = { _, _, _, _ -> }
+    onCreate: (title: String, description: String, priority: TaskUrgency, volume: TaskComplexity) -> Unit = { _, _, _, _ -> }
 ) {
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
-    var priority by remember { mutableStateOf(TaskPriority.NORMAL) }
-    var volume by remember { mutableStateOf(TaskVolume.MEDIUM) }
+    var priority by remember { mutableStateOf(TaskUrgency.MEDIUM) }
+    var volume by remember { mutableStateOf(TaskComplexity.MEDIUM) }
 
     var priorityOpen by remember { mutableStateOf(false) }
     var volumeOpen by remember { mutableStateOf(false) }
@@ -147,7 +139,7 @@ fun CreateTaskScreen(
                                 onExpandedChange = { priorityOpen = !priorityOpen }
                             ) {
                                 OutlinedTextField(
-                                    value = priority.label,
+                                    value = priority.title,
                                     onValueChange = {},
                                     readOnly = true,
                                     singleLine = true,
@@ -163,9 +155,9 @@ fun CreateTaskScreen(
                                     expanded = priorityOpen,
                                     onDismissRequest = { priorityOpen = false }
                                 ) {
-                                    TaskPriority.entries.forEach { opt ->
+                                    TaskUrgency.entries.forEach { opt ->
                                         DropdownMenuItem(
-                                            text = { Text(opt.label, fontFamily = NunitoFamily) },
+                                            text = { Text(opt.title, fontFamily = NunitoFamily) },
                                             onClick = {
                                                 priority = opt
                                                 priorityOpen = false
@@ -191,7 +183,7 @@ fun CreateTaskScreen(
                                 onExpandedChange = { volumeOpen = !volumeOpen }
                             ) {
                                 OutlinedTextField(
-                                    value = volume.label,
+                                    value = volume.title,
                                     onValueChange = {},
                                     readOnly = true,
                                     singleLine = true,
@@ -207,9 +199,9 @@ fun CreateTaskScreen(
                                     expanded = volumeOpen,
                                     onDismissRequest = { volumeOpen = false }
                                 ) {
-                                    TaskVolume.entries.forEach { opt ->
+                                    TaskComplexity.entries.forEach { opt ->
                                         DropdownMenuItem(
-                                            text = { Text(opt.label, fontFamily = NunitoFamily) },
+                                            text = { Text(opt.title, fontFamily = NunitoFamily) },
                                             onClick = {
                                                 volume = opt
                                                 volumeOpen = false

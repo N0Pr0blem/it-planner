@@ -25,16 +25,11 @@ import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
-
+import com.example.planner.data.model.task.TaskStatus
 // --- модели ---
 
 enum class ProjectTab { Tasks, Members, Repository }
 
-enum class TaskStatus(val label: String, val color: Color) {
-    TODO("To do", Color(0xFF6B7280)),          // серый
-    IN_REVIEW("In review", Color(0xFF8B5CF6)), // фиолетовый
-    DONE("Done", Color(0xFF16A34A))            // зелёный
-}
 
 data class ProjectTaskUi(
     val id: String,
@@ -269,14 +264,14 @@ private fun TaskCard(
                     modifier = Modifier
                         .size(14.dp)
                         .clip(CircleShape)
-                        .background(task.status.color.copy(alpha = 0.16f)),
+                        .background(task.status.dotColor().copy(alpha = 0.16f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(task.status.color)
+                            .background(task.status.dotColor())
                     )
                 }
             }
@@ -314,8 +309,8 @@ private fun TaskCard(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = task.status.label,
-                color = task.status.color,
+                text = task.status.title,
+                color = task.status.dotColor(),
                 fontFamily = NunitoFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 13.sp
@@ -459,9 +454,9 @@ fun PreviewProjectDetails() {
         ProjectDetailsScreen(
             projectName = "Planner Mobile",
             tasks = listOf(
-                ProjectTaskUi("1", "Taska", "Vlad Shugar", TaskStatus.TODO),
-                ProjectTaskUi("2", "Taska", "Valera Pompish", TaskStatus.IN_REVIEW),
-                ProjectTaskUi("3", "Taska", "Kostia Tigrovech", TaskStatus.IN_REVIEW),
+                ProjectTaskUi("1", "Taska", "Vlad Shugar", TaskStatus.TO_DO),
+                ProjectTaskUi("2", "Taska", "Valera Pompish", TaskStatus.REVIEW),
+                ProjectTaskUi("3", "Taska", "Kostia Tigrovech", TaskStatus.REVIEW),
                 ProjectTaskUi("4", "Taska", "Pasha Paulski", TaskStatus.DONE),
             ),
             activeTab = ProjectTab.Tasks,

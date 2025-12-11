@@ -25,25 +25,30 @@ import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
+import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.data.model.task.TaskUrgency
+import com.example.planner.data.model.task.TaskComplexity
 
-// ======= models (заглушки для верстки) =======
+// ======= UI extensions for data models =======
 
-enum class TaskStatusUi(val label: String, val dotColor: Color, val textColor: Color) {
-    TODO("To do", Color(0xFF6B7280), Color(0xFF6B7280)),
-    IN_REVIEW("In review", Color(0xFF8B5CF6), Color(0xFF8B5CF6)),
-    DONE("Done", Color(0xFF16A34A), Color(0xFF16A34A)),
+fun TaskStatus.dotColor(): Color = when (this) {
+    TaskStatus.TO_DO -> Color(0xFF6B7280)
+    TaskStatus.IN_PROGRESS -> Color(0xFF3B82F6)
+    TaskStatus.REVIEW -> Color(0xFF8B5CF6)
+    TaskStatus.IN_TEST -> Color(0xFFF59E0B)
+    TaskStatus.DONE -> Color(0xFF16A34A)
 }
 
-enum class TaskPriorityUi(val label: String, val color: Color) {
-    URGENT("Urgent", Color(0xFFEF4444)),
-    NORMAL("Not urgent", Color(0xFF16A34A)),
-    LOW("Low", Color(0xFF6B7280)),
+fun TaskUrgency.color(): Color = when (this) {
+    TaskUrgency.URGENT -> Color(0xFFEF4444)
+    TaskUrgency.MEDIUM -> Color(0xFFF59E0B)
+    TaskUrgency.NOT_URGENT -> Color(0xFF16A34A)
 }
 
-enum class TaskVolumeUi(val label: String, val color: Color) {
-    SMALL("Small", Color(0xFF60A5FA)),
-    MEDIUM("Medium", Color(0xFF8B5CF6)),
-    LARGE("Large", Color(0xFF8B5CF6)),
+fun TaskComplexity.color(): Color = when (this) {
+    TaskComplexity.HARD -> Color(0xFF8B5CF6)
+    TaskComplexity.MEDIUM -> Color(0xFF60A5FA)
+    TaskComplexity.EASY -> Color(0xFF16A34A)
 }
 
 data class TaskFileUi(
@@ -56,9 +61,9 @@ data class TaskFileUi(
 @Composable
 fun TaskDetailsScreen(
     taskTitle: String = "Taska",
-    status: TaskStatusUi = TaskStatusUi.IN_REVIEW,
-    priority: TaskPriorityUi = TaskPriorityUi.NORMAL,
-    volume: TaskVolumeUi = TaskVolumeUi.LARGE,
+    status: TaskStatus = TaskStatus.REVIEW,
+    priority: TaskUrgency = TaskUrgency.MEDIUM,
+    volume: TaskComplexity = TaskComplexity.HARD,
     timeAndAssigneesTitle: String = "10.0h total • 2 records", // заглушка
     description: String = "chill",
     files: List<TaskFileUi> = listOf(TaskFileUi("1", "CV.pdf")),
@@ -148,11 +153,11 @@ fun TaskDetailsScreen(
                                     modifier = Modifier
                                         .size(10.dp)
                                         .clip(CircleShape)
-                                        .background(status.dotColor)
+                                        .background(status.dotColor())
                                 )
                                 Spacer(Modifier.width(10.dp))
                                 Text(
-                                    text = status.label,
+                                    text = status.title,
                                     color = Color.Black,
                                     fontFamily = NunitoFamily,
                                     fontWeight = FontWeight.SemiBold,
@@ -191,8 +196,8 @@ fun TaskDetailsScreen(
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = priority.label,
-                                color = priority.color,
+                                text = priority.title,
+                                color = priority.color(),
                                 fontFamily = NunitoFamily,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
@@ -211,8 +216,8 @@ fun TaskDetailsScreen(
                             )
                             Spacer(Modifier.height(8.dp))
                             Text(
-                                text = volume.label,
-                                color = volume.color,
+                                text = volume.title,
+                                color = volume.color(),
                                 fontFamily = NunitoFamily,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp
@@ -416,9 +421,9 @@ fun PreviewTaskDetails() {
     PlannerTheme {
         TaskDetailsScreen(
             taskTitle = "Taska",
-            status = TaskStatusUi.IN_REVIEW,
-            priority = TaskPriorityUi.NORMAL,
-            volume = TaskVolumeUi.LARGE,
+            status = TaskStatus.REVIEW,
+            priority = TaskUrgency.MEDIUM,
+            volume = TaskComplexity.HARD,
             timeAndAssigneesTitle = "10.0h total • 2 records",
             description = "chill",
             files = listOf(TaskFileUi("1", "CV.pdf"))
