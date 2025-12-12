@@ -361,7 +361,7 @@ fun TaskDetailsScreen(
                         Spacer(Modifier.width(10.dp))
 
                         Text(
-                            text = f.fileName,
+                            text = f.fileName ?: "",
                             color = Color.Black,
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.SemiBold,

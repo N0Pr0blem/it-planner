@@ -154,7 +154,7 @@ fun CreateProjectScreen(
 )
 @Composable
 fun PreviewCreateProject() {
-    PlannerTheme { CreateProjectScreen() }
+    PlannerTheme { CreateProjectScreen(isLoading = false, error = null) }
 }
 
 @Preview(
@@ -166,5 +166,5 @@ fun PreviewCreateProject() {
 )
 @Composable
 fun PreviewCreateProjectDark() {
-    PlannerTheme { CreateProjectScreen() }
+    PlannerTheme { CreateProjectScreen(isLoading = false, error = null) }
 }

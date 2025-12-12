@@ -13,7 +13,8 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
-class ProjectRepository {
+// Старая реализация для совместимости
+class ProjectRepositoryLegacy {
     private val api = RetrofitInstance.api
 
     suspend fun getProjects(): Result<List<ProjectListingDto>> {

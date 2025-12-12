@@ -16,9 +16,21 @@ class MainActivity : ComponentActivity() {
                 var currentTab by remember { mutableStateOf("Login") }
 
                 if (currentTab == "Login")
-                    LoginScreen { tab -> currentTab = tab }
+                    LoginScreen (
+                        onTabSwitch = { tab -> currentTab = tab },
+                        onLogin = { _, _ -> },
+                        isLoading = false,
+                        error = null,
+                        onErrorDismiss = {}
+                    )
                 else
-                    RegisterScreen { tab -> currentTab = tab }
+                    RegisterScreen(
+                        onTabSwitch = { tab -> currentTab = tab },
+                        onRegister = { _, _, _ -> },
+                        isLoading = false,
+                        error = null,
+                        onErrorDismiss = {}
+                    )
             }
         }
     }

@@ -82,11 +82,7 @@ fun ProjectsScreenWithData(
 
     ProjectsScreen(
         projects = uiState.projects,
-        selectedProjectId = null,
-        onAddClick = onAddProject,
-        onProjectClick = onProjectClick,
-        onProjectLongClick = { project -> deleteTarget = project },
-        onAccountClick = onAccountClick
+        selectedProjectId = null
     )
 }
 
@@ -198,7 +194,7 @@ fun PersonalAccountScreenWithData(
     } ?: emptyList()
     
     val myTasks = profile?.tasks?.map { task ->
-        AccountTaskItem(task.id.toString(), task.title, TaskStatus.valueOf(task.status))
+        AccountTaskItem(task.id.toString(), task.name, if (task.isCompleted) TaskStatus.DONE else TaskStatus.TO_DO)
     } ?: emptyList()
     
     PersonalAccountScreen(

@@ -6,7 +6,7 @@ import com.example.planner.data.dto.employee.EmployeeResponseDto
 import com.example.planner.data.dto.repo.ProjectRepoFileDto
 import com.example.planner.data.model.task.TaskStatus
 import com.example.planner.data.model.user.ProjectRole
-import com.example.planner.data.repository.ProjectRepository
+import com.example.planner.data.repository.ProjectRepositoryLegacy
 import com.example.planner.data.repository.TaskRepository
 import com.example.planner.ui.screens.ProjectTaskUi
 import com.example.planner.data.mapper.toUi
@@ -27,7 +27,7 @@ data class ProjectDetailsUiState(
 )
 
 class ProjectDetailsViewModel : ViewModel() {
-    private val projectRepository = ProjectRepository()
+    private val projectRepository = ProjectRepositoryLegacy()
     private val taskRepository = TaskRepository()
 
     private val _uiState = MutableStateFlow(ProjectDetailsUiState())

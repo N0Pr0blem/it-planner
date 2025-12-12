@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.planner.data.dto.task.TaskInfoListing
 import com.example.planner.data.dto.userInfo.UserInfoResponseDto
-import com.example.planner.data.repository.ProjectRepository
+import com.example.planner.data.repository.ProjectRepositoryLegacy
 import com.example.planner.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +20,7 @@ data class ProfileUiState(
 
 class ProfileViewModel : ViewModel() {
     private val userRepository = UserRepository()
-    private val projectRepository = ProjectRepository()
+    private val projectRepository = ProjectRepositoryLegacy()
 
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
@@ -56,7 +56,7 @@ class ProfileViewModel : ViewModel() {
     fun updateProfile(firstName: String?, secondName: String?, lastName: String?) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            repository.updateProfile(firstName, secondName, lastName)
+            userRepository.updateProfile(firstName, secondName, lastName)
                 .onSuccess { profile ->
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,

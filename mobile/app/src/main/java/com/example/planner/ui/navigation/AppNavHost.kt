@@ -184,9 +184,7 @@ fun AppNavHost(
                 onBack = { navController.popBackStack() },
                 onCreate = { title, description, priority, complexity ->
                     viewModel.createTask(projectId, title, description, priority, complexity)
-                },
-                isLoading = uiState.isLoading,
-                error = uiState.error
+                }
             )
         }
 

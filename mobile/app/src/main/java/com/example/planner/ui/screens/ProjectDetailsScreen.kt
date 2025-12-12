@@ -505,7 +505,7 @@ private fun EmployeeCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${employee.firstName ?: ""} ${employee.secondName ?: ""}".trim(),
+                    text = "${employee.user.username ?: ""}".trim(),
                     color = Color.Black,
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.SemiBold,
@@ -513,7 +513,7 @@ private fun EmployeeCard(
                 )
 
                 Text(
-                    text = employee.role.name,
+                    text = employee.projectRole.name,
                     color = Color(0xFF6B7280),
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.Medium,
@@ -524,7 +524,7 @@ private fun EmployeeCard(
             Spacer(Modifier.height(6.dp))
 
             Text(
-                text = employee.username,
+                text = employee.user.username ?: "",
                 color = Color(0xFF6B7280),
                 fontFamily = NunitoFamily,
                 fontWeight = FontWeight.Medium,
@@ -572,7 +572,7 @@ private fun RepositoryFileCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = file.name,
+                    text = file.name ?: "",
                     color = Color.Black,
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.SemiBold,
@@ -580,7 +580,7 @@ private fun RepositoryFileCard(
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "${file.size} bytes • ${file.uploadDate}",
+                    text = "File details", // TODO: добавить размер и дату загрузки
                     color = Color(0xFF6B7280),
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.Medium,

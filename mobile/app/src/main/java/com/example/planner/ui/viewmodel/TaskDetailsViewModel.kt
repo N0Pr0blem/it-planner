@@ -67,7 +67,7 @@ class TaskDetailsViewModel : ViewModel() {
                 .onSuccess { details ->
                     _uiState.value = _uiState.value.copy(
                         description = details.descriptionFile ?: "",
-                        files = details.files.toUi()
+                        files = emptyList() // TODO: получить файлы задачи
                     )
                 }
 
