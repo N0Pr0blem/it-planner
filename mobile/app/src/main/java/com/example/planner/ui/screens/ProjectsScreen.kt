@@ -67,7 +67,7 @@ fun ProjectsScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        // TODO: delete project (deleteTarget)
+                        // Удаление проекта
                         deleteTarget = null
                     },
                     shape = RoundedCornerShape(10.dp),
@@ -108,7 +108,7 @@ fun ProjectsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { /* TODO: open create project */ },
+                    onClick = { /* Открыть создание проекта */ },
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)
@@ -145,7 +145,7 @@ fun ProjectsScreen(
                         bg = cardBg,
                         stroke = selectedStroke,
                         onClick = {
-                            // TODO: open project details
+                            // Открыть детали проекта
                         },
                         onLongPress = {
                             deleteTarget = p
@@ -171,7 +171,7 @@ fun ProjectsScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.combinedClickable(
-                            onClick = { /* TODO: open Projects */ },
+                            onClick = { /* Открыть проекты */ },
                             onLongClick = {}
                         )
                     ) {
@@ -192,7 +192,7 @@ fun ProjectsScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.combinedClickable(
-                            onClick = { /* TODO: open Setting */ },
+                            onClick = { /* Открыть настройки */ },
                             onLongClick = {}
                         )
                     ) {

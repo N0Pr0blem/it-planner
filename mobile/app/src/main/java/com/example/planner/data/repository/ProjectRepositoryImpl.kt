@@ -56,13 +56,13 @@ class ProjectRepositoryImpl : ProjectRepository {
             val response = api.createProject(ProjectCreateRequestDto(name))
             if (response.isSuccessful) {
                 response.body()?.let { projectDto ->
-                    // TODO: получить id созданного проекта из ответа
-                    // Пока используем фиктивный id
+                    // В ProjectCreateResponseDto отсутствует id, поэтому используем фиктивный id
+                    // В реальном приложении нужно добавить id в ответ от сервера
                     Result.success(Project(
-                        id = 0, // TODO: получить реальный id
+                        id = 0, // Фиктивный id, так как в DTO нет реального id
                         name = projectDto.name,
                         createdAt = projectDto.creationDate.toString(),
-                        updatedAt = ""  // TODO: добавить дату обновления
+                        updatedAt = ""  // Дата обновления отсутствует в DTO
                     ))
                 } ?: Result.failure(Exception("Empty response"))
             } else {
@@ -122,8 +122,25 @@ class ProjectRepositoryImpl : ProjectRepository {
         urgency: String,
         complexity: String
     ): Result<Task> {
-        // TODO: реализовать создание задачи
-        return Result.failure(NotImplementedError("Create task not implemented"))
+        return try {
+            val request = CreateTaskInfoRequestDto(
+                name = name,
+                urgency = urgency,
+                complexity = complexity,
+                projectId = projectId,
+                description = description
+            )
+            val response = api.createTask(projectId, request)
+            if (response.isSuccessful) {
+                response.body()?.let { taskDto ->
+                    Result.success(taskDto.toDomain())
+                } ?: Result.failure(Exception("Empty response"))
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to create task"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun updateTask(
@@ -135,8 +152,25 @@ class ProjectRepositoryImpl : ProjectRepository {
         status: String?,
         description: String?
     ): Result<Task> {
-        // TODO: реализовать обновление задачи
-        return Result.failure(NotImplementedError("Update task not implemented"))
+        return try {
+            val request = UpdateTaskInfoRequestDto(
+                name = name,
+                urgency = urgency,
+                complexity = complexity,
+                status = status,
+                description = description
+            )
+            val response = api.updateTask(projectId, taskId, request)
+            if (response.isSuccessful) {
+                response.body()?.let { taskDto ->
+                    Result.success(taskDto.toDomain())
+                } ?: Result.failure(Exception("Empty response"))
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to update task"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun deleteTask(projectId: Long, taskId: Long): Result<Unit> {
@@ -157,8 +191,8 @@ class ProjectRepositoryImpl : ProjectRepository {
         return try {
             val response = api.getProjectEmployees(projectId)
             if (response.isSuccessful) {
-                // TODO: преобразовать EmployeeResponseDto в User
-                Result.success(emptyList())
+                val employees = response.body()?.toDomainUsers() ?: emptyList()
+                Result.success(employees)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load employees"))
             }
@@ -171,8 +205,9 @@ class ProjectRepositoryImpl : ProjectRepository {
         return try {
             val response = api.inviteEmployee(projectId, EmployeeInviteDto(username, ProjectRole.valueOf(role)))
             if (response.isSuccessful) {
-                // TODO: преобразовать EmployeeResponseDto в User
-                Result.failure(NotImplementedError("Employee mapping not implemented"))
+                response.body()?.let { employeeDto ->
+                    Result.success(employeeDto.toDomain())
+                } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to invite employee"))
             }
@@ -198,8 +233,9 @@ class ProjectRepositoryImpl : ProjectRepository {
         return try {
             val response = api.updateEmployeeRole(projectId, employeeId, EmployeeUpdateRoleDto(ProjectRole.valueOf(role)))
             if (response.isSuccessful) {
-                // TODO: преобразовать EmployeeResponseDto в User
-                Result.failure(NotImplementedError("Employee mapping not implemented"))
+                response.body()?.let { employeeDto ->
+                    Result.success(employeeDto.toDomain())
+                } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to update employee role"))
             }

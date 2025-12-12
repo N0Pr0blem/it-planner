@@ -112,7 +112,7 @@ fun ProjectDetailsScreen(
                                 items(employees, key = { it.id.toString() }) { employee ->
                                     EmployeeCard(
                                         employee = employee,
-                                        onClick = { /* TODO: open employee details */ }
+                                        onClick = { /* TODO: открыть детали сотрудника */ }
                                     )
                                 }
                             }
@@ -135,7 +135,7 @@ fun ProjectDetailsScreen(
                                 items(repoFiles, key = { it.id.toString() }) { file ->
                                     RepositoryFileCard(
                                         file = file,
-                                        onClick = { /* TODO: open file */ }
+                                        onClick = { /* TODO: открыть файл */ }
                                     )
                                 }
                             }
