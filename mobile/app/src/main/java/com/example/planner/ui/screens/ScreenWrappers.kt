@@ -35,54 +35,14 @@ fun ProjectsScreenWithData(
     onDeleteProject: (ProjectUi) -> Unit,
     onAccountClick: () -> Unit
 ) {
-    var deleteTarget by remember { mutableStateOf<ProjectUi?>(null) }
-
-    if (deleteTarget != null) {
-        AlertDialog(
-            onDismissRequest = { deleteTarget = null },
-            containerColor = Color(0xFFBDBDBD),
-            shape = RoundedCornerShape(18.dp),
-            text = {
-                Text(
-                    text = "Are you sure you want to\ndelete the project?",
-                    color = Color.Black,
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    lineHeight = 18.sp
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        deleteTarget?.let { onDeleteProject(it) }
-                        deleteTarget = null
-                    },
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                    elevation = ButtonDefaults.buttonElevation(0.dp),
-                    modifier = Modifier.height(36.dp)
-                ) {
-                    Text("Yes", color = Color.Black, fontFamily = NunitoFamily, fontWeight = FontWeight.Medium)
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = { deleteTarget = null },
-                    shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                    elevation = ButtonDefaults.buttonElevation(0.dp),
-                    modifier = Modifier.height(36.dp)
-                ) {
-                    Text("Cancel", color = Color.White, fontFamily = NunitoFamily, fontWeight = FontWeight.Medium)
-                }
-            }
-        )
-    }
-
     ProjectsScreen(
         projects = uiState.projects,
-        selectedProjectId = null
+        selectedProjectId = null,
+        onAddProject = onAddProject,
+        onProjectClick = onProjectClick,
+        onProjectLongClick = { project -> onDeleteProject(project) },
+        onDeleteProject = onDeleteProject,
+        onAccountClick = onAccountClick
     )
 }
 

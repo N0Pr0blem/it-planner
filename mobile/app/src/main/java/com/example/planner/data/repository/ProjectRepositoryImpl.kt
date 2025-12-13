@@ -10,6 +10,7 @@ import com.example.planner.data.mapper.toDomainProjects
 import com.example.planner.data.mapper.toDomainTasks
 import com.example.planner.data.model.user.ProjectRole
 import com.example.planner.data.network.RetrofitInstance
+import com.example.planner.domain.exception.NetworkException
 import com.example.planner.domain.model.Project
 import com.example.planner.domain.model.Task
 import com.example.planner.domain.model.User
@@ -27,7 +28,7 @@ class ProjectRepositoryImpl : ProjectRepository {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load projects"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(NetworkException("Network error occurred", e))
         }
     }
 

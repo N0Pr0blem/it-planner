@@ -41,6 +41,11 @@ data class ProjectUi(
 fun ProjectsScreen(
     projects: List<ProjectUi>,
     selectedProjectId: String? = null,
+    onAddProject: () -> Unit = {},
+    onProjectClick: (ProjectUi) -> Unit = {},
+    onProjectLongClick: (ProjectUi) -> Unit = {},
+    onDeleteProject: (ProjectUi) -> Unit = {},
+    onAccountClick: () -> Unit = {}
 ) {
     val navFg = Color(0xFF2D5178)
     val navBg = Color(0xFFE8E8E8)
@@ -67,7 +72,7 @@ fun ProjectsScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        // Удаление проекта
+                        deleteTarget?.let { onDeleteProject(it) }
                         deleteTarget = null
                     },
                     shape = RoundedCornerShape(10.dp),
@@ -108,7 +113,7 @@ fun ProjectsScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(
-                    onClick = { /* Открыть создание проекта */ },
+                    onClick = onAddProject,
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)
@@ -144,12 +149,8 @@ fun ProjectsScreen(
                         selected = p.id == selectedProjectId,
                         bg = cardBg,
                         stroke = selectedStroke,
-                        onClick = {
-                            // Открыть детали проекта
-                        },
-                        onLongPress = {
-                            deleteTarget = p
-                        }
+                        onClick = { onProjectClick(p) },
+                        onLongPress = { onProjectLongClick(p) }
                     )
                 }
             }
@@ -171,7 +172,7 @@ fun ProjectsScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.combinedClickable(
-                            onClick = { /* Открыть проекты */ },
+                            onClick = { /* Проекты уже открыты */ },
                             onLongClick = {}
                         )
                     ) {
@@ -192,7 +193,7 @@ fun ProjectsScreen(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.combinedClickable(
-                            onClick = { /* Открыть настройки */ },
+                            onClick = onAccountClick,
                             onLongClick = {}
                         )
                     ) {

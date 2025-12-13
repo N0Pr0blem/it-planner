@@ -44,7 +44,7 @@ class ProjectDetailsViewModel : ViewModel() {
                 .onSuccess { project ->
                     _uiState.value = _uiState.value.copy(projectName = project.name)
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load project details: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(error = e.message)
                 }
         }
@@ -59,7 +59,7 @@ class ProjectDetailsViewModel : ViewModel() {
                     val tasksUi = tasks.toUi()
                     _uiState.value = _uiState.value.copy(isLoading = false, tasks = tasksUi)
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load project details: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to load tasks")
                 }
         }
@@ -72,7 +72,7 @@ class ProjectDetailsViewModel : ViewModel() {
                 .onSuccess { employees ->
                     _uiState.value = _uiState.value.copy(isLoading = false, employees = employees)
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load project details: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }
@@ -85,7 +85,7 @@ class ProjectDetailsViewModel : ViewModel() {
                 .onSuccess { files ->
                     _uiState.value = _uiState.value.copy(isLoading = false, repoFiles = files)
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load project details: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }
@@ -99,7 +99,7 @@ class ProjectDetailsViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(isLoading = false, employeeInvited = true)
                     loadEmployees()
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load project details: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }
@@ -112,7 +112,7 @@ class ProjectDetailsViewModel : ViewModel() {
                 .onSuccess {
                     loadEmployees()
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load project details: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }

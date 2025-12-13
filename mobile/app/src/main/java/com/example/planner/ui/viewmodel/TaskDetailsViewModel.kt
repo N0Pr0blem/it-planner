@@ -59,7 +59,7 @@ class TaskDetailsViewModel : ViewModel() {
                         assignedTo = task.assignedTo?.let { "${it.firstName ?: ""} ${it.secondName ?: ""}" } ?: ""
                     )
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load task: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to load task")
                 }
 
@@ -98,7 +98,7 @@ class TaskDetailsViewModel : ViewModel() {
                         taskUpdated = true
                     )
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load task: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }
@@ -112,7 +112,7 @@ class TaskDetailsViewModel : ViewModel() {
                     loadTracking()
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load task: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }
@@ -126,7 +126,7 @@ class TaskDetailsViewModel : ViewModel() {
                     loadTracking()
                     _uiState.value = _uiState.value.copy(isLoading = false)
                 }
-                .onFailure { e ->
+                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load task: \${e.message}"\n                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }

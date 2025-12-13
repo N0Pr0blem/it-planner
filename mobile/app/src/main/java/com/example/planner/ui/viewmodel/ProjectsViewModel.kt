@@ -40,7 +40,12 @@ class ProjectsViewModel : ViewModel() {
                     _uiState.value = _uiState.value.copy(isLoading = false, projects = projectsUi)
                 }
                 .onFailure { e ->
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = e.message ?: "Failed to load projects")
+                    val errorMessage = when (e) {
+                        is com.example.planner.domain.exception.ValidationException -> e.message
+                        is com.example.planner.domain.exception.NetworkException -> "Network error: ${e.message}"
+                        else -> "Failed to load projects: ${e.message}"
+                    }
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
                 }
         }
     }
