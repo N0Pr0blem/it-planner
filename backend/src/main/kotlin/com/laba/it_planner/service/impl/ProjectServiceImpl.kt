@@ -9,11 +9,7 @@ import com.laba.it_planner.model.project.Project
 import com.laba.it_planner.model.project.repository.ProjectRepo
 import com.laba.it_planner.model.user.ProjectRole
 import com.laba.it_planner.repository.ProjectRepository
-import com.laba.it_planner.service.EmployeeService
-import com.laba.it_planner.service.OauthService
-import com.laba.it_planner.service.ProjectRepoService
-import com.laba.it_planner.service.ProjectService
-import com.laba.it_planner.service.UserInfoService
+import com.laba.it_planner.service.*
 import org.springframework.stereotype.Service
 import java.security.Principal
 import java.time.LocalDateTime
@@ -24,14 +20,15 @@ class ProjectServiceImpl(
     private val oauthService: OauthService,
     private val employeeService: EmployeeService,
     private val projectRepoService: ProjectRepoService,
-    private val userInfoService: UserInfoService
+    private val userInfoService: UserInfoService,
+    private val mailService: MailService
 ) : ProjectService {
 
     override fun createProject(
         projectCreateRequestDto: ProjectCreateRequestDto,
         principal: Principal
     ): Project {
-        val userInfo = userInfoService.getUserInfo (principal)
+        val userInfo = userInfoService.getUserInfo(principal)
         if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, userInfo.id).isPresent) {
             throw DataException(
                 "Project with name ${projectCreateRequestDto.name} already exists",
@@ -73,7 +70,8 @@ class ProjectServiceImpl(
         val projects = getAllUsersProjects(username)
         val project = projectRepository.findById(projectId)
         if (project.isPresent && projects.contains(project.get())) {
-            val user = userInfoService.getUserInfo (employeeInviteDto.username)
+            val user = userInfoService.getUserInfo(employeeInviteDto.username)
+            mailService.sendInformationForm(user.email!!, "You have been invited to this project ${project.get().name}")
             return employeeService.createEmployee(
                 Employee(
                     user = user,
@@ -87,7 +85,12 @@ class ProjectServiceImpl(
     override fun deleteEmployee(projectId: Long, employeeId: Long, username: String) {
         val projects = getAllUsersProjects(username)
         val project = projectRepository.findById(projectId)
-        if (project.isPresent && projects.contains(project.get())) {
+        val employee = employeeService.getById(employeeId)
+        if (project.isPresent
+            && projects.contains(project.get())
+            && employee.user.username != username
+            && project.get().createdUser!!.username != username
+        ) {
             employeeService.deleteEmployee(employeeId)
         }
     }
@@ -97,19 +100,21 @@ class ProjectServiceImpl(
         employeeId: Long,
         employeeUpdateRoleDto: EmployeeUpdateRoleDto,
         name: String
-    ) : Employee{
+    ): Employee {
         val project = projectRepository.findById(projectId)
-        if(project.isPresent && project.get().createdUser?.username.equals(name)) {
-           return employeeService.changeRole(employeeId,employeeUpdateRoleDto.projectRole)
-        }
-        else{
-            throw DataException("Project with id $projectId does not exist or it's not your's", "PROJECT_NOT_FOUND_ERROR")
+        if (project.isPresent && project.get().createdUser?.username.equals(name)) {
+            return employeeService.changeRole(employeeId, employeeUpdateRoleDto.projectRole)
+        } else {
+            throw DataException(
+                "Project with id $projectId does not exist or it's not your's",
+                "PROJECT_NOT_FOUND_ERROR"
+            )
         }
     }
 
     override fun get(projectId: Long): Project {
         return projectRepository.findById(projectId)
-            .orElseThrow { DataException("Project with id $projectId not found","NOT_FOUND_ERROR") }
+            .orElseThrow { DataException("Project with id $projectId not found", "NOT_FOUND_ERROR") }
     }
 
     override fun getAllProjects(name: String): List<Project> {
@@ -117,7 +122,7 @@ class ProjectServiceImpl(
     }
 
     override fun deleteProject(projectId: Long, principal: Principal) {
-        if(employeeService.checkPermission(projectId, principal)){
+        if (employeeService.checkPermission(projectId, principal)) {
             projectRepository.deleteById(projectId)
         }
     }

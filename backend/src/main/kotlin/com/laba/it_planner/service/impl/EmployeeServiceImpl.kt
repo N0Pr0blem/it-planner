@@ -1,5 +1,6 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.exception.ApiException
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.project.Employee
 import com.laba.it_planner.model.user.OauthUser
@@ -71,12 +72,17 @@ class EmployeeServiceImpl(
         val user = userInfoService.getUserInfo(principal)
         val result = employeeRepository.findAllByProjectId(projectId)
         if (isContainUser(result, user) && isContainEmployee(result, employeeId)) {
-            val employee = result.stream().filter { employee->employee.id==employeeId }.findFirst().get()
+            val employee = result.stream().filter { employee -> employee.id == employeeId }.findFirst().get()
             employee.user.profileImage = setImage(employee.user.profileImage)
             return employee
         } else {
             throw DataException("You can't see not yours team", "MEMBER_EMPLOYEE_ERROR")
         }
+    }
+
+    override fun getById(employeeId: Long): Employee {
+        return employeeRepository.findById(employeeId)
+            .orElseThrow { ApiException("No such employee", "NO_SUCH_EMPLOYEE_ERROR") }
     }
 
     private fun isContainUser(employees: List<Employee>, user: OauthUser): Boolean {

@@ -25,7 +25,8 @@ class TaskInfoServiceImpl(
     private val projectService: ProjectService,
     private val taskDetailService: TaskDetailsService,
     private val fileService: FileService,
-    private val taskDescriptionMapper: TaskDescriptionMapper
+    private val taskDescriptionMapper: TaskDescriptionMapper,
+    private val mailService: MailService
 ) : TaskInfoService {
     override fun get(id: Long, principal: Principal): TaskInfo {
         val taskInfoOpt = taskInfoRepository.findById(id)
@@ -161,5 +162,22 @@ class TaskInfoServiceImpl(
             return getTaskFolderPath(taskId, taskDetails!!.descriptionFile!!) + "/files/"
         }
         return null
+    }
+
+    override fun assignToEmployee(
+        taskId: Long,
+        projectId: Long,
+        employeeId: Long,
+        principal: Principal
+    ) {
+        val taskInfoOpt = taskInfoRepository.findById(taskId)
+        val meAsEmployee = employeeService.getByUserNameAndProjectId(principal.name, projectId)
+        if (taskInfoOpt.isPresent && meAsEmployee != null) {
+            val taskDetails = taskInfoOpt.get().taskDetails
+            val employee = employeeService.getById(employeeId)
+            taskDetails!!.toUser = employee
+            mailService.sendInformationForm(employee.user.email!!,"You was assigned to the task:\n${taskDetails.taskInfo!!.name}")
+            taskDetailService.save(taskDetails)
+        }
     }
 }

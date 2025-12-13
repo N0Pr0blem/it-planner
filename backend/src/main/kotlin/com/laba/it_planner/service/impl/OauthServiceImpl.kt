@@ -12,8 +12,10 @@ import com.laba.it_planner.model.user.UserInfo
 import com.laba.it_planner.repository.OauthUserRepository
 import com.laba.it_planner.repository.UserInfoRepository
 import com.laba.it_planner.security.TokenDetails
+import com.laba.it_planner.service.MailService
 import com.laba.it_planner.service.OauthService
 import com.laba.it_planner.service.SecurityService
+import com.laba.it_planner.utils.feature.FeatureToggleService
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -22,7 +24,9 @@ import java.time.LocalDateTime
 class OauthServiceImpl(
     private val userInfoRepository: UserInfoRepository,
     private val oauthRepository: OauthUserRepository,
-    private val securityService: SecurityService
+    private val securityService: SecurityService,
+    private val mailService: MailService,
+    private val toggleService: FeatureToggleService
 ) : OauthService {
 
     override fun getByUsername(username: String): OauthUser {
@@ -37,17 +41,21 @@ class OauthServiceImpl(
             val username = registerRequestDto.username
             throw DataException("User with username $username already exist", "USER_ALREADY_EXIST")
         }
+        val generatedVerificationCode = generate4DigitCode();
         val userInfo = UserInfo().apply {
             email = registerRequestDto.username
             firstName = registerRequestDto.firstName
+            secondName = ""
+            lastName = ""
 
             username = registerRequestDto.username
             password = securityService.hashPassword(registerRequestDto.password)
-            enabled = true
-            verificationCode = generate4DigitCode()
+            enabled = !toggleService.isEnabled("email.sending")
+            verificationCode = generatedVerificationCode
             role = OauthRole.USER
             registrationDate = LocalDateTime.now()
         }
+        mailService.sendActivationCodeForm(userInfo.email!!, generatedVerificationCode)
         return userInfoRepository.save(userInfo)
     }
 
@@ -70,8 +78,7 @@ class OauthServiceImpl(
             user.enabled = true
             oauthRepository.save(user)
             "$username successfully verified"
-        }
-        else throw AccessException("Wrong verification code","VERIFICATION_CODE_EXCEPTION")
+        } else throw AccessException("Wrong verification code", "VERIFICATION_CODE_EXCEPTION")
 
         return MessageResponseDto(message = result)
     }

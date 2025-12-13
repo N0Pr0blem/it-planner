@@ -93,4 +93,16 @@ class TaskInfoController(
         taskInfoService.assignToMe(taskId, projectId, principal)
         return ResponseEntity.ok("Successfully assign the task")
     }
+
+    @Operation(summary = "Assign task to someone employee")
+    @PatchMapping("/project/{projectId}/task/{taskId}/employee/{employeeId}")
+    fun assignToEmployee(
+        @PathVariable(name = "taskId") taskId: Long,
+        @PathVariable(name = "projectId") projectId: Long,
+        @PathVariable(name = "employeeId") employeeId: Long,
+        principal: Principal
+    ): ResponseEntity<String> {
+        taskInfoService.assignToEmployee(taskId, projectId, employeeId, principal)
+        return ResponseEntity.ok("Successfully assign the task")
+    }
 }

@@ -9,7 +9,9 @@ class FeatureToggleService(
     fun isEnabled(name:String):Boolean {
         val toggleOpt = featureRepository.findByName(name)
         if(toggleOpt.isPresent) {
-            return toggleOpt.get().enabled
+            val res = toggleOpt.get().enabled
+            println("$name is enabled: $res")
+            return res
         }
         else {
             println("Toggle with name - \'$name\' not found")
