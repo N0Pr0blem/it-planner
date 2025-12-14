@@ -43,11 +43,16 @@ class ProfileViewModel : ViewModel() {
                             val updatedProfile = profile.copy(projects = projects, tasks = tasks)
                             _uiState.value = _uiState.value.copy(isLoading = false, profile = updatedProfile)
                         }
-                        .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load profile: \${e.message}"\n                    }
+                        .onFailure { e ->
+                            val errorMessage = when (e) {
+                                is com.example.planner.domain.exception.ValidationException -> e.message
+                                is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"
+                                else -> "Failed to load profile: \${e.message}"
+                            }
                             _uiState.value = _uiState.value.copy(isLoading = false, profile = profile, error = e.message)
                         }
                 }
-                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load profile: \${e.message}"\n                    }
+                .onFailure { e ->
                     val errorMessage = when (e) {
                         is com.example.planner.domain.exception.ValidationException -> e.message
                         is com.example.planner.domain.exception.NetworkException -> "Network error: ${e.message}"
@@ -69,7 +74,12 @@ class ProfileViewModel : ViewModel() {
                         profileUpdated = true
                     )
                 }
-                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to load profile: \${e.message}"\n                    }
+                .onFailure { e ->
+                    val errorMessage = when (e) {
+                    is com.example.planner.domain.exception.ValidationException -> e.message
+                    is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"
+                    else -> "Failed to load profile: \${e.message}"
+                }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }

@@ -35,7 +35,12 @@ class CreateTaskViewModel : ViewModel() {
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(isLoading = false, taskCreated = true)
                 }
-                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        else -> "Failed to create task: \${e.message}"\n                    }
+                .onFailure { e ->
+                    val errorMessage = when (e) {
+                        is com.example.planner.domain.exception.ValidationException -> e.message
+                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"
+                        else -> "Failed to create task: \${e.message}"
+                    }
                     _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
                 }
         }

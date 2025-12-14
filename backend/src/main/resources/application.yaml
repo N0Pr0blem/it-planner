@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    active: local
   datasource:
     url: jdbc:postgresql://postgres-user:5433/planner_db
     username: ${POSTGRES_USER}
@@ -13,6 +15,19 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         default_schema: public
+  mail:
+    host: connect.smtp.bz
+    port: 587
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    properties:
+      thread_count: ${SPRING_MAIL_TREAD_COUNT}
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 
 jwt:
   password:

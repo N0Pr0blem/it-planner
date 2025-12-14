@@ -19,7 +19,6 @@ class SecurityConfig(
 
     private val publicRoutes = arrayOf(
             "/api/v1/auth/**",
-            "/api/v1/auth/activate",
             "/api/v1/swagger-ui/*",
             "/api/v1/swagger-ui.html",
             "/webjars/swagger-ui/**",
@@ -54,10 +53,15 @@ class SecurityConfig(
             "http://localhost:5173",
             "http://localhost:3000",
             "http://frontend:80",
+            "http://localhost:8081",
+            "http://localhost:5000",
+            "http://127.0.0.1:8081",
             "capacitor://localhost",
             "ionic://localhost",
             "http://localhost:8080",
-            "http://10.0.2.2:8080"
+            "http://10.193.60.191:8080",
+            "http://10.193.60.191",
+            "http://10.193.60.191:3000",
         )
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
         configuration.allowedHeaders = listOf("*")

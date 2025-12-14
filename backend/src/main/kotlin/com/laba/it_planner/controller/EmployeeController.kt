@@ -1,5 +1,6 @@
 package com.laba.it_planner.controller
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.employee.EmployeeInviteDto
 import com.laba.it_planner.dto.employee.EmployeeResponseDto
 import com.laba.it_planner.dto.employee.EmployeeUpdateRoleDto
@@ -25,8 +26,19 @@ class EmployeeController(
         @PathVariable(name = "projectId") projectId: Long,
         principal: Principal
     ): ResponseEntity<List<EmployeeResponseDto>> {
-        val employees = employeeService.getAllProjectEmployee(projectId, principal.name)
+        val employees = employeeService.getAllProjectEmployee(projectId, principal)
         return ResponseEntity.ok().body(employeeMapper.toDtos(employees))
+    }
+
+    @GetMapping("/{projectId}/employee/{employeeId}")
+    @Operation(summary = "Find all employees of project if you are member of it")
+    fun getAllEmployeeOfProject(
+        @PathVariable(name = "projectId") projectId: Long,
+        @PathVariable(name = "employeeId") employeeId: Long,
+        principal: Principal
+    ): ResponseEntity<EmployeeResponseDto> {
+        val employee = employeeService.getEmployeeInfo(projectId, employeeId, principal)
+        return ResponseEntity.ok().body(employeeMapper.toDto(employee))
     }
 
     @PostMapping("/{projectId}/employee")
@@ -46,9 +58,9 @@ class EmployeeController(
         @PathVariable(name = "projectId") projectId: Long,
         @PathVariable(name = "employeeId") employeeId: Long,
         principal: Principal
-    ): ResponseEntity<String> {
+    ): ResponseEntity<MessageResponseDto> {
         projectService.deleteEmployee(projectId, employeeId, principal.name)
-        return ResponseEntity.ok().body("Employee was successfully deleted")
+        return ResponseEntity.ok().body(MessageResponseDto("Employee was successfully deleted"))
     }
 
     @PatchMapping("/{projectId}/employee/{employeeId}")
@@ -59,7 +71,7 @@ class EmployeeController(
         @RequestBody employeeUpdateRoleDto: EmployeeUpdateRoleDto,
         principal: Principal
     ): ResponseEntity<EmployeeResponseDto> {
-        val result = projectService.changeRole(projectId, employeeId,employeeUpdateRoleDto, principal.name)
+        val result = projectService.changeRole(projectId, employeeId, employeeUpdateRoleDto, principal.name)
         return ResponseEntity.ok().body(employeeMapper.toDto(result))
     }
 }

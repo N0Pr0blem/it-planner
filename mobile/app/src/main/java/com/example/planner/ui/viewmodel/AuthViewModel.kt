@@ -32,8 +32,14 @@ class AuthViewModel : ViewModel() {
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(isLoading = false, isLoggedIn = true)
                 }
-                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        is com.example.planner.domain.exception.AuthenticationException -> "Authentication failed: \${e.message}"\n                        else -> "Operation failed: \${e.message}"\n                    }
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+                .onFailure { e ->
+                    val errorMessage = when (e) {
+                        is com.example.planner.domain.exception.ValidationException -> e.message
+                        is com.example.planner.domain.exception.NetworkException -> "Network error: ${e.message}"
+                        is com.example.planner.domain.exception.AuthenticationException -> "Authentication failed: ${e.message}"
+                        else -> "Operation failed: ${e.message}"
+                    }
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
                 }
         }
     }
@@ -45,8 +51,14 @@ class AuthViewModel : ViewModel() {
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(isLoading = false, isRegistered = true)
                 }
-                .onFailure { e ->\n                    val errorMessage = when (e) {\n                        is com.example.planner.domain.exception.ValidationException -> e.message\n                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"\n                        is com.example.planner.domain.exception.AuthenticationException -> "Authentication failed: \${e.message}"\n                        else -> "Operation failed: \${e.message}"\n                    }
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+                .onFailure { e ->
+                    val errorMessage = when (e) {
+                        is com.example.planner.domain.exception.ValidationException -> e.message
+                        is com.example.planner.domain.exception.NetworkException -> "Network error: ${e.message}"
+                        is com.example.planner.domain.exception.AuthenticationException -> "Authentication failed: ${e.message}"
+                        else -> "Operation failed: ${e.message}"
+                    }
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
                 }
         }
     }

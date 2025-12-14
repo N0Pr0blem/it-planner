@@ -1,0 +1,78 @@
+server:
+  port: 8080
+  address: 0.0.0.0
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/planner_db
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        default_schema: public
+  mail:
+    host: connect.smtp.bz
+    port: 587
+    username: admin@miniuser.ru
+    password: HjeX4cIst5mw
+    email:
+      from: fern@miniuser.ru
+    path:
+      verification_form: static/html/verification-template.html
+      information_form: static/html/text-information-template.html
+    properties:
+      thread_count: 5
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+jwt:
+  password:
+    encoder:
+      secret: F2K2DZ82odq$13e8aENggaMbb_fAkl-nJL4AEVBX43g
+      iteration: 64
+      key-length: 256
+  secret: b5f59337a612a2a7dc07328f3e7d1a04722967c7f86df20a499a7d3f91ff2a7c
+  expiration: 7200
+  issuer: PLANNER
+
+minio:
+  endpoint: http://localhost:9000
+  access-key: LUYD0xiZIO6ixLfXbSUr
+  secret-key: 5LfovDMENCIwit8TQ6nONt1JGQDXQOtr6bN2OrnK
+  bucket-name: it-planner
+  region: us-east-1
+  secure: false
+
+springdoc:
+  swagger-ui:
+    enabled: true
+    path: /api/v1/swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  packages-to-scan: com.laba.it_planner.controller
+
+logging:
+  level:
+    org.springdoc: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      simple:
+        enabled: true

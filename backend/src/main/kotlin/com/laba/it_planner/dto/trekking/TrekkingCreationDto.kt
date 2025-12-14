@@ -1,0 +1,13 @@
+package com.laba.it_planner.dto.trekking
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import java.time.LocalDate
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class TrekkingCreationDto(
+    val date: LocalDate,
+    val hours: Double,
+    val projectId: Long,
+    val taskId: Long
+)

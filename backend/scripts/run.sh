@@ -1,4 +1,4 @@
-#!/bin/batch
+#!/bin/bash
 
 echo "🔨 Останавливаю предыдущую версию..."
 docker-compose stop

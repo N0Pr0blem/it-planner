@@ -1,30 +1,26 @@
 package com.laba.it_planner.model.task
 
-import com.laba.it_planner.model.user.OauthUser
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.OneToOne
-import jakarta.persistence.Table
+import com.laba.it_planner.model.project.Employee
+import jakarta.persistence.*
 
 @Entity
 @Table(name = "task_details")
-class TaskDetails (user: OauthUser) {
+class TaskDetails(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null
+    val id: Long? = null,
 
     @OneToOne
     @JoinColumn(name = "from_user_id")
-    val fromUser: OauthUser = user
+    val fromUser: Employee,
 
     @OneToOne
     @JoinColumn(name = "to_user_id")
-    val toUser: OauthUser? = null
+    var toUser: Employee? = null,
 
     @Column(name = "description_file")
-    val descriptionFile: String? = null
-}
+    var descriptionFile: String? = null,
+
+    @OneToOne(mappedBy = "taskDetails")
+    var taskInfo: TaskInfo? = null
+)

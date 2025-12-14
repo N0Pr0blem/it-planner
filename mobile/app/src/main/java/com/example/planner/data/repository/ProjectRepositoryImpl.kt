@@ -5,11 +5,18 @@ import com.example.planner.data.dto.employee.EmployeeUpdateRoleDto
 import com.example.planner.data.dto.project.ProjectCreateRequestDto
 import com.example.planner.data.dto.project.ProjectCreateResponseDto
 import com.example.planner.data.dto.project.ProjectListingDto
+import com.example.planner.data.dto.task.CreateTaskInfoRequestDto
+import com.example.planner.data.dto.task.UpdateTaskInfoRequestDto
 import com.example.planner.data.mapper.toDomain
 import com.example.planner.data.mapper.toDomainProjects
 import com.example.planner.data.mapper.toDomainTasks
+import com.example.planner.data.mapper.toDomainUsers
+import com.example.planner.data.model.task.TaskComplexity
+import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.data.model.task.TaskUrgency
 import com.example.planner.data.model.user.ProjectRole
 import com.example.planner.data.network.RetrofitInstance
+import com.example.planner.di.CacheModule
 import com.example.planner.domain.exception.NetworkException
 import com.example.planner.domain.model.Project
 import com.example.planner.domain.model.Task
@@ -20,10 +27,19 @@ class ProjectRepositoryImpl : ProjectRepository {
     private val api = RetrofitInstance.api
 
     override suspend fun getProjects(): Result<List<Project>> {
+        // Check cache first
+        val cachedProjects = CacheModule.getCachedProjects()
+        if (cachedProjects != null) {
+            return Result.success(cachedProjects)
+        }
+        
         return try {
             val response = api.getProjects()
             if (response.isSuccessful) {
-                Result.success(response.body()?.toDomainProjects() ?: emptyList())
+                val projects = response.body()?.toDomainProjects() ?: emptyList()
+                // Cache the results
+                CacheModule.cacheProjects(projects)
+                Result.success(projects)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load projects"))
             }
@@ -59,18 +75,21 @@ class ProjectRepositoryImpl : ProjectRepository {
                 response.body()?.let { projectDto ->
                     // В ProjectCreateResponseDto отсутствует id, поэтому используем фиктивный id
                     // В реальном приложении нужно добавить id в ответ от сервера
-                    Result.success(Project(
+                    val project = Project(
                         id = 0, // Фиктивный id, так как в DTO нет реального id
                         name = projectDto.name,
                         createdAt = projectDto.creationDate.toString(),
                         updatedAt = ""  // Дата обновления отсутствует в DTO
-                    ))
+                    )
+                    // Clear projects cache after creation
+                    CacheModule.clearProjectsCache()
+                    Result.success(project)
                 } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to create project"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(NetworkException("Network error occurred", e))
         }
     }
 
@@ -89,15 +108,24 @@ class ProjectRepositoryImpl : ProjectRepository {
 
     // Tasks
     override suspend fun getProjectTasks(projectId: Long): Result<List<Task>> {
+        // Check cache first
+        val cachedTasks = CacheModule.getCachedTasks(projectId)
+        if (cachedTasks != null) {
+            return Result.success(cachedTasks)
+        }
+        
         return try {
             val response = api.getProjectTasks(projectId)
             if (response.isSuccessful) {
-                Result.success(response.body()?.toDomainTasks() ?: emptyList())
+                val tasks = response.body()?.toDomainTasks() ?: emptyList()
+                // Cache the results
+                CacheModule.cacheTasks(projectId, tasks)
+                Result.success(tasks)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load tasks"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(NetworkException("Network error occurred", e))
         }
     }
 
@@ -124,10 +152,25 @@ class ProjectRepositoryImpl : ProjectRepository {
         complexity: String
     ): Result<Task> {
         return try {
+            // Convert string parameters to enum values
+            val urgencyEnum = when (urgency.uppercase()) {
+                "URGENT" -> TaskUrgency.URGENT
+                "MEDIUM" -> TaskUrgency.MEDIUM
+                "NOT_URGENT" -> TaskUrgency.NOT_URGENT
+                else -> TaskUrgency.MEDIUM // default
+            }
+            
+            val complexityEnum = when (complexity.uppercase()) {
+                "HARD" -> TaskComplexity.HARD
+                "MEDIUM" -> TaskComplexity.MEDIUM
+                "EASY" -> TaskComplexity.EASY
+                else -> TaskComplexity.MEDIUM // default
+            }
+            
             val request = CreateTaskInfoRequestDto(
                 name = name,
-                urgency = urgency,
-                complexity = complexity,
+                urgency = urgencyEnum, // Use actual enum object
+                complexity = complexityEnum, // Use actual enum object
                 projectId = projectId,
                 description = description
             )
@@ -154,11 +197,41 @@ class ProjectRepositoryImpl : ProjectRepository {
         description: String?
     ): Result<Task> {
         return try {
+            // Convert string parameters to enum values
+            val urgencyEnum = urgency?.let {
+                when (it.uppercase()) {
+                    "URGENT" -> TaskUrgency.URGENT
+                    "MEDIUM" -> TaskUrgency.MEDIUM
+                    "NOT_URGENT" -> TaskUrgency.NOT_URGENT
+                    else -> TaskUrgency.MEDIUM
+                }
+            }
+            
+            val complexityEnum = complexity?.let {
+                when (it.uppercase()) {
+                    "HARD" -> TaskComplexity.HARD
+                    "MEDIUM" -> TaskComplexity.MEDIUM
+                    "EASY" -> TaskComplexity.EASY
+                    else -> TaskComplexity.MEDIUM
+                }
+            }
+            
+            val statusEnum = status?.let {
+                when (it.uppercase()) {
+                    "TO_DO" -> TaskStatus.TO_DO
+                    "IN_PROGRESS" -> TaskStatus.IN_PROGRESS
+                    "REVIEW" -> TaskStatus.REVIEW
+                    "IN_TEST" -> TaskStatus.IN_TEST
+                    "DONE" -> TaskStatus.DONE
+                    else -> TaskStatus.TO_DO
+                }
+            }
+            
             val request = UpdateTaskInfoRequestDto(
                 name = name,
-                urgency = urgency,
-                complexity = complexity,
-                status = status,
+                urgency = urgencyEnum, // Use actual enum object
+                complexity = complexityEnum, // Use actual enum object
+                status = statusEnum, // Use actual enum object
                 description = description
             )
             val response = api.updateTask(projectId, taskId, request)
@@ -189,16 +262,24 @@ class ProjectRepositoryImpl : ProjectRepository {
 
     // Employees
     override suspend fun getProjectEmployees(projectId: Long): Result<List<User>> {
+        // Check cache first
+        val cachedUsers = CacheModule.getCachedUsers(projectId)
+        if (cachedUsers != null) {
+            return Result.success(cachedUsers)
+        }
+        
         return try {
             val response = api.getProjectEmployees(projectId)
             if (response.isSuccessful) {
                 val employees = response.body()?.toDomainUsers() ?: emptyList()
+                // Cache the results
+                CacheModule.cacheUsers(projectId, employees)
                 Result.success(employees)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load employees"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(NetworkException("Network error occurred", e))
         }
     }
 

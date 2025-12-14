@@ -95,8 +95,8 @@ fun com.example.planner.data.dto.employee.EmployeeResponseDto.toDomain(): User {
     return User(
         id = id,
         username = user.username ?: "",
-        firstName = user.firstName,
-        secondName = user.secondName,
+        firstName = "", // OauthUser doesn't have firstName
+        secondName = "", // OauthUser doesn't have secondName
         lastName = null,
         email = null,
         profileImageUrl = null

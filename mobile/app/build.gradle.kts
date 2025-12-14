@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.devtools.ksp)
+    // alias(libs.plugins.google.devtools.ksp)
 }
 
 android {
@@ -54,6 +54,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.text)
     implementation(libs.androidx.compose.foundation)
     testImplementation(libs.junit)
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.3.1")
+    testImplementation("org.mockito:mockito-inline:5.3.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -66,7 +69,7 @@ dependencies {
     implementation(libs.converter.moshi)
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
-    ksp(libs.moshi.kotlin)
+    // ksp(libs.moshi.kotlin)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
@@ -77,7 +80,7 @@ dependencies {
     implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler) // Для Kotlin (KSP)
+    // ksp(libs.androidx.room.compiler) // Для Kotlin (KSP)
 
     // Kotlin Extensions и поддержка Coroutines для Room
     implementation(libs.androidx.room.ktx)
