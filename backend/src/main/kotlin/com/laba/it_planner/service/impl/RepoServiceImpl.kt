@@ -54,10 +54,10 @@ class RepoServiceImpl(
 
                 return MessageResponseDto(message = result)
 
-            } else throw DataException("File already exists", "FILE_EXIST_ERROR")
+            } else throw DataException("file.originalFilename", file.originalFilename.toString())
 
 
-        } else throw AccessException("You don't have permission to this repository", "PERMISSION_DENIED")
+        } else throw AccessException("error.repo.file.permission", "")
     }
 
     override fun getAllRepositoryFiles(
@@ -70,7 +70,7 @@ class RepoServiceImpl(
             val result = fileRepo.findAllByProjectRepo(projectRepo)
 
             return result.stream().map(projectRepoMapper::toDto).collect(Collectors.toList())
-        } else throw AccessException("You don't have permission to this repository", "PERMISSION_DENIED")
+        } else throw AccessException("error.repo.file.permission", "")
     }
 
     override fun getFile(projectId: Long, fileId: Long, principal: Principal): ByteArray {
@@ -80,7 +80,7 @@ class RepoServiceImpl(
             .filter { repoFile -> repoFile.id == fileId }
             .findFirst()
             .orElseThrow {
-                DataException("No such file in repository", "NO_SUCH_FILE")
+                DataException("error.repo.file.not_exist", fileId.toString())
             }
 
         val path = projectRepoOpt.get().path + file.type.prefix + file.name

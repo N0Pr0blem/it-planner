@@ -1,18 +1,42 @@
 package com.laba.it_planner.handler
 
+import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.exception.ApiException
+import org.springframework.context.MessageSource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.FieldError
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.util.Locale
+import java.util.function.Consumer
+
 
 @RestControllerAdvice
-class GlobalExceptionHandler {
+class GlobalExceptionHandler(
+    private val messageSource: MessageSource
+) {
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<MutableMap<String?, String?>?> {
+        val errors: MutableMap<String?, String?> = HashMap()
+        ex.bindingResult
+            .fieldErrors
+            .forEach(Consumer { error: FieldError? -> errors.put(error!!.field, error.defaultMessage) })
+        return ResponseEntity.badRequest().body<MutableMap<String?, String?>?>(errors)
+    }
 
     @ExceptionHandler(ApiException::class)
-    fun handleApiException(e: ApiException): ResponseEntity<Map<String, String>> {
-        val response = mapOf("error_code" to e.errorCode, "message" to e.message.orEmpty())
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(response)
+    fun handleApiException(e: ApiException, locale: Locale): ResponseEntity<MessageResponseDto> {
+        val argsArray = when (e.args) {
+            is Array<*> -> e.args
+            else -> arrayOf(e.args)
+        }
+
+        val message = messageSource.getMessage(e.message!!, argsArray, locale)
+        val response = MessageResponseDto(message)
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response)
     }
 }

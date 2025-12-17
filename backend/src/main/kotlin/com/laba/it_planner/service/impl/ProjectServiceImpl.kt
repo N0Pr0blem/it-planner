@@ -31,8 +31,8 @@ class ProjectServiceImpl(
         val userInfo = userInfoService.getUserInfo(principal)
         if (projectRepository.findByNameAndByCreatedUser(projectCreateRequestDto.name, userInfo.id).isPresent) {
             throw DataException(
-                "Project with name ${projectCreateRequestDto.name} already exists",
-                "PROJECT_CREATION_ERROR"
+                "error.project.exist",
+                projectCreateRequestDto.name
             )
         } else {
             val result = projectRepository.save(
@@ -79,7 +79,7 @@ class ProjectServiceImpl(
                     projectRole = employeeInviteDto.projectRole
                 )
             )
-        } else throw DataException("Project with id $projectId does not exist", "PROJECT_NOT_FOUND_ERROR")
+        } else throw DataException("error.project.not_exist", projectId.toString())
     }
 
     override fun deleteEmployee(projectId: Long, employeeId: Long, username: String) {
@@ -105,16 +105,13 @@ class ProjectServiceImpl(
         if (project.isPresent && project.get().createdUser?.username.equals(name)) {
             return employeeService.changeRole(employeeId, employeeUpdateRoleDto.projectRole)
         } else {
-            throw DataException(
-                "Project with id $projectId does not exist or it's not your's",
-                "PROJECT_NOT_FOUND_ERROR"
-            )
+            throw DataException("error.project.not_exist", projectId.toString())
         }
     }
 
     override fun get(projectId: Long): Project {
         return projectRepository.findById(projectId)
-            .orElseThrow { DataException("Project with id $projectId not found", "NOT_FOUND_ERROR") }
+            .orElseThrow { DataException("error.project.not_exist", projectId.toString()) }
     }
 
     override fun getAllProjects(name: String): List<Project> {

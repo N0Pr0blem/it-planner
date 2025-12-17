@@ -9,6 +9,7 @@ import com.laba.it_planner.mapper.ProjectListingMapper
 import com.laba.it_planner.model.project.Project
 import com.laba.it_planner.service.ProjectService
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -28,7 +29,7 @@ class ProjectController(
 ) {
     @PostMapping()
     @Operation(summary = "Create new project")
-    fun createProject(@RequestBody projectRequestDto: ProjectCreateRequestDto, principal: Principal): ResponseEntity<ProjectCreateResponseDto> {
+    fun createProject(@Valid @RequestBody projectRequestDto: ProjectCreateRequestDto, principal: Principal): ResponseEntity<ProjectCreateResponseDto> {
         val response = projectService.createProject(projectRequestDto, principal)
         return ResponseEntity.ok(projectMapper.toDto(response))
     }

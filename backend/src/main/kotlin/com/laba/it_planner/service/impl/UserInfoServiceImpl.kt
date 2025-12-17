@@ -35,7 +35,7 @@ class UserInfoServiceImpl(
             }
             return userInfoRepository.save(userInfo)
         }
-        else throw DataException("User not found","USER_NOT_FOUND_EXCEPTION")
+        else throw DataException("error.user.username.not_found",principal.name)
     }
 
     override fun getInfo(principal: Principal) : UserInfo{
@@ -67,7 +67,7 @@ class UserInfoServiceImpl(
             }
             return userInfo
         }
-        else throw DataException("User not found","USER_NOT_FOUND_EXCEPTION")
+        else throw DataException("error.user.not_found","")
     }
 
 }

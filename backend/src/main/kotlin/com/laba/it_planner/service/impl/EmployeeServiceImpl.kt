@@ -1,6 +1,5 @@
 package com.laba.it_planner.service.impl
 
-import com.laba.it_planner.exception.ApiException
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.project.Employee
 import com.laba.it_planner.model.user.OauthUser
@@ -23,7 +22,7 @@ class EmployeeServiceImpl(
 
     override fun createEmployee(employee: Employee): Employee {
         if (employeeRepository.findByProjectIdAndUserId(employee.project.id, employee.user.id).isPresent) {
-            throw DataException("User already in project team", "ADD_EMPLOYEE_ERROR");
+            throw DataException("error.employee.exist", employee.project.id.toString());
         } else return employeeRepository.save(employee)
     }
 
@@ -34,7 +33,7 @@ class EmployeeServiceImpl(
             result.forEach { e -> e.user.profileImage = setImage(e.user.profileImage) }
             return result
         } else {
-            throw DataException("You can't see not yours team", "MEMBER_EMPLOYEE_ERROR")
+            throw DataException("error.employee.access", "")
         }
     }
 
@@ -51,7 +50,7 @@ class EmployeeServiceImpl(
             employee.projectRole = newRole
             return employeeRepository.save(employee)
         }
-        throw DataException("No such employee exception", "EMPLOYEE_NOT_FOUND_ERROR")
+        throw DataException("error.employee.not_exist", employeeId.toString())
     }
 
     override fun checkPermission(projectId: Long, principal: Principal): Boolean {
@@ -65,7 +64,7 @@ class EmployeeServiceImpl(
         val employeeOpt = employeeRepository.findByUsernameAndProjectId(projectId, name)
         if (employeeOpt.isPresent) {
             return employeeOpt.get()
-        } else throw DataException("No such employee exception", "EMPLOYEE_NOT_FOUND_ERROR")
+        } else throw DataException("error.employee.not_exist.in_project", listOf(name, projectId.toString()))
     }
 
     override fun getEmployeeInfo(projectId: Long, employeeId: Long, principal: Principal): Employee {
@@ -76,13 +75,13 @@ class EmployeeServiceImpl(
             employee.user.profileImage = setImage(employee.user.profileImage)
             return employee
         } else {
-            throw DataException("You can't see not yours team", "MEMBER_EMPLOYEE_ERROR")
+            throw DataException("error.employee.access", "")
         }
     }
 
     override fun getById(employeeId: Long): Employee {
         return employeeRepository.findById(employeeId)
-            .orElseThrow { ApiException("No such employee", "NO_SUCH_EMPLOYEE_ERROR") }
+            .orElseThrow { DataException("error.employee.not_exist", employeeId.toString()) }
     }
 
     private fun isContainUser(employees: List<Employee>, user: OauthUser): Boolean {

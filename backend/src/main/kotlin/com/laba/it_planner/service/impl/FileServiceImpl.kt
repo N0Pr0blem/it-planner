@@ -1,5 +1,6 @@
 package com.laba.it_planner.service.impl
 
+import com.laba.it_planner.exception.ApiException
 import com.laba.it_planner.service.FileProcessorFactory
 import com.laba.it_planner.service.FileService
 import io.minio.GetObjectArgs
@@ -87,7 +88,7 @@ class FileServiceImpl(
                 tempFile.delete()
             }
         } catch (e: Exception) {
-            throw RuntimeException("Ошибка при обновлении файла: ${e.message}", e)
+            throw ApiException("error.file.update", e.message.toString())
         }
     }
 

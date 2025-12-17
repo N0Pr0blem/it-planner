@@ -35,10 +35,10 @@ class TaskInfoServiceImpl(
             if (employeeService.checkPermission(taskInfo.project.id!!, principal)) {
                 return taskInfo
             } else {
-                throw AccessException("Access denied", "FORBIDDEN")
+                throw AccessException("error.access.denied", "")
             }
         } else {
-            throw AccessException("Task not found", "NOT_FOUND")
+            throw AccessException("error.task.not_found", "")
         }
     }
 
@@ -52,7 +52,7 @@ class TaskInfoServiceImpl(
             return dbResponse.stream().map { projection -> fromProjection(projection) }
                 .collect(Collectors.toList())
         } else {
-            throw AccessException("Access denied", "FORBIDDEN")
+            throw AccessException("error.access.denied", "")
         }
     }
 
@@ -76,7 +76,7 @@ class TaskInfoServiceImpl(
             )
 
         } else {
-            throw AccessException("Access denied", "FORBIDDEN")
+            throw AccessException("error.access.denied", "")
         }
     }
 

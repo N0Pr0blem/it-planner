@@ -1,6 +1,7 @@
 package com.laba.it_planner.service.impl;
 
 import com.laba.it_planner.exception.ApiException
+import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.service.MailService
 import com.laba.it_planner.utils.feature.FeatureToggleService
 import jakarta.annotation.PostConstruct
@@ -84,7 +85,7 @@ class MailServiceImpl(
                     println("Activation code email sent to: $to")
                 } catch (e: Exception) {
                     println("Failed to send activation code email to: $to \n\n $e")
-                    throw ApiException("Failed to send email", "SEND_EMAIL_EXCEPTION")
+                    throw DataException("error.mail.failed_to_send", to)
                 }
             }
         }
@@ -109,7 +110,7 @@ class MailServiceImpl(
                     println("Information email sent to: $to")
                 } catch (e: Exception) {
                     println("Failed to send information email to: $to\n\n$e")
-                    throw ApiException("Failed to send email", "SEND_EMAIL_EXCEPTION")
+                    throw DataException("errors.mail.failed_to_send", to)
                 }
             }
         }

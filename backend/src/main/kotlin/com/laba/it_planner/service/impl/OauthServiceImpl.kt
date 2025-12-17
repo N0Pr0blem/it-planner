@@ -32,14 +32,14 @@ class OauthServiceImpl(
     override fun getByUsername(username: String): OauthUser {
         return oauthRepository.findByUsername(username)
             .orElseThrow {
-                DataException("User with username $username not found", "USER_NOT_FOUND")
+                DataException("error.user.username.not_found", username)
             }
     }
 
     override fun register(registerRequestDto: RegisterRequestDto): UserInfo {
         if (userInfoRepository.findByUsername(registerRequestDto.username).isPresent) {
             val username = registerRequestDto.username
-            throw DataException("User with username $username already exist", "USER_ALREADY_EXIST")
+            throw DataException("error.user.username.exists", username)
         }
         val generatedVerificationCode = generate4DigitCode();
         val userInfo = UserInfo().apply {
@@ -62,10 +62,10 @@ class OauthServiceImpl(
     override fun authenticate(oauthRequestDto: AuthRequestDto): TokenDetails {
         val user = getByUsername(oauthRequestDto.username)
         if (!user.enabled) {
-            throw AuthException("Account disabled", "ACCOUNT_DISABLED")
+            throw AuthException("error.user.disabled", "")
         }
         if (user.password != securityService.hashPassword(oauthRequestDto.password)) {
-            throw AuthException("Account password mismatch", "INVALID_PASSWORD")
+            throw AuthException("error.user.password", "")
         }
 
         return securityService.generateToken(user)
@@ -78,7 +78,7 @@ class OauthServiceImpl(
             user.enabled = true
             oauthRepository.save(user)
             "$username successfully verified"
-        } else throw AccessException("Wrong verification code", "VERIFICATION_CODE_EXCEPTION")
+        } else throw AccessException("error.user.verification_code", "")
 
         return MessageResponseDto(message = result)
     }
