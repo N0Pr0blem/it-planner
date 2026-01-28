@@ -48,4 +48,11 @@ class OauthController(
         println("Try verify ${username}: $code")
         return ResponseEntity.ok(oauthService.verify(username, code))
     }
+
+    @PostMapping("/resend")
+    @Operation(summary = "Resend verification code")
+    fun resend(@RequestParam("username") username: String): ResponseEntity<MessageResponseDto> {
+        println("Resend verification code for $username")
+        return ResponseEntity.ok(oauthService.resendVerificationCode(username))
+    }
 }

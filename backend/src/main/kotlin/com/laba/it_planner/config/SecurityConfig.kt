@@ -62,6 +62,7 @@ class SecurityConfig(
             "http://10.193.60.191:8080",
             "http://10.193.60.191",
             "http://10.193.60.191:3000",
+            "http://10.0.2.2:8080",
         )
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
         configuration.allowedHeaders = listOf("*")

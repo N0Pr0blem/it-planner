@@ -2,6 +2,8 @@ package com.example.planner.domain.usecase
 
 import com.example.planner.domain.exception.ValidationException
 import com.example.planner.domain.model.Task
+import com.example.planner.domain.model.TaskComplexity
+import com.example.planner.domain.model.TaskUrgency
 import com.example.planner.domain.repository.ProjectRepository
 
 class UpdateTaskUseCase(private val projectRepository: ProjectRepository) {
@@ -9,8 +11,8 @@ class UpdateTaskUseCase(private val projectRepository: ProjectRepository) {
         projectId: Long,
         taskId: Long,
         name: String? = null,
-        urgency: String? = null,
-        complexity: String? = null,
+        urgency: TaskUrgency? = null,
+        complexity: TaskComplexity? = null,
         status: String? = null,
         description: String? = null
     ): Result<Task> {

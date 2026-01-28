@@ -1,15 +1,12 @@
 package com.example.planner.data.mapper
 
 import com.example.planner.data.dto.project.ProjectListingDto
-import com.example.planner.data.dto.task.TaskInfoListing
-import com.example.planner.data.dto.task.TaskInfoResponseDto
 import com.example.planner.data.dto.userInfo.UserInfoResponseDto
 import com.example.planner.domain.model.Project
-import com.example.planner.domain.model.Task
+import com.example.planner.domain.model.ProjectMember
+import com.example.planner.domain.model.ProjectRole
 import com.example.planner.domain.model.User
-import com.example.planner.data.model.task.TaskComplexity
-import com.example.planner.data.model.task.TaskStatus
-import com.example.planner.data.model.task.TaskUrgency
+import com.example.planner.data.model.user.ProjectRole as DataProjectRole
 
 // User mappers
 fun UserInfoResponseDto.toDomain(): User {
@@ -38,71 +35,56 @@ fun List<ProjectListingDto>.toDomainProjects(): List<Project> {
     return map { it.toDomain() }
 }
 
-// Task mappers
-fun TaskInfoListing.toDomain(): Task {
-    return Task(
-        id = id,
-        projectId = 0, // projectId отсутствует в DTO, используем 0 как фиктивное значение
-        name = name,
-        description = "", // Описание отсутствует в DTO
-        status = if (isCompleted) TaskStatus.DONE else TaskStatus.TO_DO,
-        urgency = TaskUrgency.MEDIUM, // Приоритет отсутствует в DTO, используем средний
-        complexity = TaskComplexity.MEDIUM, // Сложность отсутствует в DTO, используем среднюю
-        isCompleted = isCompleted,
-        createdAt = "", // Даты отсутствуют в DTO
-        updatedAt = "",
-        assignedBy = null, // Назначенный отсутствует в DTO
-        assignedTo = null
-    )
-}
-
-fun TaskInfoResponseDto.toDomain(): Task {
-    return Task(
-        id = id,
-        projectId = projectId,
-        name = name,
-        description = "", // Описание нужно получать из деталей задачи (отдельный запрос)
-        status = TaskStatus.valueOf(status),
-        urgency = TaskUrgency.valueOf(urgency),
-        complexity = TaskComplexity.valueOf(complexity),
-        isCompleted = isCompleted,
-        createdAt = creationDate.toString(),
-        updatedAt = "", // Дата обновления отсутствует в DTO
-        assignedBy = assignedBy?.toDomain(),
-        assignedTo = assignedTo?.toDomain()
-    )
-}
-
-fun List<TaskInfoListing>.toDomainTasks(): List<Task> {
-    return map { it.toDomain() }
-}
-
-// Helper mappers for DTO user info
-fun com.example.planner.data.dto.userInfo.UserInfoForTaskDto.toDomain(): User {
-    return User(
-        id = 0, // id отсутствует в DTO
-        username = "", // username отсутствует в DTO
-        firstName = firstName,
-        secondName = secondName,
-        lastName = null,
-        email = null,
-        profileImageUrl = profileImage
-    )
-}
-
 // Employee mappers
+fun com.example.planner.data.dto.employee.EmployeeResponseDto.toDomainMember(): ProjectMember {
+    return ProjectMember(
+        id = id,
+        role = projectRole.toDomain(),
+        firstName = user.firstName,
+        secondName = user.secondName,
+        profileImageUrl = user.profileImage
+    )
+}
+
 fun com.example.planner.data.dto.employee.EmployeeResponseDto.toDomain(): User {
     return User(
         id = id,
-        username = user.username ?: "",
-        firstName = "", // OauthUser doesn't have firstName
-        secondName = "", // OauthUser doesn't have secondName
+        username = "${user.firstName ?: ""} ${user.secondName ?: ""}".trim(),
+        firstName = user.firstName,
+        secondName = user.secondName,
         lastName = null,
         email = null,
-        profileImageUrl = null
+        profileImageUrl = user.profileImage
     )
 }
 
 fun List<com.example.planner.data.dto.employee.EmployeeResponseDto>.toDomainUsers(): List<User> {
     return map { it.toDomain() }
+}
+fun List<com.example.planner.data.dto.employee.EmployeeResponseDto>.toDomainMembers(): List<ProjectMember> {
+    return map { it.toDomainMember() }
+}
+
+fun DataProjectRole.toDomain(): ProjectRole {
+    return when (this) {
+        DataProjectRole.PROJECT_MANAGER -> ProjectRole.PROJECT_MANAGER
+        DataProjectRole.FRONTEND_DEVELOPER -> ProjectRole.FRONTEND_DEVELOPER
+        DataProjectRole.BACKEND_DEVELOPER -> ProjectRole.BACKEND_DEVELOPER
+        DataProjectRole.TESTER -> ProjectRole.TESTER
+        DataProjectRole.UI_UX_DESIGNER -> ProjectRole.UI_UX_DESIGNER
+        DataProjectRole.DEVOPS -> ProjectRole.DEVOPS
+        DataProjectRole.ANOTHER -> ProjectRole.ANOTHER
+    }
+}
+
+fun ProjectRole.toData(): DataProjectRole {
+    return when (this) {
+        ProjectRole.PROJECT_MANAGER -> DataProjectRole.PROJECT_MANAGER
+        ProjectRole.FRONTEND_DEVELOPER -> DataProjectRole.FRONTEND_DEVELOPER
+        ProjectRole.BACKEND_DEVELOPER -> DataProjectRole.BACKEND_DEVELOPER
+        ProjectRole.TESTER -> DataProjectRole.TESTER
+        ProjectRole.UI_UX_DESIGNER -> DataProjectRole.UI_UX_DESIGNER
+        ProjectRole.DEVOPS -> DataProjectRole.DEVOPS
+        ProjectRole.ANOTHER -> DataProjectRole.ANOTHER
+    }
 }

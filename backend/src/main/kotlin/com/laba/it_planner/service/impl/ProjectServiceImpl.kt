@@ -136,4 +136,16 @@ class ProjectServiceImpl(
         return projectRepository.findAllByCreatedUser(user)
     }
 
+    override fun getProject(projectId: Long, principal: Principal): Project {
+        val project = projectRepository.findById(projectId)
+            .orElseThrow { DataException("Project with id $projectId not found", "NOT_FOUND_ERROR") }
+        
+        // Check if user has access to this project
+        if (!employeeService.checkPermission(projectId, principal)) {
+            throw DataException("You don't have access to this project", "ACCESS_DENIED_ERROR")
+        }
+        
+        return project
+    }
+
 }

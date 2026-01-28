@@ -1,5 +1,8 @@
 package com.example.planner.domain.usecase
 
+import com.example.planner.data.model.task.TaskComplexity
+import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.data.model.task.TaskUrgency
 import com.example.planner.domain.model.Task
 import com.example.planner.domain.repository.ProjectRepository
 import kotlinx.coroutines.test.runTest
@@ -24,8 +27,34 @@ class GetProjectTasksUseCaseTest {
         // Given
         val projectId = 1L
         val expectedTasks = listOf(
-            Task(1, projectId, "Task 1", "Description 1", "2023-01-01", "2023-01-02"),
-            Task(2, projectId, "Task 2", "Description 2", "2023-01-03", "2023-01-04")
+            Task(
+                1,
+                projectId,
+                "Task 1",
+                "Description 1",
+                TaskStatus.TO_DO,
+                TaskUrgency.MEDIUM,
+                TaskComplexity.MEDIUM,
+                false,
+                "2023-01-01",
+                "2023-01-02",
+                null,
+                null
+            ),
+            Task(
+                2,
+                projectId,
+                "Task 2",
+                "Description 2",
+                TaskStatus.TO_DO,
+                TaskUrgency.MEDIUM,
+                TaskComplexity.MEDIUM,
+                false,
+                "2023-01-03",
+                "2023-01-04",
+                null,
+                null
+            )
         )
         whenever(projectRepository.getProjectTasks(projectId)).thenReturn(Result.success(expectedTasks))
 

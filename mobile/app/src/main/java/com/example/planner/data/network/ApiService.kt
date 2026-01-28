@@ -1,6 +1,7 @@
 
 package com.example.planner.data.network
 
+import com.example.planner.data.dto.MessageResponseDto
 import com.example.planner.data.dto.employee.EmployeeInviteDto
 import com.example.planner.data.dto.employee.EmployeeResponseDto
 import com.example.planner.data.dto.employee.EmployeeUpdateRoleDto
@@ -13,17 +14,17 @@ import com.example.planner.data.dto.project.ProjectCreateResponseDto
 import com.example.planner.data.dto.project.ProjectListingDto
 import com.example.planner.data.dto.repo.ProjectRepoFileDto
 import com.example.planner.data.dto.task.CreateTaskInfoRequestDto
-import com.example.planner.data.dto.task.TaskDetailsInfo
 import com.example.planner.data.dto.task.TaskInfoListing
 import com.example.planner.data.dto.task.TaskInfoResponseDto
+import com.example.planner.data.dto.task.TaskFileDto
 import com.example.planner.data.dto.task.UpdateTaskInfoRequestDto
 import com.example.planner.data.dto.tracking.AllTrackingResponse
 import com.example.planner.data.dto.tracking.TrackingCreationDto
 import com.example.planner.data.dto.tracking.TrackingResponseDto
-import com.example.planner.data.dto.userInfo.UserInfoPatchDto
 import com.example.planner.data.dto.userInfo.UserInfoResponseDto
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -36,6 +37,17 @@ interface ApiService {
     @POST("api/v1/auth/login")
     suspend fun login(@Body request: AuthRequestDto): Response<AuthResponseDto>
 
+    @POST("api/v1/auth/verify")
+    suspend fun verify(
+        @Query("code") code: String,
+        @Query("username") username: String
+    ): Response<MessageResponseDto>
+
+    @POST("api/v1/auth/resend")
+    suspend fun resendVerificationCode(
+        @Query("username") username: String
+    ): Response<MessageResponseDto>
+
     // --- User Info ---
     @GET("api/v1/profile")
     suspend fun getProfileInfo(): Response<UserInfoResponseDto>
@@ -43,7 +55,8 @@ interface ApiService {
     @Multipart
     @PATCH("api/v1/profile")
     suspend fun updateProfile(
-        @Part("userInfoPatchDto") userInfo: UserInfoPatchDto,
+        @Part("secondName") secondName: RequestBody?,
+        @Part("lastName") lastName: RequestBody?,
         @Part image: MultipartBody.Part?
     ): Response<UserInfoResponseDto>
 
@@ -52,7 +65,10 @@ interface ApiService {
     suspend fun createProject(@Body request: ProjectCreateRequestDto): Response<ProjectCreateResponseDto>
 
     @GET("api/v1/project")
-    suspend fun getProjects(): Response<List<ProjectListingDto>>
+    suspend fun getProjects(): Response<List<ProjectListingDto?>>
+
+    @GET("api/v1/project/my")
+    suspend fun getMyProjects(): Response<List<ProjectListingDto?>>
 
     @GET("api/v1/project/{projectId}")
     suspend fun getProject(@Path("projectId") projectId: Long): Response<ProjectCreateResponseDto>
@@ -84,39 +100,34 @@ interface ApiService {
     ): Response<EmployeeResponseDto>
 
     // --- Tasks ---
-    @GET("api/v1/project/{projectId}/task")
+    @GET("api/v1/project/{projectId}/browse")
     suspend fun getProjectTasks(@Path("projectId") projectId: Long): Response<List<TaskInfoListing>>
 
-    @POST("api/v1/project/{projectId}/task")
+    @POST("api/v1/task")
     suspend fun createTask(
-        @Path("projectId") projectId: Long,
         @Body request: CreateTaskInfoRequestDto
     ): Response<TaskInfoResponseDto>
 
-    @GET("api/v1/project/{projectId}/task/{taskId}")
+    @GET("api/v1/task/{taskId}")
     suspend fun getTask(
-        @Path("projectId") projectId: Long,
         @Path("taskId") taskId: Long
     ): Response<TaskInfoResponseDto>
 
-    @PATCH("api/v1/project/{projectId}/task/{taskId}")
+    @PATCH("api/v1/task/{taskId}")
     suspend fun updateTask(
-        @Path("projectId") projectId: Long,
         @Path("taskId") taskId: Long,
         @Body request: UpdateTaskInfoRequestDto
     ): Response<TaskInfoResponseDto>
 
-    @DELETE("api/v1/project/{projectId}/task/{taskId}")
+    @DELETE("api/v1/task/{taskId}")
     suspend fun deleteTask(
-        @Path("projectId") projectId: Long,
         @Path("taskId") taskId: Long
     ): Response<Unit>
 
-    @GET("api/v1/project/{projectId}/task/{taskId}/details")
+    @GET("api/v1/task/{taskId}/description")
     suspend fun getTaskDetails(
-        @Path("projectId") projectId: Long,
         @Path("taskId") taskId: Long
-    ): Response<TaskDetailsInfo>
+    ): Response<MessageResponseDto>
 
     // --- Repository files ---
     @Multipart
@@ -133,26 +144,57 @@ interface ApiService {
     suspend fun downloadRepoFile(
         @Path("projectId") projectId: Long,
         @Path("fileId") fileId: Long
-    ): Response<ByteArray>
+    ): Response<ResponseBody>
+
+    // --- Task files ---
+    @Multipart
+    @POST("api/v1/task/{taskId}/file")
+    suspend fun uploadTaskFile(
+        @Path("taskId") taskId: Long,
+        @Part file: MultipartBody.Part
+    ): Response<MessageResponseDto>
+
+    @GET("api/v1/task/{taskId}/file")
+    suspend fun getTaskFiles(@Path("taskId") taskId: Long): Response<List<TaskFileDto>>
+
+    @GET("api/v1/task/{taskId}/file/{fileId}")
+    suspend fun downloadTaskFile(
+        @Path("taskId") taskId: Long,
+        @Path("fileId") fileId: Long
+    ): Response<ResponseBody>
+
+    @DELETE("api/v1/task/{taskId}/file/{fileId}")
+    suspend fun deleteTaskFile(
+        @Path("taskId") taskId: Long,
+        @Path("fileId") fileId: Long
+    ): Response<MessageResponseDto>
+
+    @PATCH("api/v1/project/{projectId}/task/{taskId}/employee/{employeeId}")
+    suspend fun assignTaskToEmployee(
+        @Path("projectId") projectId: Long,
+        @Path("taskId") taskId: Long,
+        @Path("employeeId") employeeId: Long
+    ): Response<String>
+
+    @DELETE("api/v1/project/{projectId}/repository/file/{fileId}")
+    suspend fun deleteRepoFile(
+        @Path("projectId") projectId: Long,
+        @Path("fileId") fileId: Long
+    ): Response<Unit>
 
     // --- Tracking ---
-    @GET("api/v1/project/{projectId}/task/{taskId}/tracking")
+    @GET("api/v1/task/{taskId}/trekking")
     suspend fun getTaskTracking(
-        @Path("projectId") projectId: Long,
         @Path("taskId") taskId: Long
     ): Response<AllTrackingResponse>
 
-    @POST("api/v1/project/{projectId}/task/{taskId}/tracking")
+    @POST("api/v1/trekking")
     suspend fun createTracking(
-        @Path("projectId") projectId: Long,
-        @Path("taskId") taskId: Long,
         @Body request: TrackingCreationDto
     ): Response<TrackingResponseDto>
 
-    @DELETE("api/v1/project/{projectId}/task/{taskId}/tracking/{trackingId}")
+    @DELETE("api/v1/trekking/{trackingId}")
     suspend fun deleteTracking(
-        @Path("projectId") projectId: Long,
-        @Path("taskId") taskId: Long,
         @Path("trackingId") trackingId: Long
     ): Response<Unit>
 }

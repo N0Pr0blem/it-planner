@@ -1,5 +1,8 @@
 package com.example.planner.domain.usecase
 
+import com.example.planner.data.model.task.TaskComplexity
+import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.data.model.task.TaskUrgency
 import com.example.planner.domain.exception.ValidationException
 import com.example.planner.domain.model.Task
 import com.example.planner.domain.repository.ProjectRepository
@@ -28,10 +31,23 @@ class UpdateTaskUseCaseTest {
         val taskId = 1L
         val name = "Updated Task"
         val description = "Updated description"
-        val urgency = "HIGH"
-        val complexity = "HIGH"
+        val urgency = "URGENT"
+        val complexity = "HARD"
         val status = "DONE"
-        val expectedTask = Task(taskId, projectId, name, description, "2023-01-01", "2023-01-02")
+        val expectedTask = Task(
+            taskId,
+            projectId,
+            name,
+            description,
+            TaskStatus.DONE,
+            TaskUrgency.URGENT,
+            TaskComplexity.HARD,
+            true,
+            "2023-01-01",
+            "2023-01-02",
+            null,
+            null
+        )
         whenever(projectRepository.updateTask(projectId, taskId, name, urgency, complexity, status, description))
             .thenReturn(Result.success(expectedTask))
 

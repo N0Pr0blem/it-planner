@@ -2,13 +2,17 @@ package com.example.planner.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.planner.data.model.task.TaskComplexity
-import com.example.planner.data.model.task.TaskUrgency
-import com.example.planner.data.repository.TaskRepository
+import com.example.planner.domain.model.TaskComplexity
+import com.example.planner.domain.model.TaskUrgency
+import com.example.planner.domain.usecase.CreateTaskUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 data class CreateTaskUiState(
     val isLoading: Boolean = false,
@@ -16,8 +20,10 @@ data class CreateTaskUiState(
     val error: String? = null
 )
 
-class CreateTaskViewModel : ViewModel() {
-    private val repository = TaskRepository()
+@HiltViewModel
+class CreateTaskViewModel @Inject constructor(
+    private val createTaskUseCase: CreateTaskUseCase
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CreateTaskUiState())
     val uiState: StateFlow<CreateTaskUiState> = _uiState.asStateFlow()
@@ -31,17 +37,26 @@ class CreateTaskViewModel : ViewModel() {
     ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            repository.createTask(projectId, title, priority, complexity, description)
+            val createResult = withContext(Dispatchers.IO) {
+                createTaskUseCase(
+                    projectId,
+                    title,
+                    description,
+                    priority,
+                    complexity
+                )
+            }
+            createResult
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(isLoading = false, taskCreated = true)
                 }
                 .onFailure { e ->
                     val errorMessage = when (e) {
                         is com.example.planner.domain.exception.ValidationException -> e.message
-                        is com.example.planner.domain.exception.NetworkException -> "Network error: \${e.message}"
-                        else -> "Failed to create task: \${e.message}"
+                        is com.example.planner.domain.exception.NetworkException -> "Network error: ${e.message}"
+                        else -> "Failed to create task: ${e.message}"
                     }
-                    _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = errorMessage)
                 }
         }
     }

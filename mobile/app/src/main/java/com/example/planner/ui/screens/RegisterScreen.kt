@@ -73,7 +73,7 @@ fun RegisterScreen(
     error: String? = null,
     onErrorDismiss: () -> Unit = {}
 ) {
-    var username by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
@@ -126,12 +126,12 @@ fun RegisterScreen(
 
                     Spacer(Modifier.height(40.dp))
 
-                    // --- Username ---
+                    // --- Name ---
                     TextField(
-                        value = username,
-                        onValueChange = { username = it },
+                        value = name,
+                        onValueChange = { name = it },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.Black) },
-                        placeholder = { Text("Username", style = MaterialTheme.typography.bodyMedium.copy(color = Color.DarkGray)) },
+                        placeholder = { Text("Name", style = MaterialTheme.typography.bodyMedium.copy(color = Color.DarkGray)) },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
@@ -189,8 +189,8 @@ fun RegisterScreen(
             }
 
             Button(
-                onClick = { onRegister(username, email, password) },
-                enabled = username.isNotBlank() && email.isNotBlank() && password.isNotBlank() && !isLoading,
+                onClick = { onRegister(email, name, password) },
+                enabled = name.isNotBlank() && email.isNotBlank() && password.isNotBlank() && !isLoading,
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(GreenButton),
                 elevation = ButtonDefaults.buttonElevation(0.dp),

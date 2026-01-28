@@ -1,8 +1,11 @@
 package com.example.planner.domain.repository
 
 import com.example.planner.domain.model.Project
+import com.example.planner.domain.model.ProjectRole
 import com.example.planner.domain.model.Task
-import com.example.planner.domain.model.User
+import com.example.planner.domain.model.ProjectMember
+import com.example.planner.domain.model.TaskComplexity
+import com.example.planner.domain.model.TaskUrgency
 
 interface ProjectRepository {
     suspend fun getProjects(): Result<List<Project>>
@@ -17,16 +20,16 @@ interface ProjectRepository {
         projectId: Long,
         name: String,
         description: String,
-        urgency: String,
-        complexity: String
+        urgency: TaskUrgency,
+        complexity: TaskComplexity
     ): Result<Task>
     
     suspend fun updateTask(
         projectId: Long,
         taskId: Long,
         name: String? = null,
-        urgency: String? = null,
-        complexity: String? = null,
+        urgency: TaskUrgency? = null,
+        complexity: TaskComplexity? = null,
         status: String? = null,
         description: String? = null
     ): Result<Task>
@@ -34,8 +37,8 @@ interface ProjectRepository {
     suspend fun deleteTask(projectId: Long, taskId: Long): Result<Unit>
     
     // Employees
-    suspend fun getProjectEmployees(projectId: Long): Result<List<User>>
-    suspend fun inviteEmployee(projectId: Long, username: String, role: String): Result<User>
+    suspend fun getProjectEmployees(projectId: Long): Result<List<ProjectMember>>
+    suspend fun inviteEmployee(projectId: Long, username: String, role: ProjectRole): Result<ProjectMember>
     suspend fun deleteEmployee(projectId: Long, employeeId: Long): Result<Unit>
-    suspend fun updateEmployeeRole(projectId: Long, employeeId: Long, role: String): Result<User>
+    suspend fun updateEmployeeRole(projectId: Long, employeeId: Long, role: ProjectRole): Result<ProjectMember>
 }

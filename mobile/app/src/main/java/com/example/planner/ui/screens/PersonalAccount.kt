@@ -1,9 +1,11 @@
 package com.example.planner.ui.screens
 
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -12,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Folder
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Work
@@ -21,12 +22,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,12 +33,11 @@ import androidx.compose.ui.unit.sp
 import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
-import com.example.planner.data.model.task.TaskStatus
-private enum class EditField { Login, Password }
+import com.example.planner.domain.model.TaskStatus
+import com.example.planner.ui.extensions.dotColor
+import com.example.planner.ui.extensions.title
 
-// ===== Заглушки данных для блоков снизу (private — не конфликтуют и не ломают проект) =====
 data class AccountProjectItem(val id: String, val name: String)
-
 
 data class AccountTaskItem(val id: String, val title: String, val status: TaskStatus)
 
@@ -47,57 +45,46 @@ data class AccountTaskItem(val id: String, val title: String, val status: TaskSt
 fun PersonalAccountScreen(
     myProjects: List<AccountProjectItem> = emptyList(),
     myTasks: List<AccountTaskItem> = emptyList(),
-    savedLogin: String = "",
-    savedPassword: String = "",
+    profileName: String = "",
+    email: String = "",
+    profileImageBase64: String? = null,
+    selectedPhotoBytes: ByteArray? = null,
+    initialFirstName: String = "",
+    initialLastName: String = "",
+    initialSecondName: String = "",
     onProjectsClick: () -> Unit = {},
     onLogout: () -> Unit = {},
-    onSaveProfile: (String, String) -> Unit = { _, _ -> }
+    onPickPhoto: () -> Unit = {},
+    onSaveProfile: (String?, String?) -> Unit = { _, _ -> },
+    onCancelEdit: () -> Unit = {}
 ) {
-    // "сохранённые" значения
-    var savedLoginState by remember { mutableStateOf(savedLogin) }
-    var savedPasswordState by remember { mutableStateOf(savedPassword) }
-
-    // значения в полях (редактируемые)
-    var login by remember { mutableStateOf(savedLoginState) }
-    var password by remember { mutableStateOf(savedPasswordState) }
-
-    // режим редактирования + какое поле нужно сфокусировать
+    var lastName by remember(initialLastName) { mutableStateOf(initialLastName) }
+    var secondName by remember(initialSecondName) { mutableStateOf(initialSecondName) }
     var isEditing by remember { mutableStateOf(false) }
-    var focusField by remember { mutableStateOf<EditField?>(null) }
 
-    val loginFocus = remember { FocusRequester() }
-    val passFocus = remember { FocusRequester() }
-
-    LaunchedEffect(isEditing, focusField) {
-        if (isEditing) {
-            when (focusField) {
-                EditField.Login -> loginFocus.requestFocus()
-                EditField.Password -> passFocus.requestFocus()
-                null -> Unit
-            }
-        }
-    }
-
-    fun startEditing(field: EditField) {
-        login = savedLoginState
-        password = savedPasswordState
+    fun startEditing() {
+        lastName = initialLastName
+        secondName = initialSecondName
         isEditing = true
-        focusField = field
     }
 
     fun cancelEditing() {
-        login = savedLoginState
-        password = savedPasswordState
+        lastName = initialLastName
+        secondName = initialSecondName
         isEditing = false
-        focusField = null
+        onCancelEdit()
     }
 
     fun saveEditing() {
-        savedLoginState = login
-        savedPasswordState = password
         isEditing = false
-        focusField = null
-        onSaveProfile(login, password)
+        onSaveProfile(lastName.trim(), secondName.trim())
+    }
+
+    val profileBitmap = remember(profileImageBase64, selectedPhotoBytes) {
+        val bytes = selectedPhotoBytes ?: runCatching {
+            profileImageBase64?.let { Base64.decode(it, Base64.DEFAULT) }
+        }.getOrNull()
+        bytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
     }
 
     val scroll = rememberScrollState()
@@ -108,18 +95,14 @@ fun PersonalAccountScreen(
             .fillMaxSize()
             .background(BlueBackground)
     ) {
-        // ===== ВЕСЬ КОНТЕНТ С УЧЁТОМ НИЖНЕГО МЕНЮ =====
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
-                // ключевое: резервируем место под нижнее меню,
-                // чтобы карточки никогда под него не залезали
                 .padding(bottom = bottomBarHeight + 16.dp)
         ) {
             Spacer(Modifier.height(48.dp))
 
-            // -------- Header --------
             Row(
                 modifier = Modifier
                     .fillMaxWidth(0.9f),
@@ -134,24 +117,33 @@ fun PersonalAccountScreen(
                             .background(Color.White.copy(alpha = 0.1f)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(32.dp)
-                        )
+                        if (profileBitmap != null) {
+                            Image(
+                                bitmap = profileBitmap.asImageBitmap(),
+                                contentDescription = "Profile photo",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     }
                     Spacer(Modifier.width(16.dp))
                     Column {
                         Text(
-                            "Personal account",
+                            if (profileName.isNotBlank()) profileName else "Profile",
                             color = Color.White,
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 18.sp
                         )
                         Text(
-                            "Email@gmail.com",
+                            if (email.isNotBlank()) email else "Email",
                             color = Color.White.copy(alpha = 0.8f),
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.Medium,
@@ -170,7 +162,6 @@ fun PersonalAccountScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // -------- Scroll area (форма + списки) --------
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
@@ -178,9 +169,24 @@ fun PersonalAccountScreen(
                     .verticalScroll(scroll),
                 horizontalAlignment = Alignment.Start
             ) {
-                // -------- Login --------
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = { if (isEditing) cancelEditing() else startEditing() }) {
+                        Text(
+                            if (isEditing) "Cancel" else "Edit profile",
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
                 Text(
-                    "Login",
+                    "First name",
                     color = Color.White,
                     modifier = Modifier.padding(start = 14.dp),
                     fontFamily = NunitoFamily,
@@ -188,50 +194,31 @@ fun PersonalAccountScreen(
                     fontSize = 16.sp
                 )
                 Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = initialFirstName,
+                    onValueChange = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.White) },
+                    singleLine = true,
+                    readOnly = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
+                        disabledTextColor = Color.White
+                    ),
+                    textStyle = LocalTextStyle.current.copy(
+                        fontFamily = NunitoFamily,
+                        fontSize = 16.sp
+                    ),
+                    shape = RoundedCornerShape(15.dp)
+                )
 
-                Box {
-                    OutlinedTextField(
-                        value = login,
-                        onValueChange = { login = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(loginFocus)
-                            .padding(top = 4.dp),
-                        leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.White) },
-                        singleLine = true,
-                        readOnly = !isEditing,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
-                            cursorColor = Color.White,
-                            disabledTextColor = Color.White
-                        ),
-                        textStyle = LocalTextStyle.current.copy(
-                            fontFamily = NunitoFamily,
-                            fontSize = 16.sp
-                        ),
-                        shape = RoundedCornerShape(15.dp)
-                    )
+                Spacer(Modifier.height(20.dp))
 
-                    if (!isEditing) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) { startEditing(EditField.Login) }
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(26.dp))
-
-                // -------- Password --------
                 Text(
-                    "Password",
+                    "Last name",
                     color = Color.White,
                     modifier = Modifier.padding(start = 14.dp),
                     fontFamily = NunitoFamily,
@@ -239,158 +226,93 @@ fun PersonalAccountScreen(
                     fontSize = 16.sp
                 )
                 Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.White) },
+                    singleLine = true,
+                    readOnly = !isEditing,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
+                        cursorColor = Color.White,
+                        disabledTextColor = Color.White
+                    ),
+                    textStyle = LocalTextStyle.current.copy(
+                        fontFamily = NunitoFamily,
+                        fontSize = 16.sp
+                    ),
+                    shape = RoundedCornerShape(15.dp)
+                )
 
-                Box {
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        leadingIcon = { Icon(Icons.Default.Lock, null, tint = Color.White) },
-                        singleLine = true,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(passFocus)
-                            .padding(top = 4.dp),
-                        readOnly = !isEditing,
-                        visualTransformation = if (isEditing) VisualTransformation.None else PasswordVisualTransformation(),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White,
-                            focusedBorderColor = Color.White,
-                            unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
-                            cursorColor = Color.White,
-                            disabledTextColor = Color.White
-                        ),
-                        textStyle = LocalTextStyle.current.copy(
-                            fontFamily = NunitoFamily,
-                            fontSize = 16.sp
-                        ),
-                        shape = RoundedCornerShape(15.dp)
-                    )
+                Spacer(Modifier.height(20.dp))
 
-                    if (!isEditing) {
-                        Box(
-                            modifier = Modifier
-                                .matchParentSize()
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() },
-                                    indication = null
-                                ) { startEditing(EditField.Password) }
-                        )
-                    }
-                }
+                Text(
+                    "Patronymic",
+                    color = Color.White,
+                    modifier = Modifier.padding(start = 14.dp),
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = secondName,
+                    onValueChange = { secondName = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { Icon(Icons.Default.Person, null, tint = Color.White) },
+                    singleLine = true,
+                    readOnly = !isEditing,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedBorderColor = Color.White,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.6f),
+                        cursorColor = Color.White,
+                        disabledTextColor = Color.White
+                    ),
+                    textStyle = LocalTextStyle.current.copy(
+                        fontFamily = NunitoFamily,
+                        fontSize = 16.sp
+                    ),
+                    shape = RoundedCornerShape(15.dp)
+                )
 
-                // -------- Save / Cancel --------
                 if (isEditing) {
-                    Spacer(Modifier.height(18.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(14.dp)
+                    Spacer(Modifier.height(16.dp))
+                    TextButton(onClick = onPickPhoto) {
+                        Text(
+                            "Change photo",
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick = { saveEditing() },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.White),
+                        elevation = ButtonDefaults.buttonElevation(0.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(44.dp)
                     ) {
-                        Button(
-                            onClick = { saveEditing() },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
-                            elevation = ButtonDefaults.buttonElevation(0.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(44.dp)
-                        ) {
-                            Text(
-                                "Save",
-                                color = Color.Black,
-                                fontFamily = NunitoFamily,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
-
-                        Button(
-                            onClick = { cancelEditing() },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                            elevation = ButtonDefaults.buttonElevation(0.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(44.dp)
-                        ) {
-                            Text(
-                                "Cancel",
-                                color = Color.White,
-                                fontFamily = NunitoFamily,
-                                fontWeight = FontWeight.Medium
-                            )
-                        }
+                        Text(
+                            "Save",
+                            color = Color.Black,
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.Medium
+                        )
                     }
                 }
 
-                            Spacer(Modifier.height(22.dp))
-                Text(
-                    text = "My projects",
-                    color = Color.White,
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(start = 6.dp)
-                )
-                Spacer(Modifier.height(10.dp))
-
-                myProjects.forEach { p ->
-                    AccountProjectRow(title = p.name, modifier = Modifier.fillMaxWidth())
-                    Spacer(Modifier.height(12.dp))
-                }
-
-                // ====== My tasks ======
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "My tasks",
-                    color = Color.White,
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
-                    modifier = Modifier.padding(start = 6.dp)
-                )
-                Spacer(Modifier.height(10.dp))
-
-                myTasks.forEach { t ->
-                    AccountTaskRow(title = t.title, status = t.status, modifier = Modifier.fillMaxWidth())
-                    Spacer(Modifier.height(12.dp))
-                }
-
-    // ====== My projects ======
-                if (myProjects.isNotEmpty()) {
-                    Spacer(Modifier.height(22.dp))
-                    Text(
-                        text = "My projects",
-                        color = Color.White,
-                        fontFamily = NunitoFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                    Spacer(Modifier.height(10.dp))
-
-                    myProjects.forEach { p ->
-                        AccountProjectRow(title = p.name, modifier = Modifier.fillMaxWidth())
-                        Spacer(Modifier.height(12.dp))
-                    }
-                }
-                if (myTasks.isNotEmpty()) {
-                    Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = "My tasks",
-                        color = Color.White,
-                        fontFamily = NunitoFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(start = 6.dp)
-                    )
-                    Spacer(Modifier.height(10.dp))
-
-                    myTasks.forEach { t ->
-                        AccountTaskRow(title = t.title, status = t.status, modifier = Modifier.fillMaxWidth())
-                        Spacer(Modifier.height(12.dp))
-                    }
-                }
                 Spacer(Modifier.height(22.dp))
+
                 Text(
                     text = "My projects",
                     color = Color.White,
@@ -406,7 +328,6 @@ fun PersonalAccountScreen(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                // ====== My tasks ======
                 Spacer(Modifier.height(8.dp))
                 Text(
                     text = "My tasks",
@@ -423,12 +344,10 @@ fun PersonalAccountScreen(
                     Spacer(Modifier.height(12.dp))
                 }
 
-                // небольшой хвост, чтобы последняя карточка красиво отрывалась от низа
                 Spacer(Modifier.height(24.dp))
             }
         }
 
-        // ===== НИЖНЕЕ МЕНЮ ПОВЕРХ (фикс) =====
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -464,7 +383,7 @@ fun PersonalAccountScreen(
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.clickable { /* TODO: go to Settings (Account) */ }
+                    modifier = Modifier.clickable { }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Settings,
@@ -484,8 +403,6 @@ fun PersonalAccountScreen(
         }
     }
 }
-
-// ====== маленькие UI-компоненты для списков ======
 
 @Composable
 private fun AccountProjectRow(
@@ -588,35 +505,31 @@ private fun AccountTaskRow(
 }
 
 @Preview(
-    name = "Personal Account – Default",
+    name = "Personal Account Default",
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
     device = Devices.PIXEL_6
 )
 @Composable
 fun PreviewPersonalAccount() {
-    val sampleProjects = listOf(
-        AccountProjectItem("1", "Arduino"),
-        AccountProjectItem("2", "Planner Mobile"),
-    )
-    val sampleTasks = listOf(
-        AccountTaskItem("1", "PLA-4", TaskStatus.TO_DO),
-        AccountTaskItem("2", "Taska", TaskStatus.REVIEW),
-        AccountTaskItem("3", "PLA", TaskStatus.DONE),
-    )
-    
-    PlannerTheme { 
+    val sampleProjects = listOf(AccountProjectItem("1", "Arduino"))
+    val sampleTasks = listOf(AccountTaskItem("1", "PLA-4", TaskStatus.TO_DO))
+
+    PlannerTheme {
         PersonalAccountScreen(
             myProjects = sampleProjects,
             myTasks = sampleTasks,
-            savedLogin = "PersonLogin",
-            savedPassword = "password123"
+            profileName = "Ivan Petrov",
+            email = "ivan@example.com",
+            initialFirstName = "Ivan",
+            initialLastName = "Petrov",
+            initialSecondName = "Sergeevich"
         )
     }
 }
 
 @Preview(
-    name = "Personal Account – Dark",
+    name = "Personal Account Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,

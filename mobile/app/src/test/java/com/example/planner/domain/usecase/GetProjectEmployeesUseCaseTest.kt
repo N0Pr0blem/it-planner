@@ -1,6 +1,7 @@
 package com.example.planner.domain.usecase
 
-import com.example.planner.domain.model.User
+import com.example.planner.domain.model.ProjectMember
+import com.example.planner.domain.model.ProjectRole
 import com.example.planner.domain.repository.ProjectRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -24,8 +25,8 @@ class GetProjectEmployeesUseCaseTest {
         // Given
         val projectId = 1L
         val expectedEmployees = listOf(
-            User(1, "user1", "John", "Doe", "john@example.com", "profile1.jpg"),
-            User(2, "user2", "Jane", "Smith", "jane@example.com", "profile2.jpg")
+            ProjectMember(1, ProjectRole.BACKEND_DEVELOPER, "John", "Doe", "profile1.jpg"),
+            ProjectMember(2, ProjectRole.TESTER, "Jane", "Smith", "profile2.jpg")
         )
         whenever(projectRepository.getProjectEmployees(projectId)).thenReturn(Result.success(expectedEmployees))
 

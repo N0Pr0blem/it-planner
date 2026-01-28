@@ -2,7 +2,7 @@ package com.example.planner.di
 
 import com.example.planner.domain.model.Project
 import com.example.planner.domain.model.Task
-import com.example.planner.domain.model.User
+import com.example.planner.domain.model.ProjectMember
 
 /**
  * Simple in-memory cache module for better performance
@@ -20,8 +20,8 @@ object CacheModule {
     private val tasksCacheTimestamp = mutableMapOf<Long, Long>()
     private const val TASKS_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
     
-    // Users cache
-    private val usersCache = mutableMapOf<Long, List<User>>()
+    // Project members cache
+    private val usersCache = mutableMapOf<Long, List<ProjectMember>>()
     private val usersCacheTimestamp = mutableMapOf<Long, Long>()
     private const val USERS_CACHE_TTL = 5 * 60 * 1000 // 5 minutes
     
@@ -71,7 +71,7 @@ object CacheModule {
     }
     
     // Users cache operations
-    fun getCachedUsers(projectId: Long): List<User>? {
+    fun getCachedUsers(projectId: Long): List<ProjectMember>? {
         return if (usersCache[projectId] != null && 
             System.currentTimeMillis() - (usersCacheTimestamp[projectId] ?: 0) < USERS_CACHE_TTL) {
             usersCache[projectId]
@@ -80,7 +80,7 @@ object CacheModule {
         }
     }
     
-    fun cacheUsers(projectId: Long, users: List<User>) {
+    fun cacheUsers(projectId: Long, users: List<ProjectMember>) {
         usersCache[projectId] = users
         usersCacheTimestamp[projectId] = System.currentTimeMillis()
     }

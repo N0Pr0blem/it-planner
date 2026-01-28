@@ -7,6 +7,7 @@ import com.squareup.moshi.ToJson
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.Instant
 import java.util.Date
 
 class LocalDateTimeAdapter {
@@ -32,8 +33,16 @@ class LocalDateAdapter {
 
 class DateAdapter {
     @ToJson
-    fun toJson(value: Date): Long = value.time
+    fun toJson(value: Date): String = value.toInstant().toString()
 
     @FromJson
-    fun fromJson(value: Long): Date = Date(value)
+    fun fromJson(value: String): Date {
+        // accept either epoch millis or ISO-8601 string
+        val millis = value.toLongOrNull()
+        return if (millis != null) {
+            Date(millis)
+        } else {
+            Date.from(Instant.parse(value))
+        }
+    }
 }

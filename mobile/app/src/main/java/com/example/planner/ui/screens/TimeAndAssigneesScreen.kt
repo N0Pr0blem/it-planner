@@ -76,10 +76,12 @@ fun TimeAndAssigneesScreen(
     // TODO: сюда потом подключишь реальное добавление записи (бек/вм)
     onAddTimeRecord: (hoursText: String, user: AssigneeUi?) -> Unit = { _, _ -> },
 
+    onAssignResponsible: (AssigneeUi) -> Unit = {},
     onConfirmChanges: () -> Unit = {},
 ) {
     // ===== Bottom sheet state =====
     var showAddSheet by remember { mutableStateOf(false) }
+    var showAssignSheet by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -228,7 +230,7 @@ fun TimeAndAssigneesScreen(
                         iconTint = Color(0xFF16A34A),
                         label = "Responsible",
                         user = responsible,
-                        onClick = { /* TODO */ }
+                        onClick = { showAssignSheet = true }
                     )
                 }
 
@@ -293,6 +295,18 @@ fun TimeAndAssigneesScreen(
                     // TODO: потом подключишь реальное сохранение/обновление
                     onAddTimeRecord(hoursText, user)
                     showAddSheet = false
+                }
+            )
+        }
+
+        if (showAssignSheet) {
+            AssignResponsibleBottomSheet(
+                users = availableUsers,
+                current = responsible,
+                onDismiss = { showAssignSheet = false },
+                onSelect = { user ->
+                    onAssignResponsible(user)
+                    showAssignSheet = false
                 }
             )
         }
@@ -495,6 +509,102 @@ private fun AddTimeRecordBottomSheet(
                         fontWeight = FontWeight.Medium
                     )
                 }
+            }
+
+            Spacer(Modifier.height(18.dp))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AssignResponsibleBottomSheet(
+    users: List<AssigneeUi>,
+    current: AssigneeUi,
+    onDismiss: () -> Unit,
+    onSelect: (AssigneeUi) -> Unit,
+) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var selectedUser by remember { mutableStateOf(current) }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = Color(0xFFF2F2F2),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(top = 10.dp, bottom = 6.dp)
+                    .size(width = 54.dp, height = 6.dp)
+                    .clip(RoundedCornerShape(999.dp))
+                    .background(Color.Black.copy(alpha = 0.12f))
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp, vertical = 8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Assign responsible",
+                    color = Color.Black,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp
+                )
+
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close")
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            users.forEach { user ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { selectedUser = user }
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = user.id == selectedUser.id,
+                        onClick = { selectedUser = user }
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = user.name,
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            Button(
+                onClick = { onSelect(selectedUser) },
+                shape = RoundedCornerShape(14.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenButton),
+                elevation = ButtonDefaults.buttonElevation(0.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = "Assign",
+                    color = Color.White,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.Medium
+                )
             }
 
             Spacer(Modifier.height(18.dp))

@@ -1,4 +1,9 @@
 package com.example.planner.ui.screens
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
+import android.util.Base64
+import android.graphics.BitmapFactory
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
@@ -22,7 +27,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -50,6 +54,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.planner.domain.model.ProjectRole
 import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
@@ -59,8 +64,12 @@ data class ProjectUserUi(
     val id: String,
     val fullName: String,
     val roleInProject: String,
+    val role: ProjectRole,
     val firstName: String,
     val lastName: String,
+    val username: String? = null,
+    val userId: Long? = null,
+    val profileImageBase64: String? = null,
 )
 
 @Composable
@@ -69,17 +78,28 @@ fun ProjectUserDetailsScreen(
         id = "5",
         fullName = "Olga Sliapitsa",
         roleInProject = "Backend Developer",
+        role = ProjectRole.BACKEND_DEVELOPER,
         firstName = "Olga",
-        lastName = "Sliapitsa"
+        lastName = "Sliapitsa",
+        username = "olga@example.com",
+        userId = 5L,
+        profileImageBase64 = null
     ),
-    onBack: () -> Unit = {},            // TODO: навигация назад
-    onKickFromProject: () -> Unit = {}, // TODO: выгнать из проекта (подтверждение сделаете позже)
+    onBack: () -> Unit = {},
+    onKickFromProject: () -> Unit = {},
     onOpenMenuAction: (String) -> Unit = {}, // TODO: действия из меню (например "Edit", "Copy id" и т.п.)
+    onSaveRole: (ProjectRole) -> Unit = {},
 ) {
+    val profileBitmap = remember(user.profileImageBase64) {
+        val bytes = user.profileImageBase64?.let {
+            runCatching { Base64.decode(it, Base64.DEFAULT) }.getOrNull()
+        }
+        bytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+    }
     var role by remember { mutableStateOf(user.roleInProject) }
+    var roleFieldExpanded by remember { mutableStateOf(false) }
+    var selectedRole by remember { mutableStateOf(user.role) }
     var isEditingRole by remember { mutableStateOf(false) }
-
-    var menuExpanded by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -113,49 +133,6 @@ fun ProjectUserDetailsScreen(
                     )
                 }
 
-                Text(
-                    text = user.fullName,
-                    color = Color.White,
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp
-                )
-
-                Box {
-                    IconButton(
-                        onClick = { menuExpanded = true },
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Color.White.copy(alpha = 0.12f))
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreVert,
-                            contentDescription = "Menu",
-                            tint = Color.White
-                        )
-                    }
-
-                    DropdownMenu(
-                        expanded = menuExpanded,
-                        onDismissRequest = { menuExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("TODO: Edit", fontFamily = NunitoFamily) },
-                            onClick = {
-                                menuExpanded = false
-                                onOpenMenuAction("edit")
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("TODO: Copy ID", fontFamily = NunitoFamily) },
-                            onClick = {
-                                menuExpanded = false
-                                onOpenMenuAction("copy_id")
-                            }
-                        )
-                    }
-                }
             }
 
             Spacer(Modifier.height(22.dp))
@@ -172,13 +149,24 @@ fun ProjectUserDetailsScreen(
                         .background(Color.White.copy(alpha = 0.12f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = user.fullName.firstOrNull()?.uppercase() ?: "",
-                        color = Color.White,
-                        fontFamily = NunitoFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 34.sp
-                    )
+                    if (profileBitmap != null) {
+                        Image(
+                            bitmap = profileBitmap.asImageBitmap(),
+                            contentDescription = "Profile photo",
+                            modifier = Modifier
+                                .size(104.dp)
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = user.fullName.firstOrNull()?.uppercase() ?: "",
+                            color = Color.White,
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 34.sp
+                        )
+                    }
                 }
 
                 Spacer(Modifier.height(14.dp))
@@ -228,9 +216,12 @@ fun ProjectUserDetailsScreen(
                             onValueChange = { role = it },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            readOnly = !isEditingRole,
+                            readOnly = true,
                             trailingIcon = {
-                                IconButton(onClick = { isEditingRole = true }) {
+                                IconButton(onClick = {
+                                    isEditingRole = true
+                                    roleFieldExpanded = true
+                                }) {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
                                         contentDescription = "Edit role",
@@ -253,7 +244,23 @@ fun ProjectUserDetailsScreen(
                             shape = RoundedCornerShape(14.dp)
                         )
 
-                        // тап по всему полю -> включить редактирование (как в твоем PersonalAccount)
+                        DropdownMenu(
+                            expanded = roleFieldExpanded && isEditingRole,
+                            onDismissRequest = { roleFieldExpanded = false }
+                        ) {
+                            ProjectRole.values().forEach { candidate ->
+                                DropdownMenuItem(
+                                    text = { Text(formatRole(candidate), fontFamily = NunitoFamily) },
+                                    onClick = {
+                                        selectedRole = candidate
+                                        role = formatRole(candidate)
+                                        roleFieldExpanded = false
+                                    }
+                                )
+                            }
+                        }
+
+                        // 'click to edit' overlay for read-only state
                         if (!isEditingRole) {
                             Box(
                                 modifier = Modifier
@@ -261,12 +268,23 @@ fun ProjectUserDetailsScreen(
                                     .clickable(
                                         interactionSource = remember { MutableInteractionSource() },
                                         indication = null
-                                    ) { isEditingRole = true }
+                                    ) {
+                                        isEditingRole = true
+                                        roleFieldExpanded = true
+                                    }
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) { roleFieldExpanded = true }
                             )
                         }
                     }
 
-                    // маленькая подсказка
                     if (isEditingRole) {
                         Spacer(Modifier.height(10.dp))
                         Row(
@@ -275,8 +293,9 @@ fun ProjectUserDetailsScreen(
                         ) {
                             Button(
                                 onClick = {
-                                    // TODO: сохранить роль на бэк
+                                    onSaveRole(selectedRole)
                                     isEditingRole = false
+                                    roleFieldExpanded = false
                                 },
                                 modifier = Modifier
                                     .weight(1f)
@@ -296,7 +315,9 @@ fun ProjectUserDetailsScreen(
                             Button(
                                 onClick = {
                                     role = user.roleInProject
+                                    selectedRole = user.role
                                     isEditingRole = false
+                                    roleFieldExpanded = false
                                 },
                                 modifier = Modifier
                                     .weight(1f)
@@ -380,6 +401,14 @@ private fun InfoField(
         }
     }
 }
+
+private fun formatRole(role: ProjectRole): String {
+    return role.name
+        .lowercase()
+        .split('_')
+        .joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
+}
+
 
 @Preview(
     name = "Project User Details – Default",

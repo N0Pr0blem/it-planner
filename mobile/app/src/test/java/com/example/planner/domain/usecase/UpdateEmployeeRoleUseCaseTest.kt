@@ -1,11 +1,10 @@
 package com.example.planner.domain.usecase
 
-import com.example.planner.domain.exception.ValidationException
-import com.example.planner.domain.model.User
+import com.example.planner.domain.model.ProjectMember
+import com.example.planner.domain.model.ProjectRole
 import com.example.planner.domain.repository.ProjectRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
@@ -26,8 +25,8 @@ class UpdateEmployeeRoleUseCaseTest {
         // Given
         val projectId = 1L
         val employeeId = 1L
-        val role = "ADMIN"
-        val expectedUser = User(employeeId, "testuser", "Test", "User", "test@example.com", "profile.jpg")
+        val role = ProjectRole.PROJECT_MANAGER
+        val expectedUser = ProjectMember(employeeId, ProjectRole.PROJECT_MANAGER, "Test", "User", "profile.jpg")
         whenever(projectRepository.updateEmployeeRole(projectId, employeeId, role))
             .thenReturn(Result.success(expectedUser))
 
@@ -40,43 +39,11 @@ class UpdateEmployeeRoleUseCaseTest {
     }
 
     @Test
-    fun `invoke should return error when role is empty`() = runTest {
-        // Given
-        val projectId = 1L
-        val employeeId = 1L
-        val emptyRole = ""
-
-        // When
-        val result = updateEmployeeRoleUseCase(projectId, employeeId, emptyRole)
-
-        // Then
-        assert(result.isFailure)
-        assertTrue(result.exceptionOrNull() is ValidationException)
-        assertEquals("Role cannot be empty", result.exceptionOrNull()?.message)
-    }
-
-    @Test
-    fun `invoke should return error when role is too long`() = runTest {
-        // Given
-        val projectId = 1L
-        val employeeId = 1L
-        val longRole = "a".repeat(51)
-
-        // When
-        val result = updateEmployeeRoleUseCase(projectId, employeeId, longRole)
-
-        // Then
-        assert(result.isFailure)
-        assertTrue(result.exceptionOrNull() is ValidationException)
-        assertEquals("Role cannot exceed 50 characters", result.exceptionOrNull()?.message)
-    }
-
-    @Test
     fun `invoke should return error when repository fails`() = runTest {
         // Given
         val projectId = 1L
         val employeeId = 1L
-        val role = "ADMIN"
+        val role = ProjectRole.PROJECT_MANAGER
         val expectedError = Exception("Failed to update employee role")
         whenever(projectRepository.updateEmployeeRole(projectId, employeeId, role))
             .thenReturn(Result.failure(expectedError))

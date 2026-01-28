@@ -36,6 +36,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.ui.window.Dialog
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -73,35 +74,29 @@ data class RepoFileUi(
     val filename: String,
 )
 
-/**
- * Экран "Repository" (файлы проекта) — чистая верстка.
- *
- * Внизу: проектное меню 3 вкладки (Tasks / Members / Repository).
- * Навигации нет — все действия через TODO колбэки.
- *
- * ВАЖНО: ProjectTab должен быть объявлен ОДИН раз в проекте (Tasks/Members/Repository),
- * иначе будет Redeclaration.
- */
 @Composable
 fun ProjectRepositoryScreen(
     projectName: String,
     files: List<RepoFileUi>,
     activeTab: ProjectTab = ProjectTab.Repository,
     onTabChange: (ProjectTab) -> Unit = {},
+    onBack: () -> Unit = {},
+    onAddMember: () -> Unit = {},
+    onFileClick: (RepoFileUi) -> Unit = {},
+    onDeleteFile: (RepoFileUi) -> Unit = {},
 
-    onBack: () -> Unit = {},                 // TODO: назад к проекту/списку
-    onAddMember: () -> Unit = {},            // TODO: открыть экран добавления участника
-    onFileClick: (RepoFileUi) -> Unit = {},  // TODO: открыть файл
-    onDeleteFile: (RepoFileUi) -> Unit = {}, // TODO: удалить файл
-
-    onPickFile: () -> Unit = {},             // TODO: открыть системный picker
-    onUploadFile: (String) -> Unit = {},     // TODO: загрузить выбранный файл (передай имя/uri как решите)
+    selectedFilename: String? = null,
+    isLoading: Boolean = false,
+    error: String? = null,
+    onErrorDismiss: () -> Unit = {},
+    onClearPickedFile: () -> Unit = {},
+    onPickFile: () -> Unit = {},
+    onUploadFile: () -> Unit = {},
 ) {
     val bottomBarHeight = 160.dp
 
     var query by remember { mutableStateOf("") }
     var showUploadDialog by remember { mutableStateOf(false) }
-    var selectedFilename by remember { mutableStateOf<String?>(null) }
 
     var deleteConfirmFor by remember { mutableStateOf<RepoFileUi?>(null) }
 
@@ -186,6 +181,34 @@ fun ProjectRepositoryScreen(
                 )
             }
 
+            if (error != null) {
+                item {
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFE4E6)),
+                        elevation = CardDefaults.cardElevation(0.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = error,
+                                color = Color(0xFF991B1B),
+                                fontFamily = NunitoFamily,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = onErrorDismiss) {
+                                Icon(Icons.Default.Close, contentDescription = "Dismiss error", tint = Color(0xFF991B1B))
+                            }
+                        }
+                    }
+                }
+            }
+
             // ---- Search ----
             item {
                 OutlinedTextField(
@@ -196,7 +219,7 @@ fun ProjectRepositoryScreen(
                     },
                     placeholder = {
                         Text(
-                            "Search files…",
+                            "Search files",
                             fontFamily = NunitoFamily,
                             color = Color(0xFF2D5178).copy(alpha = 0.55f)
                         )
@@ -239,13 +262,20 @@ fun ProjectRepositoryScreen(
                 }
             }
         }
-
+        if (isLoading) {
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .fillMaxWidth(),
+                color = GreenButton
+            )
+        }
         // ===== FAB (+) =====
         FloatingActionButton(
             onClick = {
                 // TODO: открыть диалог загрузки
                 showUploadDialog = true
-                selectedFilename = null
+                onClearPickedFile()
             },
             containerColor = GreenButton,
             modifier = Modifier
@@ -272,26 +302,20 @@ fun ProjectRepositoryScreen(
             UploadFileDialog(
                 selectedFilename = selectedFilename,
                 onPick = {
-                    // TODO: открыть file picker
                     onPickFile()
-
-                    // демо-заглушка, чтобы было видно состояние выбора:
-                    if (selectedFilename == null) selectedFilename = "english cv.docx"
                 },
                 onCancel = {
                     showUploadDialog = false
-                    selectedFilename = null
+                    onClearPickedFile()
                 },
                 onUpload = {
-                    val name = selectedFilename ?: return@UploadFileDialog
-                    // TODO: загрузить файл в проект
-                    onUploadFile(name)
+                    onUploadFile()
                     showUploadDialog = false
-                    selectedFilename = null
+                    onClearPickedFile()
                 },
                 onClose = {
                     showUploadDialog = false
-                    selectedFilename = null
+                    onClearPickedFile()
                 }
             )
         }
@@ -446,7 +470,7 @@ private fun UploadFileDialog(
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = selectedFilename ?: "Choose file…",
+                            text = selectedFilename ?: "Choose file",
                             color = Color(0xFF111827).copy(alpha = if (selectedFilename == null) 0.45f else 1f),
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.Medium,
@@ -627,7 +651,7 @@ private fun ProjectBottomItem(
 // ===== PREVIEW =====
 
 @Preview(
-    name = "Project Repository – Default",
+    name = "Project Repository - Default",
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
     device = Devices.PIXEL_6
@@ -648,7 +672,7 @@ private fun PreviewProjectRepository() {
 }
 
 @Preview(
-    name = "Project Repository – Dark",
+    name = "Project Repository - Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
@@ -658,3 +682,12 @@ private fun PreviewProjectRepository() {
 private fun PreviewProjectRepositoryDark() {
     PlannerTheme { PreviewProjectRepository() }
 }
+
+
+
+
+
+
+
+
+

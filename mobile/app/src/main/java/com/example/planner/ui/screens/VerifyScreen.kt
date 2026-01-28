@@ -2,6 +2,7 @@ package com.example.planner.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -26,10 +27,11 @@ import androidx.compose.material3.Divider
 
 @Composable
 fun VerifyScreen(
-    onVerify: () -> Unit = {},
-    onResend: () -> Unit = {}
+    onVerify: (String) -> Unit = {},
+    onResend: () -> Unit = {},
+    isLoading: Boolean = false
 ) {
-    var code by remember { mutableStateOf(List(6) { "" }) }
+    var code by remember { mutableStateOf(List(4) { "" }) }
 
     Box(
         modifier = Modifier
@@ -90,12 +92,12 @@ fun VerifyScreen(
                                     }
                                 },
                                 modifier = Modifier
-                                    .width(40.dp)
-                                    .height(55.dp)
+                                    .width(52.dp)
+                                    .height(62.dp)
                                     .background(Color(0xFFEAEAEA), RoundedCornerShape(6.dp)), // 👈 серый фон
                                 singleLine = true,
                                 textStyle = LocalTextStyle.current.copy(
-                                    fontSize = 20.sp,
+                                    fontSize = 22.sp,
                                     textAlign = TextAlign.Center,
                                     fontFamily = NunitoFamily,
                                     fontWeight = FontWeight.Bold
@@ -124,7 +126,8 @@ fun VerifyScreen(
 
             // --- Кнопка Verify ---
             Button(
-                onClick = onVerify,
+                onClick = { onVerify(code.joinToString("")) },
+                enabled = !isLoading && code.all { it.length == 1 },
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(GreenButton),
                 elevation = ButtonDefaults.buttonElevation(0.dp),
@@ -147,12 +150,20 @@ fun VerifyScreen(
 
             Text(
                 text = "Resend code",
-                color = Color(0xFFBBBBBB),
+                color = if (isLoading) Color(0xFFBBBBBB) else Color.White,
                 fontFamily = NunitoFamily,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium,
-                textDecoration = TextDecoration.None,
-                modifier = Modifier.shadow(2.dp, spotColor = Color.Black)
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier
+                    .shadow(2.dp, spotColor = Color.Black)
+                    .then(
+                        if (isLoading) {
+                            Modifier
+                        } else {
+                            Modifier.clickable { onResend() }
+                        }
+                    )
             )
         }
     }

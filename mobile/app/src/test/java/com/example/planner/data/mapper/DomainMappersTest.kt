@@ -63,6 +63,15 @@ class DomainMappersTest {
             assignBy = "testuser",
             assignByImage = "profile.jpg"
         )
+        val expectedAssignedBy = User(
+            id = 0,
+            username = "",
+            firstName = "testuser",
+            secondName = null,
+            lastName = null,
+            email = null,
+            profileImageUrl = "profile.jpg"
+        )
 
         // When
         val result = dto.toDomain()
@@ -78,7 +87,7 @@ class DomainMappersTest {
         assertEquals(true, result.isCompleted)
         assertEquals("", result.createdAt)
         assertEquals("", result.updatedAt)
-        assertEquals(null, result.assignedBy)
+        assertEquals(expectedAssignedBy, result.assignedBy)
         assertEquals(null, result.assignedTo)
     }
 

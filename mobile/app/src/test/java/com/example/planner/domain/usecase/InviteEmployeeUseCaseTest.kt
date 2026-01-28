@@ -1,7 +1,8 @@
 package com.example.planner.domain.usecase
 
 import com.example.planner.domain.exception.ValidationException
-import com.example.planner.domain.model.User
+import com.example.planner.domain.model.ProjectRole
+import com.example.planner.domain.model.ProjectMember
 import com.example.planner.domain.repository.ProjectRepository
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -26,8 +27,8 @@ class InviteEmployeeUseCaseTest {
         // Given
         val projectId = 1L
         val username = "testuser"
-        val role = "DEVELOPER"
-        val expectedUser = User(1, username, "Test", "User", "test@example.com", "profile.jpg")
+        val role = ProjectRole.BACKEND_DEVELOPER
+        val expectedUser = ProjectMember(1, ProjectRole.BACKEND_DEVELOPER, "Test", "User", "profile.jpg")
         whenever(projectRepository.inviteEmployee(projectId, username, role))
             .thenReturn(Result.success(expectedUser))
 
@@ -44,7 +45,7 @@ class InviteEmployeeUseCaseTest {
         // Given
         val projectId = 1L
         val emptyUsername = ""
-        val role = "DEVELOPER"
+        val role = ProjectRole.BACKEND_DEVELOPER
 
         // When
         val result = inviteEmployeeUseCase(projectId, emptyUsername, role)
@@ -60,7 +61,7 @@ class InviteEmployeeUseCaseTest {
         // Given
         val projectId = 1L
         val longUsername = "a".repeat(51)
-        val role = "DEVELOPER"
+        val role = ProjectRole.BACKEND_DEVELOPER
 
         // When
         val result = inviteEmployeeUseCase(projectId, longUsername, role)
@@ -72,27 +73,11 @@ class InviteEmployeeUseCaseTest {
     }
 
     @Test
-    fun `invoke should return error when role is empty`() = runTest {
-        // Given
-        val projectId = 1L
-        val username = "testuser"
-        val emptyRole = ""
-
-        // When
-        val result = inviteEmployeeUseCase(projectId, username, emptyRole)
-
-        // Then
-        assert(result.isFailure)
-        assertTrue(result.exceptionOrNull() is ValidationException)
-        assertEquals("Role cannot be empty", result.exceptionOrNull()?.message)
-    }
-
-    @Test
     fun `invoke should return error when repository fails`() = runTest {
         // Given
         val projectId = 1L
         val username = "testuser"
-        val role = "DEVELOPER"
+        val role = ProjectRole.BACKEND_DEVELOPER
         val expectedError = Exception("Failed to invite employee")
         whenever(projectRepository.inviteEmployee(projectId, username, role))
             .thenReturn(Result.failure(expectedError))

@@ -2,6 +2,8 @@ package com.example.planner.data.network
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Base64
+import org.json.JSONObject
 import java.util.Date
 
 object TokenManager {
@@ -25,6 +27,20 @@ object TokenManager {
 
     fun getToken(): String? {
         return prefs?.getString(KEY_TOKEN, null)
+    }
+
+    fun getUserIdFromToken(): Long? {
+        val token = getToken() ?: return null
+        val parts = token.split(".")
+        if (parts.size < 2) return null
+        return try {
+            val payload = parts[1]
+            val decoded = Base64.decode(payload, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+            val json = JSONObject(String(decoded, Charsets.UTF_8))
+            json.optString("sub").toLongOrNull()
+        } catch (_: Exception) {
+            null
+        }
     }
 
     fun isTokenValid(): Boolean {

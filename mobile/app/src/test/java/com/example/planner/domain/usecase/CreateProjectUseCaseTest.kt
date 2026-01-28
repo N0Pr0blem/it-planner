@@ -1,5 +1,6 @@
 package com.example.planner.domain.usecase
 
+import com.example.planner.domain.exception.ValidationException
 import com.example.planner.domain.model.Project
 import com.example.planner.domain.repository.ProjectRepository
 import kotlinx.coroutines.test.runTest
@@ -45,7 +46,7 @@ class CreateProjectUseCaseTest {
 
         // Then
         assert(result.isFailure)
-        assertTrue(result.exceptionOrNull() is IllegalArgumentException)
+        assertTrue(result.exceptionOrNull() is ValidationException)
         assertEquals("Project name cannot be empty", result.exceptionOrNull()?.message)
     }
 

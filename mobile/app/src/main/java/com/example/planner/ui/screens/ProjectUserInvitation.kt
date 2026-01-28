@@ -29,10 +29,11 @@ import com.example.planner.ui.theme.PlannerTheme
 @Composable
 fun InviteMemberScreen(
     projectName: String,
-    onBack: () -> Unit = {}, // TODO: навигация назад
-    onInvite: (email: String, role: String) -> Unit = { _, _ -> } // TODO: отправить приглашение
+    onBack: () -> Unit = {},
+    onInvite: (email: String, role: String) -> Unit = { _, _ -> },
+    isLoading: Boolean = false,
+    error: String? = null
 ) {
-    // роли пока заглушка (потом с бэка)
     val roles = remember {
         listOf(
             "Backend Developer",
@@ -47,8 +48,7 @@ fun InviteMemberScreen(
     var roleExpanded by remember { mutableStateOf(false) }
     var selectedRole by remember { mutableStateOf(roles.first()) }
 
-    // TODO: нормальная валидация email
-    val canInvite = email.trim().contains("@") && email.trim().contains(".")
+    val canInvite = email.trim().isNotEmpty() && !isLoading
 
     Box(
         modifier = Modifier
@@ -60,7 +60,6 @@ fun InviteMemberScreen(
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
-            // ---------- Top bar ----------
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -90,14 +89,11 @@ fun InviteMemberScreen(
                     fontSize = 18.sp
                 )
 
-                // справа заглушка, чтобы заголовок был по центру
                 Spacer(Modifier.size(44.dp))
             }
 
-            // опускаем карточку ниже (было 18.dp)
             Spacer(Modifier.height(34.dp))
 
-            // ---------- Centered card (уже и по центру) ----------
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.TopCenter
@@ -115,7 +111,7 @@ fun InviteMemberScreen(
                             .padding(18.dp)
                     ) {
                         Text(
-                            text = "Пригласить участника",
+                            text = "Invite member",
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 20.sp,
@@ -124,9 +120,8 @@ fun InviteMemberScreen(
 
                         Spacer(Modifier.height(14.dp))
 
-                        // ---- Email ----
                         Text(
-                            text = "Email пользователя",
+                            text = "Email",
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp,
@@ -159,11 +154,19 @@ fun InviteMemberScreen(
                             )
                         )
 
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = "Use the registered email.",
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp,
+                            color = Color.Black.copy(alpha = 0.55f)
+                        )
+
                         Spacer(Modifier.height(16.dp))
 
-                        // ---- Role ----
                         Text(
-                            text = "Роль в проекте",
+                            text = "Project role",
                             fontFamily = NunitoFamily,
                             fontWeight = FontWeight.Medium,
                             fontSize = 14.sp,
@@ -223,7 +226,17 @@ fun InviteMemberScreen(
 
                         Spacer(Modifier.height(18.dp))
 
-                        // ---- Actions ----
+                        if (!error.isNullOrBlank()) {
+                            Text(
+                                text = error,
+                                color = Color(0xFFB91C1C),
+                                fontFamily = NunitoFamily,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(bottom = 10.dp)
+                            )
+                        }
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -231,7 +244,7 @@ fun InviteMemberScreen(
                         ) {
                             TextButton(onClick = onBack) {
                                 Text(
-                                    text = "Отмена",
+                                    text = "Back",
                                     fontFamily = NunitoFamily,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF0E3A22)
@@ -239,15 +252,23 @@ fun InviteMemberScreen(
                             }
 
                             Button(
-                                onClick = { onInvite(email.trim(), selectedRole) }, // TODO: запрос на бэк
+                                onClick = { onInvite(email.trim(), selectedRole) },
                                 enabled = canInvite,
                                 shape = RoundedCornerShape(14.dp),
                                 colors = ButtonDefaults.buttonColors(containerColor = GreenButton),
                                 elevation = ButtonDefaults.buttonElevation(0.dp),
                                 contentPadding = PaddingValues(horizontal = 22.dp, vertical = 12.dp)
                             ) {
+                                if (isLoading) {
+                                    CircularProgressIndicator(
+                                        strokeWidth = 2.dp,
+                                        modifier = Modifier.size(16.dp),
+                                        color = Color.White
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                }
                                 Text(
-                                    text = "Пригласить",
+                                    text = if (isLoading) "Inviting..." else "Invite",
                                     fontFamily = NunitoFamily,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color.White,
@@ -263,7 +284,7 @@ fun InviteMemberScreen(
 }
 
 @Preview(
-    name = "Invite Member Screen – Default",
+    name = "Invite Member Screen - Default",
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
     device = Devices.PIXEL_6
@@ -276,7 +297,7 @@ private fun PreviewInviteMemberScreen() {
 }
 
 @Preview(
-    name = "Invite Member Screen – Dark",
+    name = "Invite Member Screen - Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
@@ -286,3 +307,5 @@ private fun PreviewInviteMemberScreen() {
 private fun PreviewInviteMemberScreenDark() {
     PlannerTheme { PreviewInviteMemberScreen() }
 }
+
+

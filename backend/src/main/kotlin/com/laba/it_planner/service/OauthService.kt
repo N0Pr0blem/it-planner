@@ -15,4 +15,6 @@ interface OauthService {
     fun authenticate(oauthRequestDto: AuthRequestDto): TokenDetails
 
     fun verify(username: String, code: String): MessageResponseDto
+
+    fun resendVerificationCode(username: String): MessageResponseDto
 }

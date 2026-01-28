@@ -1,5 +1,8 @@
 package com.example.planner.domain.usecase
 
+import com.example.planner.data.model.task.TaskComplexity
+import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.data.model.task.TaskUrgency
 import com.example.planner.domain.exception.ValidationException
 import com.example.planner.domain.model.Task
 import com.example.planner.domain.repository.ProjectRepository
@@ -29,7 +32,20 @@ class CreateTaskUseCaseTest {
         val description = "Task description"
         val urgency = "MEDIUM"
         val complexity = "MEDIUM"
-        val expectedTask = Task(1, projectId, name, description, "2023-01-01", "2023-01-02")
+        val expectedTask = Task(
+            1,
+            projectId,
+            name,
+            description,
+            TaskStatus.TO_DO,
+            TaskUrgency.MEDIUM,
+            TaskComplexity.MEDIUM,
+            false,
+            "2023-01-01",
+            "2023-01-02",
+            null,
+            null
+        )
         whenever(projectRepository.createTask(projectId, name, description, urgency, complexity))
             .thenReturn(Result.success(expectedTask))
 

@@ -24,19 +24,12 @@ import androidx.compose.ui.unit.sp
 import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
-import com.example.planner.data.model.task.TaskStatus
-import com.example.planner.data.model.task.TaskUrgency
-import com.example.planner.data.model.task.TaskComplexity
+import com.example.planner.domain.model.TaskStatus
+import com.example.planner.domain.model.TaskUrgency
+import com.example.planner.domain.model.TaskComplexity
+import com.example.planner.ui.extensions.dotColor
+import com.example.planner.ui.extensions.title
 
-// ======= UI extensions for data models =======
-
-fun TaskStatus.dotColor(): Color = when (this) {
-    TaskStatus.TO_DO -> Color(0xFF6B7280)
-    TaskStatus.IN_PROGRESS -> Color(0xFF3B82F6)
-    TaskStatus.REVIEW -> Color(0xFF8B5CF6)
-    TaskStatus.IN_TEST -> Color(0xFFF59E0B)
-    TaskStatus.DONE -> Color(0xFF16A34A)
-}
 
 fun TaskUrgency.color(): Color = when (this) {
     TaskUrgency.URGENT -> Color(0xFFEF4444)
@@ -74,6 +67,7 @@ fun TaskDetailsScreen(
     onRefreshDescription: () -> Unit = {},      // иконка "обновить" у описания
     onDownloadFile: (TaskFileUi) -> Unit = {},  // скачать
     onDeleteFile: (TaskFileUi) -> Unit = {},    // удалить
+    onAddFile: () -> Unit = {},
 ) {
     Box(
         modifier = Modifier
@@ -323,7 +317,7 @@ fun TaskDetailsScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = if (description.isBlank()) "—" else description,
+                        text = if (description.isBlank()) "No description" else description,
                         color = Color.Black.copy(alpha = 0.85f),
                         fontFamily = NunitoFamily,
                         fontWeight = FontWeight.Medium,
@@ -335,14 +329,29 @@ fun TaskDetailsScreen(
 
             item {
                 //  Attachments title
-                Text(
-                    text = "Attached files",
-                    color = Color.White,
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                    modifier = Modifier.padding(top = 6.dp)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Attached files",
+                        color = Color.White,
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp
+                    )
+                    TextButton(onClick = onAddFile) {
+                        Text(
+                            text = "Add file",
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
 
             items(files, key = { it.id }) { f ->
@@ -441,3 +450,8 @@ fun PreviewTaskDetails() {
 fun PreviewTaskDetailsDark() {
     PlannerTheme { PreviewTaskDetails() }
 }
+
+
+
+
+

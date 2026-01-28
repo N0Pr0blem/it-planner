@@ -8,23 +8,28 @@ import com.example.planner.data.dto.project.ProjectListingDto
 import com.example.planner.data.dto.task.CreateTaskInfoRequestDto
 import com.example.planner.data.dto.task.UpdateTaskInfoRequestDto
 import com.example.planner.data.mapper.toDomain
+import com.example.planner.data.mapper.toData
+import com.example.planner.data.mapper.toDomainMember
+import com.example.planner.data.mapper.toDomainMembers
 import com.example.planner.data.mapper.toDomainProjects
 import com.example.planner.data.mapper.toDomainTasks
-import com.example.planner.data.mapper.toDomainUsers
-import com.example.planner.data.model.task.TaskComplexity
-import com.example.planner.data.model.task.TaskStatus
-import com.example.planner.data.model.task.TaskUrgency
-import com.example.planner.data.model.user.ProjectRole
-import com.example.planner.data.network.RetrofitInstance
+import com.example.planner.data.network.ApiService
 import com.example.planner.di.CacheModule
 import com.example.planner.domain.exception.NetworkException
 import com.example.planner.domain.model.Project
+import com.example.planner.domain.model.ProjectRole
 import com.example.planner.domain.model.Task
+import com.example.planner.domain.model.ProjectMember
 import com.example.planner.domain.model.User
+import com.example.planner.domain.model.TaskComplexity as DomainComplexity
+import com.example.planner.domain.model.TaskUrgency as DomainUrgency
+import com.example.planner.domain.model.TaskStatus as DomainStatus
 import com.example.planner.domain.repository.ProjectRepository
+import javax.inject.Inject
 
-class ProjectRepositoryImpl : ProjectRepository {
-    private val api = RetrofitInstance.api
+class ProjectRepositoryImpl @Inject constructor(
+    private val api: ApiService
+) : ProjectRepository {
 
     override suspend fun getProjects(): Result<List<Project>> {
         // Check cache first
@@ -34,14 +39,27 @@ class ProjectRepositoryImpl : ProjectRepository {
         }
         
         return try {
-            val response = api.getProjects()
-            if (response.isSuccessful) {
-                val projects = response.body()?.toDomainProjects() ?: emptyList()
-                // Cache the results
+            val primary = api.getProjects()
+            if (primary.isSuccessful) {
+                val projects = primary.body()
+                    ?.filterNotNull()
+                    ?.map { it.toDomain() }
+                    ?: emptyList()
+                CacheModule.cacheProjects(projects)
+                return Result.success(projects)
+            }
+
+            // fallback: some deployments serve projects at /api/v1/project/my
+            val fallback = api.getMyProjects()
+            if (fallback.isSuccessful) {
+                val projects = fallback.body()
+                    ?.filterNotNull()
+                    ?.map { it.toDomain() }
+                    ?: emptyList()
                 CacheModule.cacheProjects(projects)
                 Result.success(projects)
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load projects"))
+                Result.failure(Exception(fallback.errorBody()?.string() ?: "Failed to load projects"))
             }
         } catch (e: Exception) {
             Result.failure(NetworkException("Network error occurred", e))
@@ -131,7 +149,7 @@ class ProjectRepositoryImpl : ProjectRepository {
 
     override suspend fun getTask(projectId: Long, taskId: Long): Result<Task> {
         return try {
-            val response = api.getTask(projectId, taskId)
+            val response = api.getTask(taskId)
             if (response.isSuccessful) {
                 response.body()?.let { 
                     Result.success(it.toDomain())
@@ -148,23 +166,19 @@ class ProjectRepositoryImpl : ProjectRepository {
         projectId: Long,
         name: String,
         description: String,
-        urgency: String,
-        complexity: String
+        urgency: DomainUrgency,
+        complexity: DomainComplexity
     ): Result<Task> {
         return try {
-            // Convert string parameters to enum values
-            val urgencyEnum = when (urgency.uppercase()) {
-                "URGENT" -> TaskUrgency.URGENT
-                "MEDIUM" -> TaskUrgency.MEDIUM
-                "NOT_URGENT" -> TaskUrgency.NOT_URGENT
-                else -> TaskUrgency.MEDIUM // default
+            val urgencyEnum = when (urgency) {
+                DomainUrgency.URGENT -> com.example.planner.data.model.task.TaskUrgency.URGENT
+                DomainUrgency.MEDIUM -> com.example.planner.data.model.task.TaskUrgency.MEDIUM
+                DomainUrgency.NOT_URGENT -> com.example.planner.data.model.task.TaskUrgency.NOT_URGENT
             }
-            
-            val complexityEnum = when (complexity.uppercase()) {
-                "HARD" -> TaskComplexity.HARD
-                "MEDIUM" -> TaskComplexity.MEDIUM
-                "EASY" -> TaskComplexity.EASY
-                else -> TaskComplexity.MEDIUM // default
+            val complexityEnum = when (complexity) {
+                DomainComplexity.HARD -> com.example.planner.data.model.task.TaskComplexity.HARD
+                DomainComplexity.MEDIUM -> com.example.planner.data.model.task.TaskComplexity.MEDIUM
+                DomainComplexity.EASY -> com.example.planner.data.model.task.TaskComplexity.EASY
             }
             
             val request = CreateTaskInfoRequestDto(
@@ -174,9 +188,10 @@ class ProjectRepositoryImpl : ProjectRepository {
                 projectId = projectId,
                 description = description
             )
-            val response = api.createTask(projectId, request)
+            val response = api.createTask(request)
             if (response.isSuccessful) {
                 response.body()?.let { taskDto ->
+                    CacheModule.clearTasksCache(projectId)
                     Result.success(taskDto.toDomain())
                 } ?: Result.failure(Exception("Empty response"))
             } else {
@@ -191,39 +206,36 @@ class ProjectRepositoryImpl : ProjectRepository {
         projectId: Long,
         taskId: Long,
         name: String?,
-        urgency: String?,
-        complexity: String?,
+        urgency: DomainUrgency?,
+        complexity: DomainComplexity?,
         status: String?,
         description: String?
     ): Result<Task> {
         return try {
-            // Convert string parameters to enum values
             val urgencyEnum = urgency?.let {
-                when (it.uppercase()) {
-                    "URGENT" -> TaskUrgency.URGENT
-                    "MEDIUM" -> TaskUrgency.MEDIUM
-                    "NOT_URGENT" -> TaskUrgency.NOT_URGENT
-                    else -> TaskUrgency.MEDIUM
+                when (it) {
+                    DomainUrgency.URGENT -> com.example.planner.data.model.task.TaskUrgency.URGENT
+                    DomainUrgency.MEDIUM -> com.example.planner.data.model.task.TaskUrgency.MEDIUM
+                    DomainUrgency.NOT_URGENT -> com.example.planner.data.model.task.TaskUrgency.NOT_URGENT
                 }
             }
-            
+
             val complexityEnum = complexity?.let {
-                when (it.uppercase()) {
-                    "HARD" -> TaskComplexity.HARD
-                    "MEDIUM" -> TaskComplexity.MEDIUM
-                    "EASY" -> TaskComplexity.EASY
-                    else -> TaskComplexity.MEDIUM
+                when (it) {
+                    DomainComplexity.HARD -> com.example.planner.data.model.task.TaskComplexity.HARD
+                    DomainComplexity.MEDIUM -> com.example.planner.data.model.task.TaskComplexity.MEDIUM
+                    DomainComplexity.EASY -> com.example.planner.data.model.task.TaskComplexity.EASY
                 }
             }
-            
+
             val statusEnum = status?.let {
                 when (it.uppercase()) {
-                    "TO_DO" -> TaskStatus.TO_DO
-                    "IN_PROGRESS" -> TaskStatus.IN_PROGRESS
-                    "REVIEW" -> TaskStatus.REVIEW
-                    "IN_TEST" -> TaskStatus.IN_TEST
-                    "DONE" -> TaskStatus.DONE
-                    else -> TaskStatus.TO_DO
+                    "TO_DO" -> com.example.planner.data.model.task.TaskStatus.TO_DO
+                    "IN_PROGRESS" -> com.example.planner.data.model.task.TaskStatus.IN_PROGRESS
+                    "REVIEW" -> com.example.planner.data.model.task.TaskStatus.REVIEW
+                    "IN_TEST" -> com.example.planner.data.model.task.TaskStatus.IN_TEST
+                    "DONE" -> com.example.planner.data.model.task.TaskStatus.DONE
+                    else -> com.example.planner.data.model.task.TaskStatus.TO_DO
                 }
             }
             
@@ -234,9 +246,10 @@ class ProjectRepositoryImpl : ProjectRepository {
                 status = statusEnum, // Use actual enum object
                 description = description
             )
-            val response = api.updateTask(projectId, taskId, request)
+            val response = api.updateTask(taskId, request)
             if (response.isSuccessful) {
                 response.body()?.let { taskDto ->
+                    CacheModule.clearTasksCache(projectId)
                     Result.success(taskDto.toDomain())
                 } ?: Result.failure(Exception("Empty response"))
             } else {
@@ -249,8 +262,9 @@ class ProjectRepositoryImpl : ProjectRepository {
 
     override suspend fun deleteTask(projectId: Long, taskId: Long): Result<Unit> {
         return try {
-            val response = api.deleteTask(projectId, taskId)
+            val response = api.deleteTask(taskId)
             if (response.isSuccessful) {
+                CacheModule.clearTasksCache(projectId)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to delete task"))
@@ -261,7 +275,7 @@ class ProjectRepositoryImpl : ProjectRepository {
     }
 
     // Employees
-    override suspend fun getProjectEmployees(projectId: Long): Result<List<User>> {
+    override suspend fun getProjectEmployees(projectId: Long): Result<List<ProjectMember>> {
         // Check cache first
         val cachedUsers = CacheModule.getCachedUsers(projectId)
         if (cachedUsers != null) {
@@ -271,7 +285,7 @@ class ProjectRepositoryImpl : ProjectRepository {
         return try {
             val response = api.getProjectEmployees(projectId)
             if (response.isSuccessful) {
-                val employees = response.body()?.toDomainUsers() ?: emptyList()
+                val employees = response.body()?.toDomainMembers() ?: emptyList()
                 // Cache the results
                 CacheModule.cacheUsers(projectId, employees)
                 Result.success(employees)
@@ -283,12 +297,13 @@ class ProjectRepositoryImpl : ProjectRepository {
         }
     }
 
-    override suspend fun inviteEmployee(projectId: Long, username: String, role: String): Result<User> {
+    override suspend fun inviteEmployee(projectId: Long, username: String, role: ProjectRole): Result<ProjectMember> {
         return try {
-            val response = api.inviteEmployee(projectId, EmployeeInviteDto(username, ProjectRole.valueOf(role)))
+            val response = api.inviteEmployee(projectId, EmployeeInviteDto(username, role.toData()))
             if (response.isSuccessful) {
+                CacheModule.clearUsersCache(projectId)
                 response.body()?.let { employeeDto ->
-                    Result.success(employeeDto.toDomain())
+                    Result.success(employeeDto.toDomainMember())
                 } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to invite employee"))
@@ -302,6 +317,7 @@ class ProjectRepositoryImpl : ProjectRepository {
         return try {
             val response = api.deleteEmployee(projectId, employeeId)
             if (response.isSuccessful) {
+                CacheModule.clearUsersCache(projectId)
                 Result.success(Unit)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to delete employee"))
@@ -311,12 +327,13 @@ class ProjectRepositoryImpl : ProjectRepository {
         }
     }
 
-    override suspend fun updateEmployeeRole(projectId: Long, employeeId: Long, role: String): Result<User> {
+    override suspend fun updateEmployeeRole(projectId: Long, employeeId: Long, role: ProjectRole): Result<ProjectMember> {
         return try {
-            val response = api.updateEmployeeRole(projectId, employeeId, EmployeeUpdateRoleDto(ProjectRole.valueOf(role)))
+            val response = api.updateEmployeeRole(projectId, employeeId, EmployeeUpdateRoleDto(role.toData()))
             if (response.isSuccessful) {
+                CacheModule.clearUsersCache(projectId)
                 response.body()?.let { employeeDto ->
-                    Result.success(employeeDto.toDomain())
+                    Result.success(employeeDto.toDomainMember())
                 } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to update employee role"))

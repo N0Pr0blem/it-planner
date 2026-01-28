@@ -41,6 +41,7 @@ data class ProjectUi(
 fun ProjectsScreen(
     projects: List<ProjectUi>,
     selectedProjectId: String? = null,
+    isLoading: Boolean = false,
     onAddProject: () -> Unit = {},
     onProjectClick: (ProjectUi) -> Unit = {},
     onProjectLongClick: (ProjectUi) -> Unit = {},
@@ -131,26 +132,37 @@ fun ProjectsScreen(
             Spacer(Modifier.height(14.dp))
 
             // ---------- List ----------
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                contentPadding = PaddingValues(
-                    start = 22.dp,
-                    end = 22.dp,
-                    top = 8.dp,
-                    bottom = 18.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .weight(1f)
             ) {
-                items(projects, key = { it.id }) { p ->
-                    ProjectCard(
-                        project = p,
-                        selected = p.id == selectedProjectId,
-                        bg = cardBg,
-                        stroke = selectedStroke,
-                        onClick = { onProjectClick(p) },
-                        onLongPress = { onProjectLongClick(p) }
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        start = 22.dp,
+                        end = 22.dp,
+                        top = 8.dp,
+                        bottom = 18.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(projects, key = { it.id }) { p ->
+                        ProjectCard(
+                            project = p,
+                            selected = p.id == selectedProjectId,
+                            bg = cardBg,
+                            stroke = selectedStroke,
+                            onClick = { onProjectClick(p) },
+                            onLongPress = { onProjectLongClick(p) }
+                        )
+                    }
+                }
+
+                if (isLoading && projects.isEmpty()) {
+                    CircularProgressIndicator(
+                        color = Color.White,
+                        modifier = Modifier.align(Alignment.Center)
                     )
                 }
             }
@@ -255,14 +267,16 @@ private fun ProjectCard(
                 fontSize = 18.sp,
                 modifier = Modifier.align(Alignment.TopStart)
             )
-            Text(
-                text = "Date:${project.date}",
-                color = Color.Black,
-                fontFamily = NunitoFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
-                modifier = Modifier.align(Alignment.BottomEnd)
-            )
+            if (project.date.isNotEmpty()) {
+                Text(
+                    text = "Date:${project.date}",
+                    color = Color.Black,
+                    fontFamily = NunitoFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 12.sp,
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                )
+            }
         }
     }
 }

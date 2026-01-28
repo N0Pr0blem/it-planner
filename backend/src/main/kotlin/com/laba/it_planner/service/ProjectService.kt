@@ -12,6 +12,8 @@ interface ProjectService {
 
     fun getAllUsersProjects(username: String): List<Project>
 
+    fun getProject(projectId: Long, principal: Principal): Project
+
     fun inviteEmployee(projectId: Long, employeeInviteDto: EmployeeInviteDto, username: String): Employee
 
     fun deleteEmployee(projectId: Long, employeeId: Long, username: String)

@@ -83,6 +83,20 @@ class OauthServiceImpl(
         return MessageResponseDto(message = result)
     }
 
+    override fun resendVerificationCode(username: String): MessageResponseDto {
+        val userInfo = userInfoRepository.findByUsername(username)
+            .orElseThrow { DataException("User with username $username not found", "USER_NOT_FOUND") }
+        if (userInfo.enabled) {
+            throw AccessException("Account already verified", "ACCOUNT_ALREADY_VERIFIED")
+        }
+        val generatedVerificationCode = generate4DigitCode()
+        userInfo.verificationCode = generatedVerificationCode
+        userInfo.enabled = false
+        userInfoRepository.save(userInfo)
+        mailService.sendActivationCodeForm(userInfo.email!!, generatedVerificationCode)
+        return MessageResponseDto(message = "Verification code resent")
+    }
+
     private fun generate4DigitCode(): String {
         return RandomStringUtils.random(4, false, true)
     }

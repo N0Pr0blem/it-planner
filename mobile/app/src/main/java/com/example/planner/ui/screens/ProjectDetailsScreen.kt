@@ -1,6 +1,8 @@
 package com.example.planner.ui.screens
 
 import android.content.res.Configuration
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,10 +14,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.foundation.Image
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,9 +30,11 @@ import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
-import com.example.planner.data.dto.employee.EmployeeResponseDto
-import com.example.planner.data.dto.repo.ProjectRepoFileDto
-import com.example.planner.data.model.task.TaskStatus
+import com.example.planner.ui.extensions.dotColor
+import com.example.planner.ui.extensions.title
+import com.example.planner.ui.screens.RepoFileUi
+import com.example.planner.domain.model.ProjectMember
+import com.example.planner.domain.model.TaskStatus
 // --- модели ---
 
 enum class ProjectTab { Tasks, Members, Repository }
@@ -46,15 +53,46 @@ data class ProjectTaskUi(
 fun ProjectDetailsScreen(
     projectName: String,
     tasks: List<ProjectTaskUi>,
-    employees: List<EmployeeResponseDto> = emptyList(),
-    repoFiles: List<ProjectRepoFileDto> = emptyList(),
+    employees: List<ProjectMember> = emptyList(),
+    repoFiles: List<RepoFileUi> = emptyList(),
     activeTab: ProjectTab = ProjectTab.Tasks,
     onTabChange: (ProjectTab) -> Unit = {},
     onBack: () -> Unit = {},
     onAddMember: () -> Unit = {},
     onAddTask: () -> Unit = {},
     onTaskClick: (ProjectTaskUi) -> Unit = {},
+    onMemberClick: (ProjectMember) -> Unit = {},
+    onFileClick: (RepoFileUi) -> Unit = {},
+    onDeleteFile: (RepoFileUi) -> Unit = {},
+    selectedFilename: String? = null,
+    isLoading: Boolean = false,
+    error: String? = null,
+    onErrorDismiss: () -> Unit = {},
+    onClearPickedFile: () -> Unit = {},
+    onPickFile: () -> Unit = {},
+    onUploadFile: () -> Unit = {},
 ) {
+    if (activeTab == ProjectTab.Repository) {
+        ProjectRepositoryScreen(
+            projectName = projectName,
+            files = repoFiles,
+            activeTab = activeTab,
+            onTabChange = onTabChange,
+            onBack = onBack,
+            onAddMember = onAddMember,
+            onFileClick = onFileClick,
+            onDeleteFile = onDeleteFile,
+            selectedFilename = selectedFilename,
+            isLoading = isLoading,
+            error = error,
+            onErrorDismiss = onErrorDismiss,
+            onClearPickedFile = onClearPickedFile,
+            onPickFile = onPickFile,
+            onUploadFile = onUploadFile
+        )
+        return
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -82,17 +120,27 @@ fun ProjectDetailsScreen(
                         TasksHeader(onAddTask = { /* TODO */ onAddTask() })
                         Spacer(Modifier.height(14.dp))
 
-                        LazyColumn(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(bottom = 12.dp)
+                                .weight(1f)
                         ) {
-                            items(tasks, key = { it.id }) { task ->
-                                TaskCard(
-                                    task = task,
-                                    onClick = { /* TODO */ onTaskClick(task) }
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(bottom = 12.dp)
+                            ) {
+                                items(tasks, key = { it.id }) { task ->
+                                    TaskCard(
+                                        task = task,
+                                        onClick = { /* TODO */ onTaskClick(task) }
+                                    )
+                                }
+                            }
+                            if (isLoading && tasks.isEmpty()) {
+                                CircularProgressIndicator(
+                                    color = Color.White,
+                                    modifier = Modifier.align(Alignment.Center)
                                 )
                             }
                         }
@@ -112,7 +160,7 @@ fun ProjectDetailsScreen(
                                 items(employees, key = { it.id.toString() }) { employee ->
                                     EmployeeCard(
                                         employee = employee,
-                                        onClick = { /* TODO: открыть детали сотрудника */ }
+                                        onClick = { onMemberClick(employee) }
                                     )
                                 }
                             }
@@ -316,32 +364,34 @@ private fun TaskCard(
 
             Spacer(Modifier.height(6.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(22.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFCBD5F5)),
-                    contentAlignment = Alignment.Center
-                ) {
+            if (task.assignee.isNotBlank()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFCBD5F5)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = task.assignee.firstOrNull()?.uppercase() ?: "",
+                            color = Color(0xFF1F2937),
+                            fontFamily = NunitoFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 11.sp
+                        )
+                    }
+
+                    Spacer(Modifier.width(8.dp))
+
                     Text(
-                        text = task.assignee.firstOrNull()?.uppercase() ?: "",
+                        text = task.assignee,
                         color = Color(0xFF1F2937),
                         fontFamily = NunitoFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 11.sp
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp
                     )
                 }
-
-                Spacer(Modifier.width(8.dp))
-
-                Text(
-                    text = task.assignee,
-                    color = Color(0xFF1F2937),
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 13.sp
-                )
             }
 
             Spacer(Modifier.height(4.dp))
@@ -469,7 +519,7 @@ private fun RepositoryStub(modifier: Modifier = Modifier) {
     ) {
         Column(Modifier.padding(16.dp)) {
             Text(
-                text = "*(repository screen later)*",
+                text = "No files yet",
                 fontFamily = NunitoFamily,
                 fontWeight = FontWeight.Medium,
                 color = Color.Black.copy(alpha = 0.6f)
@@ -482,9 +532,25 @@ private fun RepositoryStub(modifier: Modifier = Modifier) {
 
 @Composable
 private fun EmployeeCard(
-    employee: EmployeeResponseDto,
+    employee: ProjectMember,
     onClick: () -> Unit,
 ) {
+    val name = listOfNotNull(
+        employee.firstName?.takeIf { it.isNotBlank() },
+        employee.secondName?.takeIf { it.isNotBlank() }
+    ).joinToString(" ").ifBlank { "User ${employee.id}" }
+
+    val roleText = employee.role.name
+        .lowercase()
+        .split('_')
+        .joinToString(" ") { it.replaceFirstChar { c -> c.uppercaseChar() } }
+    val avatarBytes = employee.profileImageUrl
+        ?.takeIf { it.isNotBlank() }
+        ?.let { runCatching { Base64.decode(it, Base64.DEFAULT) }.getOrNull() }
+    val avatarBitmap = remember(avatarBytes) {
+        avatarBytes?.let { BitmapFactory.decodeByteArray(it, 0, it.size) }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -501,42 +567,63 @@ private fun EmployeeCard(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFCBD5F5)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (avatarBitmap != null) {
+                            Image(
+                                bitmap = avatarBitmap.asImageBitmap(),
+                                contentDescription = name,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        } else {
+                            Text(
+                                text = name.firstOrNull()?.uppercase() ?: "",
+                                color = Color(0xFF1F2937),
+                                fontFamily = NunitoFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = roleText,
+                        color = Color(0xFF6B7280),
+                        fontFamily = NunitoFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp
+                    )
+                }
+
+                Spacer(Modifier.width(12.dp))
+
                 Text(
-                    text = "${employee.user.username ?: ""}".trim(),
+                    text = name,
                     color = Color.Black,
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp
                 )
-
-                Text(
-                    text = employee.projectRole.name,
-                    color = Color(0xFF6B7280),
-                    fontFamily = NunitoFamily,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                )
             }
 
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = employee.user.username ?: "",
-                color = Color(0xFF6B7280),
-                fontFamily = NunitoFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 14.sp
-            )
+            Spacer(Modifier.height(2.dp))
         }
     }
 }
 
 @Composable
 private fun RepositoryFileCard(
-    file: ProjectRepoFileDto,
+    file: RepoFileUi,
     onClick: () -> Unit,
 ) {
     Card(
@@ -572,7 +659,7 @@ private fun RepositoryFileCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = file.name ?: "",
+                    text = file.filename,
                     color = Color.Black,
                     fontFamily = NunitoFamily,
                     fontWeight = FontWeight.SemiBold,
@@ -594,7 +681,7 @@ private fun RepositoryFileCard(
 // --- превью ---
 
 @Preview(
-    name = "Project details – Default",
+    name = "Project details - Default",
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
     device = Devices.PIXEL_6
@@ -617,7 +704,7 @@ fun PreviewProjectDetails() {
 }
 
 @Preview(
-    name = "Project details – Dark",
+    name = "Project details - Dark",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     showBackground = true,
     backgroundColor = 0xFF1B3A5C,
@@ -629,3 +716,6 @@ fun PreviewProjectDetailsDark() {
         PreviewProjectDetails()
     }
 }
+
+
+

@@ -72,18 +72,21 @@ class SecurityServiceImpl(
                 token = token.substring(7)
             }
 
+            println("SecurityService - Validating token: ${token.take(20)}...")
+            
             Jwts.parser()
                 .setSigningKey(Base64.getEncoder().encodeToString(secret.toByteArray()))
                 .build()
                 .parseClaimsJws(token)
 
-
+            println("SecurityService - Token is valid")
             return true
         } catch (e: ExpiredJwtException) {
             System.err.println("Token expired: " + e.message)
             return false
         } catch (e: Exception) {
             System.err.println("Token validation error: " + e.message)
+            e.printStackTrace()
             return false
         }
     }

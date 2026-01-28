@@ -1,7 +1,13 @@
 package com.example.planner.domain.repository
 
-import com.example.planner.domain.model.User
+import com.example.planner.domain.model.UserProfile
+import java.io.File
 
 interface UserRepository {
-    suspend fun getUsers(): List<User>
+    suspend fun getProfile(): Result<UserProfile>
+    suspend fun updateProfile(
+        secondName: String? = null,
+        lastName: String? = null,
+        imageFile: File? = null
+    ): Result<UserProfile>
 }

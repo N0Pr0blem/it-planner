@@ -8,22 +8,37 @@ import com.example.planner.data.dto.project.ProjectCreateResponseDto
 import com.example.planner.data.dto.project.ProjectListingDto
 import com.example.planner.data.dto.repo.ProjectRepoFileDto
 import com.example.planner.data.model.user.ProjectRole
-import com.example.planner.data.network.RetrofitInstance
+import com.example.planner.data.network.ApiService
+import com.example.planner.data.mapper.toDomain
+import com.example.planner.domain.model.RepoFile
+import com.example.planner.domain.repository.RepoRepository
 import okhttp3.MultipartBody
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
+import javax.inject.Inject
+import javax.inject.Singleton
 
-// Старая реализация для совместимости
-class ProjectRepositoryLegacy {
-    private val api = RetrofitInstance.api
+@Singleton
+class ProjectRepositoryLegacy @Inject constructor(
+    private val api: ApiService
+) : RepoRepository {
 
     suspend fun getProjects(): Result<List<ProjectListingDto>> {
         return try {
-            val response = api.getProjects()
-            if (response.isSuccessful) {
-                Result.success(response.body() ?: emptyList())
+            val primary = api.getProjects()
+            if (primary.isSuccessful) {
+                val projects = primary.body()?.filterNotNull() ?: emptyList()
+                return Result.success(projects)
+            }
+
+            // fallback: some backends expose /project/my instead of plain /project
+            val fallback = api.getMyProjects()
+            if (fallback.isSuccessful) {
+                val projects = fallback.body()?.filterNotNull() ?: emptyList()
+                Result.success(projects)
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load projects"))
+                Result.failure(Exception(fallback.errorBody()?.string() ?: "Failed to load projects"))
             }
         } catch (e: Exception) {
             Result.failure(e)
@@ -127,11 +142,12 @@ class ProjectRepositoryLegacy {
     }
 
     // Repository files
-    suspend fun getRepoFiles(projectId: Long): Result<List<ProjectRepoFileDto>> {
+    override suspend fun getRepoFiles(projectId: Long): Result<List<RepoFile>> {
         return try {
             val response = api.getRepoFiles(projectId)
             if (response.isSuccessful) {
-                Result.success(response.body() ?: emptyList())
+                val files = response.body()?.map { it.toDomain() } ?: emptyList()
+                Result.success(files)
             } else {
                 Result.failure(Exception(response.errorBody()?.string() ?: "Failed to load files"))
             }
@@ -140,29 +156,60 @@ class ProjectRepositoryLegacy {
         }
     }
 
-    suspend fun uploadRepoFile(projectId: Long, file: File): Result<String> {
+    override suspend fun uploadRepoFile(
+        projectId: Long,
+        file: File,
+        filename: String? = null,
+        contentType: String? = null
+    ): Result<String> {
         return try {
-            val requestBody = file.asRequestBody()
-            val part = MultipartBody.Part.createFormData("multipartFile", file.name, requestBody)
+            val mediaType = contentType?.toMediaTypeOrNull()
+            val requestBody = file.asRequestBody(mediaType)
+            val safeName = filename?.takeIf { it.isNotBlank() } ?: file.name
+            val part = MultipartBody.Part.createFormData("file", safeName, requestBody)
             val response = api.uploadRepoFile(projectId, part)
             if (response.isSuccessful) {
                 Result.success(response.body() ?: "File uploaded")
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to upload file"))
+                val errorBody = response.errorBody()?.string()
+                val message = if (!errorBody.isNullOrBlank()) {
+                    errorBody
+                } else {
+                    "HTTP ${response.code()}: Failed to upload file"
+                }
+                Result.failure(Exception(message))
             }
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun downloadRepoFile(projectId: Long, fileId: Long): Result<ByteArray> {
+    override suspend fun downloadRepoFile(projectId: Long, fileId: Long): Result<ByteArray> {
         return try {
             val response = api.downloadRepoFile(projectId, fileId)
             if (response.isSuccessful) {
-                response.body()?.let { Result.success(it) }
+                response.body()?.let { Result.success(it.bytes()) }
                     ?: Result.failure(Exception("Empty file"))
             } else {
-                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to download file"))
+                val errorBody = response.errorBody()?.string()
+                val message = if (!errorBody.isNullOrBlank()) {
+                    errorBody
+                } else {
+                    "HTTP ${response.code()}: Failed to download file"
+                }
+                Result.failure(Exception(message))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    override suspend fun deleteRepoFile(projectId: Long, fileId: Long): Result<Unit> {
+        return try {
+            val response = api.deleteRepoFile(projectId, fileId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception(response.errorBody()?.string() ?: "Failed to delete file"))
             }
         } catch (e: Exception) {
             Result.failure(e)

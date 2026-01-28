@@ -26,9 +26,9 @@ import com.example.planner.ui.theme.BlueBackground
 import com.example.planner.ui.theme.GreenButton
 import com.example.planner.ui.theme.NunitoFamily
 import com.example.planner.ui.theme.PlannerTheme
-import com.example.planner.data.model.task.TaskStatus
-import com.example.planner.data.model.task.TaskUrgency
-import com.example.planner.data.model.task.TaskComplexity
+import com.example.planner.domain.model.TaskUrgency
+import com.example.planner.domain.model.TaskComplexity
+import com.example.planner.ui.extensions.title
 
 
 @OptIn(ExperimentalMaterial3Api::class)

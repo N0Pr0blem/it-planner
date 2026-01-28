@@ -47,6 +47,13 @@ class ProjectController(
         return ResponseEntity.ok(projectListingMapper.toDtos(response))
     }
 
+    @GetMapping("{projectId}")
+    @Operation(summary = "Get project by id")
+    fun getProject(@PathVariable projectId: Long, principal: Principal): ResponseEntity<ProjectCreateResponseDto> {
+        val response = projectService.getProject(projectId, principal)
+        return ResponseEntity.ok(projectMapper.toDto(response))
+    }
+
     @DeleteMapping("{projectId}")
     @Operation(summary = "Delete project")
     fun deleteProject(@PathVariable projectId: Long, principal: Principal): ResponseEntity<MessageResponseDto> {
