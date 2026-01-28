@@ -12,4 +12,4 @@
 
 
   Проект реализован в рамках учебной дисциплины. Бэкенд был написан не мной, но местами правился. 
-  Оригинал https://github.com/N0Pr0blem/it-planner
+  Основа https://github.com/N0Pr0blem/it-planner
