@@ -1,4 +1,4 @@
-package com.laba.it_planner.service.user
+package com.laba.it_planner.service.user.impl
 
 import com.laba.it_planner.model.user.OauthUser
 import com.laba.it_planner.security.Encoder

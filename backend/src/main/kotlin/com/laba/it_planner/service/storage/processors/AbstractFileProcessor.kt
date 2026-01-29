@@ -1,7 +1,7 @@
-package com.laba.it_planner.service.processors
+package com.laba.it_planner.service.storage.processors
 
 import com.laba.it_planner.utils.files.MimeType
-import com.laba.it_planner.service.FileProcessor
+import com.laba.it_planner.service.storage.FileProcessor
 import org.springframework.web.multipart.MultipartFile
 import io.minio.MinioClient
 import io.minio.PutObjectArgs

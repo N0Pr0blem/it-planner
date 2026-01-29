@@ -1,4 +1,4 @@
-package com.laba.it_planner.service
+package com.laba.it_planner.service.storage
 
 import com.laba.it_planner.utils.files.MimeType
 import io.minio.MinioClient

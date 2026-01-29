@@ -7,7 +7,7 @@ import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 
 @Mapper(componentModel = "spring")
-interface TrekkingMapper : Mappable<Tracking, TrekkingResponseDto> {
+interface TrackingMapper : Mappable<Tracking, TrekkingResponseDto> {
     @Mapping(target = "employeeFirstName", source = "employee.user.firstName")
     @Mapping(target = "employeeSecondName", source = "employee.user.secondName")
     @Mapping(target = "taskDetailsId", source = "taskDetails.id")

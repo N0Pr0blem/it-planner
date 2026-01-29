@@ -1,4 +1,4 @@
-package com.laba.it_planner.service.user
+package com.laba.it_planner.service.user.impl
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.oauth.AuthRequestDto

@@ -1,4 +1,4 @@
-package com.laba.it_planner.service.task
+package com.laba.it_planner.service.task.impl
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
@@ -6,13 +6,19 @@ import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.exception.AccessException
 import com.laba.it_planner.mapper.task.TaskDescriptionMapper
+import com.laba.it_planner.model.storage.Storage
+import com.laba.it_planner.model.task.Task
 import com.laba.it_planner.model.task.enum_old.TaskStatus
-import com.laba.it_planner.repository.task.TaskInfoRepository
 import com.laba.it_planner.repository.projection.TaskListingProjection
+import com.laba.it_planner.repository.task.TaskRepository
 import com.laba.it_planner.service.*
 import com.laba.it_planner.service.mail.MailService
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
+import com.laba.it_planner.service.storage.FileService
+import com.laba.it_planner.service.storage.StorageService
+import com.laba.it_planner.service.task.TaskService
+import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.security.Principal
@@ -21,17 +27,17 @@ import java.util.*
 import java.util.stream.Collectors
 
 @Service
-class TaskInfoServiceImpl(
-    private val taskInfoRepository: TaskInfoRepository,
+class TaskServiceImpl(
+    private val taskRepository: TaskRepository,
     private val employeeService: EmployeeService,
     private val projectService: ProjectService,
-    private val taskDetailService: TaskDetailsService,
     private val fileService: FileService,
     private val taskDescriptionMapper: TaskDescriptionMapper,
-    private val mailService: MailService
-) : TaskInfoService {
-    override fun get(id: Long, principal: Principal): TaskInfo {
-        val taskInfoOpt = taskInfoRepository.findById(id)
+    private val mailService: MailService,
+    private val storageService: StorageService,
+) : TaskService {
+    override fun get(id: Long, principal: Principal): Task {
+        val taskInfoOpt = taskRepository.findById(id)
         if (taskInfoOpt.isPresent) {
             val taskInfo = taskInfoOpt.get()
             if (employeeService.checkPermission(taskInfo.project.id!!, principal)) {
@@ -49,7 +55,7 @@ class TaskInfoServiceImpl(
         principal: Principal
     ): List<TaskInfoListing> {
         if (employeeService.checkPermission(projectId, principal)) {
-            val dbResponse = taskInfoRepository.findAllByProjectId(projectId)
+            val dbResponse = taskRepository.findAllByProjectId(projectId)
             dbResponse.forEach { taskInfo -> println("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
             return dbResponse.stream().map { projection -> fromProjection(projection) }
                 .collect(Collectors.toList())
@@ -58,20 +64,34 @@ class TaskInfoServiceImpl(
         }
     }
 
-    override fun add(createTaskInfoRequestDto: CreateTaskInfoRequestDto, principal: Principal): TaskInfo {
+    @Transactional
+    override fun add(createTaskInfoRequestDto: CreateTaskInfoRequestDto, principal: Principal): Task {
         if (employeeService.checkPermission(createTaskInfoRequestDto.projectId, principal)) {
             val project = projectService.get(createTaskInfoRequestDto.projectId)
-            return taskInfoRepository.save(
-                TaskInfo(
+            val employee = employeeService.getByUserNameAndProjectId(principal.name, project.id!!)
+            val taskUUID = UUID.randomUUID().toString();
+            val path = fromProjectStorage(taskUUID, project.storage!!)
+            return taskRepository.save(
+                Task(
                     name = createTaskInfoRequestDto.name,
                     urgency = createTaskInfoRequestDto.urgency,
                     complexity = createTaskInfoRequestDto.complexity,
                     project = projectService.get(createTaskInfoRequestDto.projectId),
                     creationDate = LocalDateTime.now(),
                     status = TaskStatus.TO_DO,
-                    taskDetails = taskDetailService.getEmpty(
-                        project,
+                    isCompleted = false,
+                    storage = storageService.createStorage(
+                        Storage(
+                            path = path,
+                            files = emptyList()
+                        )
+                    ),
+                    fromUser = employee,
+                    toUser = null,
+                    descriptionFile = fileService.createDescriptionFileForTask(
+                        path.replace("/storage", ""),
                         principal,
+                        taskUUID,
                         createTaskInfoRequestDto.description
                     )
                 )
@@ -82,11 +102,15 @@ class TaskInfoServiceImpl(
         }
     }
 
+    private fun fromProjectStorage(taskName: String, storage: Storage): String {
+        return storage.path.replace("/storage/", "/tasks/${taskName}/storage")
+    }
+
     override fun update(
         taskId: Long,
         updateTaskInfoRequestDto: UpdateTaskInfoRequestDto,
         principal: Principal
-    ): TaskInfo {
+    ): Task {
         val task = get(taskId, principal)
         if (updateTaskInfoRequestDto.name != null) task.name = updateTaskInfoRequestDto.name!!
         if (updateTaskInfoRequestDto.complexity != null) task.complexity = updateTaskInfoRequestDto.complexity!!
@@ -94,40 +118,40 @@ class TaskInfoServiceImpl(
         if (updateTaskInfoRequestDto.status != null) task.status = updateTaskInfoRequestDto.status!!
         if (updateTaskInfoRequestDto.description != null) {
             fileService.updateFile(
-                toDescriptionPath(taskId, task.taskDetails!!.descriptionFile!!),
+                toDescriptionPath(taskId, task.descriptionFile!!),
                 updateTaskInfoRequestDto.description
             )
         }
 
-        return taskInfoRepository.save(task)
+        return taskRepository.save(task)
     }
 
     override fun delete(id: Long, principal: Principal) {
-        if (taskInfoRepository.existsById(id)) {
-            taskInfoRepository.deleteById(id)
+        if (taskRepository.existsById(id)) {
+            taskRepository.deleteById(id)
         }
     }
 
     override fun assignToMe(taskId: Long, projectId: Long, principal: Principal) {
-        val taskInfoOpt = taskInfoRepository.findById(taskId)
+        val taskOpt = taskRepository.findById(taskId)
         val employee = employeeService.getByUserNameAndProjectId(principal.name, projectId)
-        if (taskInfoOpt.isPresent) {
-            val taskDetails = taskInfoOpt.get().taskDetails
-            taskDetails!!.toUser = employee
-            taskDetailService.save(taskDetails)
+        if (taskOpt.isPresent) {
+            val task = taskOpt.get()
+            task.toUser = employee
+            save(task)
         }
     }
 
     override fun getDescription(taskId: Long, principal: Principal): MessageResponseDto {
-        val taskDetails = taskDetailService.getByTaskId(taskId)
-        if (taskDetails != null && taskDetails.descriptionFile != null) {
-            val message = taskDescriptionMapper.toDto(toDescriptionPath(taskId, taskDetails.descriptionFile!!))
+        val task = get(taskId, principal)
+        if (task.descriptionFile != null) {
+            val message = taskDescriptionMapper.toDto(toDescriptionPath(taskId, task.descriptionFile!!))
             return MessageResponseDto(message = message)
         } else return MessageResponseDto("")
     }
 
     override fun getMy(principal: Principal): List<TaskInfoListing>? {
-        val dbResponse = taskInfoRepository.findAllByUsername(principal.name)
+        val dbResponse = taskRepository.findAllByUsername(principal.name)
         dbResponse.forEach { taskInfo -> println("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
         return dbResponse.stream().map { projection -> fromProjection(projection) }
             .collect(Collectors.toList())
@@ -157,29 +181,31 @@ class TaskInfoServiceImpl(
         return "projects/${project.name}/${taskFolder}"
     }
 
-    override fun getPathForTaskFolder(taskId: Long): String? {
-        val taskInfoOpt = taskInfoRepository.findById(taskId)
-        if(taskInfoOpt.isPresent){
-            val taskDetails = taskInfoOpt.get().taskDetails
-            return getTaskFolderPath(taskId, taskDetails!!.descriptionFile!!) + "/files/"
-        }
-        return null
-    }
-
     override fun assignToEmployee(
         taskId: Long,
         projectId: Long,
         employeeId: Long,
         principal: Principal
     ) {
-        val taskInfoOpt = taskInfoRepository.findById(taskId)
-        val meAsEmployee = employeeService.getByUserNameAndProjectId(principal.name, projectId)
-        if (taskInfoOpt.isPresent && meAsEmployee != null) {
-            val taskDetails = taskInfoOpt.get().taskDetails
+        val taskOpt = taskRepository.findById(taskId)
+        if (taskOpt.isPresent) {
+            val task = taskOpt.get()
             val employee = employeeService.getById(employeeId)
-            taskDetails!!.toUser = employee
-            mailService.sendInformationForm(employee.user.email!!,"You was assigned to the task:\n${taskDetails.taskInfo!!.name}")
-            taskDetailService.save(taskDetails)
+            task.toUser = employee
+            mailService.sendInformationForm(
+                employee.user.email!!,
+                "You was assigned to the task:\n${task.name}"
+            )
+            save(task)
         }
+    }
+
+
+    override fun getByTaskId(taskId: Long): Task {
+        return taskRepository.getByTaskId(taskId)
+    }
+
+    override fun save(task: Task): Task {
+        return taskRepository.save(task)
     }
 }

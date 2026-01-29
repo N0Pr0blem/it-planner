@@ -1,4 +1,4 @@
-package com.laba.it_planner.service
+package com.laba.it_planner.service.storage
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.repo.ProjectRepoFileDto

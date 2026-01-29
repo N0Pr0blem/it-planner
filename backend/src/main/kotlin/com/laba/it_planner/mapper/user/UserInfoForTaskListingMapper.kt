@@ -2,7 +2,7 @@ package com.laba.it_planner.mapper.user
 
 import com.laba.it_planner.dto.userInfo.UserInfoForTaskDto
 import com.laba.it_planner.model.user.UserInfo
-import com.laba.it_planner.service.FileService
+import com.laba.it_planner.service.storage.FileService
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.util.*

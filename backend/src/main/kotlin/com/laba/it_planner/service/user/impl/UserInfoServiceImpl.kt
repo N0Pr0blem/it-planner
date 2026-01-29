@@ -1,15 +1,16 @@
-package com.laba.it_planner.service.user
+package com.laba.it_planner.service.user.impl
 
 import com.laba.it_planner.dto.userInfo.UserInfoPatchDto
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.user.UserInfo
 import com.laba.it_planner.repository.user.UserInfoRepository
-import com.laba.it_planner.service.FileService
 import com.laba.it_planner.service.UserInfoService
+import com.laba.it_planner.service.storage.FileService
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.nio.charset.StandardCharsets
 import java.security.Principal
+import java.time.LocalDate
 import java.util.*
 
 @Service
@@ -29,15 +30,15 @@ class UserInfoServiceImpl(
             if (userInfoPatchDto.secondName != null) userInfo.secondName = userInfoPatchDto.secondName
             if (userInfoPatchDto.lastName != null) userInfo.lastName = userInfoPatchDto.lastName
             if (multipartFile != null) {
-                val path = userInfo.email + FileType.PROFILE.prefix + multipartFile.originalFilename
-                userInfo.profileImage=fileService.saveFile(path, multipartFile);
+                val extension = multipartFile.originalFilename!!.substringAfterLast(".")
+                val path = "users/user_${userInfo.id}/profile/avatar_${LocalDate.now()}.${extension}"
+                userInfo.profileImage = fileService.saveFile(path, multipartFile);
             }
             return userInfoRepository.save(userInfo)
-        }
-        else throw DataException("error.user.username.not_found",principal.name)
+        } else throw DataException("error.user.username.not_found", principal.name)
     }
 
-    override fun getInfo(principal: Principal) : UserInfo{
+    override fun getInfo(principal: Principal): UserInfo {
         val userInfoOpt = userInfoRepository.findByUsername(principal.name)
         return getUserInfo(userInfoOpt)
     }
@@ -59,14 +60,13 @@ class UserInfoServiceImpl(
     private fun getUserInfo(userInfoOpt: Optional<UserInfo>): UserInfo {
         if (userInfoOpt.isPresent) {
             val userInfo = userInfoOpt.get()
-            if(userInfo.profileImage!=null) {
+            if (userInfo.profileImage != null) {
                 val image = fileService.getFile(userInfo.profileImage!!)
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
-                userInfo.profileImage=String(encoded, StandardCharsets.UTF_8)
+                userInfo.profileImage = String(encoded, StandardCharsets.UTF_8)
             }
             return userInfo
-        }
-        else throw DataException("error.user.not_found","")
+        } else throw DataException("error.user.not_found", "")
     }
 
 }

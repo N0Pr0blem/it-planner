@@ -6,7 +6,7 @@ import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.TaskInfoResponseDto
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.mapper.task.TaskInfoMapper
-import com.laba.it_planner.service.TaskInfoService
+import com.laba.it_planner.service.task.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -15,7 +15,7 @@ import java.security.Principal
 @RestController
 @RequestMapping("/api/v1")
 class TaskInfoController(
-    private val taskInfoService: TaskInfoService,
+    private val taskService: TaskService,
     private val mapper: TaskInfoMapper
 ) {
     @Operation(summary = "Get all task of project")
@@ -24,7 +24,7 @@ class TaskInfoController(
         @PathVariable(name = "projectId") projectId: Long,
         principal: Principal
     ): ResponseEntity<List<TaskInfoListing>> {
-        return ResponseEntity.ok(taskInfoService.getAll(projectId, principal))
+        return ResponseEntity.ok(taskService.getAll(projectId, principal))
     }
 
     @Operation(summary = "Get all my task from many projects")
@@ -32,7 +32,7 @@ class TaskInfoController(
     fun getMy(
         principal: Principal
     ): ResponseEntity<List<TaskInfoListing>> {
-        return ResponseEntity.ok(taskInfoService.getMy(principal))
+        return ResponseEntity.ok(taskService.getMy(principal))
     }
 
     @Operation(summary = "Create task for project")
@@ -41,7 +41,7 @@ class TaskInfoController(
         @RequestBody createTaskInfoRequestDto: CreateTaskInfoRequestDto,
         principal: Principal
     ): ResponseEntity<TaskInfoResponseDto> {
-        val res = taskInfoService.add(createTaskInfoRequestDto, principal)
+        val res = taskService.add(createTaskInfoRequestDto, principal)
         return ResponseEntity.ok(mapper.toDto(res))
     }
 
@@ -51,7 +51,7 @@ class TaskInfoController(
         @PathVariable(name = "taskId") taskId: Long,
         principal: Principal
     ): ResponseEntity<TaskInfoResponseDto> {
-        val res = taskInfoService.get(taskId, principal)
+        val res = taskService.get(taskId, principal)
         return ResponseEntity.ok(mapper.toDto(res))
     }
 
@@ -61,7 +61,7 @@ class TaskInfoController(
         @PathVariable(name = "taskId") taskId: Long,
         principal: Principal
     ): ResponseEntity<MessageResponseDto> {
-        val res = taskInfoService.getDescription(taskId, principal)
+        val res = taskService.getDescription(taskId, principal)
         return ResponseEntity.ok(res)
     }
 
@@ -72,14 +72,14 @@ class TaskInfoController(
         @RequestBody updateTaskInfoRequestDto: UpdateTaskInfoRequestDto,
         principal: Principal
     ): ResponseEntity<TaskInfoResponseDto> {
-        val res = taskInfoService.update(taskId, updateTaskInfoRequestDto, principal)
+        val res = taskService.update(taskId, updateTaskInfoRequestDto, principal)
         return ResponseEntity.ok(mapper.toDto(res))
     }
 
     @Operation(summary = "Delete task of project")
     @DeleteMapping("/task/{taskId}")
     fun delete(@PathVariable(name = "taskId") taskId: Long, principal: Principal): ResponseEntity<String> {
-        taskInfoService.delete(taskId, principal)
+        taskService.delete(taskId, principal)
         return ResponseEntity.ok("Successfully deleted the task")
     }
 
@@ -90,7 +90,7 @@ class TaskInfoController(
         @PathVariable(name = "projectId") projectId: Long,
         principal: Principal
     ): ResponseEntity<String> {
-        taskInfoService.assignToMe(taskId, projectId, principal)
+        taskService.assignToMe(taskId, projectId, principal)
         return ResponseEntity.ok("Successfully assign the task")
     }
 
@@ -102,7 +102,7 @@ class TaskInfoController(
         @PathVariable(name = "employeeId") employeeId: Long,
         principal: Principal
     ): ResponseEntity<String> {
-        taskInfoService.assignToEmployee(taskId, projectId, employeeId, principal)
+        taskService.assignToEmployee(taskId, projectId, employeeId, principal)
         return ResponseEntity.ok("Successfully assign the task")
     }
 }

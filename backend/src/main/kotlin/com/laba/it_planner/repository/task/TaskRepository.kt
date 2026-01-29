@@ -1,5 +1,6 @@
 package com.laba.it_planner.repository.task
 
+import com.laba.it_planner.model.task.Task
 import com.laba.it_planner.repository.projection.TaskListingProjection
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -7,7 +8,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 
 @Repository
-interface TaskInfoRepository: JpaRepository<TaskInfo, Long> {
+interface TaskRepository: JpaRepository<Task, Long> {
     @Query("""
         select ti.id,
        ti.name,
@@ -38,4 +39,11 @@ from task_info ti
 where ui.email=:username
     """, nativeQuery = true)
     fun findAllByUsername(@Param("username")username: String): List<TaskListingProjection>
+
+    @Query("""
+        Select td.* from task_details td
+         left join task_info ti on ti.task_details_id = td.id 
+         where ti.id=:task_id
+    """, nativeQuery = true)
+    fun getByTaskId(@Param("task_id") taskId: Long): Task
 }

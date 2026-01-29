@@ -1,20 +1,22 @@
-package com.laba.it_planner.service
+package com.laba.it_planner.service.task
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
 import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
+import com.laba.it_planner.model.task.Task
 import java.security.Principal
 
-interface TaskInfoService {
-    fun get(id: Long, principal: Principal): TaskInfo
+interface TaskService {
+    fun get(id: Long, principal: Principal): Task
     fun getAll(projectId: Long, principal: Principal): List<TaskInfoListing>
-    fun add(createTaskInfoRequestDto: CreateTaskInfoRequestDto, principal: Principal): TaskInfo
-    fun update(taskId: Long, updateTaskInfoRequestDto: UpdateTaskInfoRequestDto, principal: Principal): TaskInfo
+    fun add(createTaskInfoRequestDto: CreateTaskInfoRequestDto, principal: Principal): Task
+    fun update(taskId: Long, updateTaskInfoRequestDto: UpdateTaskInfoRequestDto, principal: Principal): Task
     fun delete(id: Long, principal: Principal)
     fun assignToMe(taskId: Long, projectId: Long, principal: Principal)
     fun getDescription(taskId: Long, principal: Principal): MessageResponseDto
     fun getMy(principal: Principal): List<TaskInfoListing>?
-    fun getPathForTaskFolder(taskId: Long): String?
     fun assignToEmployee(taskId: Long, projectId: Long, employeeId: Long, principal: Principal)
+    fun getByTaskId(taskId: Long): Task
+    fun save(task: Task): Task
 }

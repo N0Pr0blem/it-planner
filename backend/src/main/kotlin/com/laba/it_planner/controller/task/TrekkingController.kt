@@ -3,8 +3,8 @@ package com.laba.it_planner.controller.task
 import com.laba.it_planner.dto.trekking.AllTrekkingResponse
 import com.laba.it_planner.dto.trekking.TrekkingCreationDto
 import com.laba.it_planner.dto.trekking.TrekkingResponseDto
-import com.laba.it_planner.mapper.task.TrekkingMapper
-import com.laba.it_planner.service.TrekkingService
+import com.laba.it_planner.mapper.task.TrackingMapper
+import com.laba.it_planner.service.task.TrackingService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -13,8 +13,8 @@ import java.security.Principal
 @RestController
 @RequestMapping("/api/v1")
 class TrekkingController(
-    private val trekkingService: TrekkingService,
-    private val trekkingMapper: TrekkingMapper
+    private val trackingService: TrackingService,
+    private val trackingMapper: TrackingMapper
 ) {
     @Operation(summary = "Create trekking for task")
     @PostMapping("/trekking")
@@ -22,8 +22,8 @@ class TrekkingController(
         @RequestBody trekkingCreationDto: TrekkingCreationDto,
         principal: Principal
     ): ResponseEntity<TrekkingResponseDto> {
-        val res = trekkingService.add(trekkingCreationDto, principal)
-        return ResponseEntity.ok(trekkingMapper.toDto(res))
+        val res = trackingService.add(trekkingCreationDto, principal)
+        return ResponseEntity.ok(trackingMapper.toDto(res))
     }
 
     @Operation(summary = "Get all trekking for task")
@@ -32,7 +32,7 @@ class TrekkingController(
         @PathVariable("taskId") taskId: Long,
         principal: Principal
     ): ResponseEntity<AllTrekkingResponse> {
-        val res = trekkingService.findAll(taskId, principal)
+        val res = trackingService.findAll(taskId, principal)
         return ResponseEntity.ok(res)
     }
 
@@ -42,7 +42,7 @@ class TrekkingController(
         @PathVariable("trekkingId") trekkingId: Long,
         principal: Principal
     ): ResponseEntity<String> {
-        trekkingService.delete(trekkingId, principal)
+        trackingService.delete(trekkingId, principal)
         return ResponseEntity.ok("Successfully deleted")
     }
 }

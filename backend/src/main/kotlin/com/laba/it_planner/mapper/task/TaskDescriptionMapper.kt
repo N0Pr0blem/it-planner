@@ -1,6 +1,6 @@
 package com.laba.it_planner.mapper.task
 
-import com.laba.it_planner.service.FileService
+import com.laba.it_planner.service.storage.FileService
 import org.springframework.stereotype.Component
 
 @Component

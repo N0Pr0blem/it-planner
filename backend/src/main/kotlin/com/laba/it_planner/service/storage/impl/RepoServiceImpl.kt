@@ -1,4 +1,4 @@
-package com.laba.it_planner.service.storage
+package com.laba.it_planner.service.storage.impl
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.repo.ProjectRepoFileDto
@@ -8,8 +8,8 @@ import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.mapper.project.ProjectRepoMapper
 import com.laba.it_planner.repository.storage.StorageFileRepository
 import com.laba.it_planner.repository.storage.StorageRepository
-import com.laba.it_planner.service.FileService
-import com.laba.it_planner.service.RepoService
+import com.laba.it_planner.service.storage.FileService
+import com.laba.it_planner.service.storage.RepoService
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.security.Principal

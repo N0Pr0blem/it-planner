@@ -13,11 +13,13 @@ import com.laba.it_planner.service.*
 import com.laba.it_planner.service.mail.MailService
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
+import com.laba.it_planner.service.storage.StorageService
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.security.Principal
 import java.time.LocalDateTime
 import java.util.Locale.getDefault
+import java.util.UUID
 
 @Service
 class ProjectServiceImpl(
@@ -43,7 +45,7 @@ class ProjectServiceImpl(
         } else {
             val storage = storageService.createStorage(
                 Storage(
-                    path = ("users/${userInfo.id}/projects/${projectCreateRequestDto.name}/storage"),
+                    path = ("users/user_${userInfo.id}/projects/${UUID.randomUUID()}/storage"),
                     files = emptyList(),
                 )
             )

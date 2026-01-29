@@ -5,7 +5,7 @@ import com.laba.it_planner.model.project.Employee
 import com.laba.it_planner.model.user.OauthUser
 import com.laba.it_planner.model.user.ProjectRole
 import com.laba.it_planner.repository.project.EmployeeRepository
-import com.laba.it_planner.service.FileService
+import com.laba.it_planner.service.storage.FileService
 import com.laba.it_planner.service.UserInfoService
 import com.laba.it_planner.service.project.EmployeeService
 import org.springframework.stereotype.Service

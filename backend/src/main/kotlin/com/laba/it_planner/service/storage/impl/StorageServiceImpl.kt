@@ -1,12 +1,12 @@
-package com.laba.it_planner.service.storage
+package com.laba.it_planner.service.storage.impl
 
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.storage.Storage
 import com.laba.it_planner.model.storage.StorageFile
 import com.laba.it_planner.repository.storage.StorageFileRepository
 import com.laba.it_planner.repository.storage.StorageRepository
-import com.laba.it_planner.service.FileService
-import com.laba.it_planner.service.StorageService
+import com.laba.it_planner.service.storage.FileService
+import com.laba.it_planner.service.storage.StorageService
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile

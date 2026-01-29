@@ -1,4 +1,4 @@
-package com.laba.it_planner.service.processors
+package com.laba.it_planner.service.storage.processors
 
 import com.laba.it_planner.utils.files.MimeType
 import io.minio.MinioClient

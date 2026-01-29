@@ -22,6 +22,6 @@ class Tracking(
     val employee: Employee,
 
     @ManyToOne
-    @JoinColumn(name = "task_details_id")
-    val taskDetails: TaskDetails
+    @JoinColumn(name = "task_id")
+    val taskDetails: Task
 )

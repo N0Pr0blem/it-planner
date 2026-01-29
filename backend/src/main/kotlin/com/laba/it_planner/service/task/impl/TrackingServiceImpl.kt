@@ -1,13 +1,13 @@
-package com.laba.it_planner.service.task
+package com.laba.it_planner.service.task.impl
 
 import com.laba.it_planner.dto.trekking.AllTrekkingResponse
 import com.laba.it_planner.dto.trekking.TrekkingCreationDto
-import com.laba.it_planner.mapper.task.TrekkingMapper
+import com.laba.it_planner.mapper.task.TrackingMapper
 import com.laba.it_planner.model.task.Tracking
 import com.laba.it_planner.repository.task.TrackingRepository
 import com.laba.it_planner.service.project.EmployeeService
-import com.laba.it_planner.service.TaskDetailsService
-import com.laba.it_planner.service.TrekkingService
+import com.laba.it_planner.service.task.TrackingService
+import com.laba.it_planner.service.task.TaskService
 import org.springframework.stereotype.Service
 import java.security.Principal
 
@@ -15,9 +15,9 @@ import java.security.Principal
 class TrackingServiceImpl(
     private val trackingRepository: TrackingRepository,
     private val employeeService: EmployeeService,
-    private val taskDetailsService: TaskDetailsService,
-    private val trekkingMapper: TrekkingMapper
-) : TrekkingService {
+    private val trackingMapper: TrackingMapper,
+    private val taskService: TaskService,
+) : TrackingService {
     override fun findAll(
         taskId: Long,
         principal: Principal
@@ -26,7 +26,7 @@ class TrackingServiceImpl(
         val hourSum = trekkingList.sumOf { it.hours }
 
         return AllTrekkingResponse(
-            trekkingList = trekkingMapper.toDtos(trekkingList),
+            trekkingList = trackingMapper.toDtos(trekkingList),
             hourSum = hourSum,
         )
     }
@@ -41,7 +41,7 @@ class TrackingServiceImpl(
                 date = trekkingCreationDto.date,
                 hours = trekkingCreationDto.hours,
                 employee = employeeService.getByUserNameAndProjectId(principal.name, trekkingCreationDto.projectId),
-                taskDetails = taskDetailsService.getByTaskId(trekkingCreationDto.taskId),
+                taskDetails = taskService.getByTaskId(trekkingCreationDto.taskId),
             )
         )
     }

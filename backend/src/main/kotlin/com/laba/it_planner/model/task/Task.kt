@@ -38,6 +38,9 @@ class Task(
     @Column(name = "creation_date")
     var creationDate: LocalDateTime? = null,
 
+    @Column(name = "description_file")
+    var descriptionFile: String? = null,
+
     @ManyToOne
     @JoinColumn(name = "project_id")
     val project: Project,

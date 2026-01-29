@@ -2,8 +2,8 @@ package com.laba.it_planner.controller.storage
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.repo.ProjectRepoFileDto
-import com.laba.it_planner.service.RepoService
-import com.laba.it_planner.service.StorageService
+import com.laba.it_planner.service.storage.RepoService
+import com.laba.it_planner.service.storage.StorageService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType

@@ -1,8 +1,8 @@
-package com.laba.it_planner.service.storage
+package com.laba.it_planner.service.storage.impl
 
 import com.laba.it_planner.exception.ApiException
-import com.laba.it_planner.service.FileProcessorFactory
-import com.laba.it_planner.service.FileService
+import com.laba.it_planner.service.storage.FileProcessorFactory
+import com.laba.it_planner.service.storage.FileService
 import io.minio.GetObjectArgs
 import io.minio.MinioClient
 import io.minio.RemoveObjectArgs
@@ -48,13 +48,11 @@ class FileServiceImpl(
     }
 
     override fun createDescriptionFileForTask(
-        projectName: String,
+        path: String,
         principal: Principal,
         taskUUID: String,
         description: String
     ): String {
-        val minioPath = "projects/$projectName/$taskUUID/description.txt"
-
         val tmpDir = File("tmp")
         if (!tmpDir.exists()) tmpDir.mkdirs()
 
@@ -63,7 +61,7 @@ class FileServiceImpl(
         try {
             tempFile.writeText(description, Charsets.UTF_8)
             val multipartFile: MultipartFile = SimpleMultipartFile(tempFile)
-            return saveFile(minioPath, multipartFile)
+            return saveFile(path, multipartFile)
         } finally {
             tempFile.delete()
         }
@@ -92,10 +90,6 @@ class FileServiceImpl(
         } catch (e: Exception) {
             throw ApiException("error.file.update", e.message.toString())
         }
-    }
-
-    override fun getCustomFilename(originalFilename: String?): String {
-        fileProcessorFactory.getProcessor()
     }
 
     private class SimpleMultipartFile(private val file: File) : MultipartFile {
