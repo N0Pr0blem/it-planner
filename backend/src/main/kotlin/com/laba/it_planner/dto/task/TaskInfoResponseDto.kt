@@ -3,10 +3,6 @@ package com.laba.it_planner.dto.task
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import com.laba.it_planner.dto.userInfo.UserInfoForTaskDto
-import com.laba.it_planner.model.task.TaskComplexity
-import com.laba.it_planner.model.task.TaskDetails
-import com.laba.it_planner.model.task.TaskStatus
-import com.laba.it_planner.model.task.TaskUrgency
 import java.time.LocalDateTime
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)

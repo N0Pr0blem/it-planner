@@ -1,5 +1,6 @@
 package com.laba.it_planner.model.project
 
+import com.laba.it_planner.model.storage.Storage
 import com.laba.it_planner.model.user.OauthUser
 import jakarta.persistence.*
 import java.time.LocalDateTime
@@ -19,5 +20,9 @@ class Project(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_user", nullable = false)
-    var createdUser: OauthUser? = null
+    var createdUser: OauthUser? = null,
+
+    @OneToOne
+    @JoinColumn(name = "storage_id", nullable = false)
+    val storage: Storage? = null,
 )

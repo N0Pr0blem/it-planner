@@ -35,6 +35,9 @@ dependencies {
     implementation 'org.postgresql:postgresql:42.7.5'
     implementation 'org.flywaydb:flyway-core'
 
+    implementation 'org.hibernate.orm:hibernate-core'
+    kapt 'org.hibernate.orm:hibernate-jpamodelgen'
+
     // JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'
