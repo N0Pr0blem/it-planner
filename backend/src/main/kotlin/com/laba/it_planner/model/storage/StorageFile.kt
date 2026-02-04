@@ -1,5 +1,6 @@
 package com.laba.it_planner.model.storage
 
+import com.laba.it_planner.utils.files.MimeType
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -19,4 +20,7 @@ class StorageFile(
     @ManyToOne
     @JoinColumn(name = "storage_id", nullable = false)
     var storage: Storage?,
+
+    @Enumerated(EnumType.STRING)
+    var mimeType: MimeType
 )

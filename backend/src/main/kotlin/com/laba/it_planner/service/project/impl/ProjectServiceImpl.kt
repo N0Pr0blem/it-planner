@@ -137,6 +137,13 @@ class ProjectServiceImpl(
         return projectRepository.findByTaskId(taskId)
     }
 
+    override fun getStorage(storageId: Long, principal: Principal): Storage {
+        val projects = getAllUsersProjects(principal.name)
+        val res = projects.find { project -> project.storage!!.id == storageId }
+        if(res==null) throw DataException("error.storage.file.permission", "")
+        return res.storage!!
+    }
+
     override fun getAllUsersProjects(username: String): List<Project> {
         val user = oauthService.getByUsername(username)
         return projectRepository.findAllByCreatedUser(user)
