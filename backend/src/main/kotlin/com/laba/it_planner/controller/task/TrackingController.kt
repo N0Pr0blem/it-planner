@@ -1,8 +1,8 @@
 package com.laba.it_planner.controller.task
 
 import com.laba.it_planner.dto.trekking.AllTrekkingResponse
-import com.laba.it_planner.dto.trekking.TrekkingCreationDto
-import com.laba.it_planner.dto.trekking.TrekkingResponseDto
+import com.laba.it_planner.dto.tracking.TrackingCreationDto
+import com.laba.it_planner.dto.tracking.TrackingResponseDto
 import com.laba.it_planner.mapper.task.TrackingMapper
 import com.laba.it_planner.service.task.TrackingService
 import io.swagger.v3.oas.annotations.Operation
@@ -19,10 +19,10 @@ class TrekkingController(
     @Operation(summary = "Create trekking for task")
     @PostMapping("/trekking")
     fun add(
-        @RequestBody trekkingCreationDto: TrekkingCreationDto,
+        @RequestBody trackingCreationDto: TrackingCreationDto,
         principal: Principal
-    ): ResponseEntity<TrekkingResponseDto> {
-        val res = trackingService.add(trekkingCreationDto, principal)
+    ): ResponseEntity<TrackingResponseDto> {
+        val res = trackingService.add(trackingCreationDto, principal)
         return ResponseEntity.ok(trackingMapper.toDto(res))
     }
 

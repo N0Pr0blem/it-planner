@@ -1,11 +1,11 @@
-package com.laba.it_planner.dto.trekking
+package com.laba.it_planner.dto.tracking
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import java.time.LocalDate
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
-data class TrekkingResponseDto(
+data class TrackingResponseDto(
     var id : Long,
     var date: LocalDate,
     var hours: Double,

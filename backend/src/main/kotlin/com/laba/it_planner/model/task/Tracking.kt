@@ -5,7 +5,7 @@ import jakarta.persistence.*
 import java.time.LocalDate
 
 @Entity
-@Table(name = "task_trekking")
+@Table(name = "task_tracking")
 class Tracking(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

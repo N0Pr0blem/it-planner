@@ -34,7 +34,6 @@ class Task(
     @Enumerated(EnumType.STRING)
     var status: TaskStatus? = null,
 
-
     @Column(name = "creation_date")
     var creationDate: LocalDateTime? = null,
 

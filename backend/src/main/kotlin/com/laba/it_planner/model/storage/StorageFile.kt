@@ -21,6 +21,7 @@ class StorageFile(
     @JoinColumn(name = "storage_id", nullable = false)
     var storage: Storage?,
 
+    @Column(name = "mime_type", columnDefinition = "TEXT")
     @Enumerated(EnumType.STRING)
     var mimeType: MimeType
 )
