@@ -45,8 +45,7 @@ class ProjectServiceImpl(
         } else {
             val storage = storageService.createStorage(
                 Storage(
-                    path = ("users/user_${userInfo.id}/projects/${UUID.randomUUID()}/storage"),
-                    files = emptyList(),
+                    path = ("users/user_${userInfo.id}/projects/${UUID.randomUUID()}/storage")
                 )
             )
 

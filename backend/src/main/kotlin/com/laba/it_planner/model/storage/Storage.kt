@@ -11,5 +11,5 @@ class Storage(
     @Column(name = "path")
     val path: String,
     @OneToMany(mappedBy = "storage")
-    val files: List<StorageFile>
+    val files: List<StorageFile>? = null
 )

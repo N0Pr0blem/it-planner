@@ -17,7 +17,7 @@ class StorageFile(
     @Column(name = "creation_date")
     var creationDate: LocalDateTime?,
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "storage_id", nullable = false)
     var storage: Storage?,
 
