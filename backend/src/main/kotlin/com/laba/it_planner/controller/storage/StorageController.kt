@@ -70,6 +70,6 @@ class StorageController(
     fun getAll(
         @ModelAttribute("storage") storage: Storage
     ): ResponseEntity<List<StorageFileDto>> {
-        return ResponseEntity.ok(storageFileMapper.toDtos(storage.files))
+        return ResponseEntity.ok(storageFileMapper.toDtos(storage.files?:emptyList()))
     }
 }

@@ -36,9 +36,9 @@ where ui.email = :username
 
     @Query(
         """
-    SELECT p.* from task_info ti 
-    left join project p ON p.id = ti.project_id
-    where ti.id = :task_id
+    SELECT p.* from task t
+    left join project p ON p.id = t.project_id
+    where t.id = :task_id
 """, nativeQuery = true
     )
     fun findByTaskId(@Param("task_id") taskId: Long): Project

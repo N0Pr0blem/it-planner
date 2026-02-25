@@ -64,7 +64,8 @@ class StorageServiceImpl(
     }
 
     fun getFile(storage: Storage, fileId: Long): StorageFile {
-        val file = storage.files.stream()
+        val files = storage.files ?: emptyList()
+        val file = files.stream()
             .filter { file -> file.id == fileId }
             .findFirst()
             .orElseThrow { DataException("error.storage.file.not_exist", fileId.toString()) }

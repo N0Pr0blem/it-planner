@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import java.util.Locale
 
 @RestController
 @RequestMapping("/api/v1")
@@ -88,10 +89,14 @@ class TaskInfoController(
     fun assignToMe(
         @PathVariable(name = "taskId") taskId: Long,
         @PathVariable(name = "projectId") projectId: Long,
-        principal: Principal
-    ): ResponseEntity<String> {
-        taskService.assignToMe(taskId, projectId, principal)
-        return ResponseEntity.ok("Successfully assign the task")
+        principal: Principal,
+        locale: Locale
+    ): ResponseEntity<MessageResponseDto> {
+        return ResponseEntity.ok(
+            MessageResponseDto(
+            taskService.assignToMe(taskId, projectId, principal,locale)
+        )
+        )
     }
 
     @Operation(summary = "Assign task to someone employee")

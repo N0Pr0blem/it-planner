@@ -9,6 +9,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import java.util.LinkedList
 import java.util.Locale
 import java.util.function.Consumer
 
@@ -19,12 +20,12 @@ class GlobalExceptionHandler(
 ) {
 
     @ExceptionHandler(MethodArgumentNotValidException::class)
-    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<MutableMap<String?, String?>?> {
-        val errors: MutableMap<String?, String?> = HashMap()
+    fun handleValidationException(ex: MethodArgumentNotValidException): ResponseEntity<LinkedList<MessageResponseDto>> {
+        val errors: LinkedList<MessageResponseDto> = LinkedList()
         ex.bindingResult
             .fieldErrors
-            .forEach(Consumer { error: FieldError? -> errors.put(error!!.field, error.defaultMessage) })
-        return ResponseEntity.badRequest().body<MutableMap<String?, String?>?>(errors)
+            .forEach(Consumer { error: FieldError? -> errors.add(MessageResponseDto(error!!.defaultMessage?:"")) })
+        return ResponseEntity.badRequest().body(errors)
     }
 
     @ExceptionHandler(ApiException::class)

@@ -21,13 +21,13 @@ CREATE TABLE user_info
 
 CREATE TABLE storage
 (
-    id   BIGINT PRIMARY KEY,
+    id   BIGSERIAL PRIMARY KEY,
     path VARCHAR(511) NOT NULL
 );
 
 CREATE TABLE storage_file
 (
-    id            BIGINT PRIMARY KEY,
+    id            BIGSERIAL PRIMARY KEY,
     name          VARCHAR(255) NOT NULL,
     creation_date TIMESTAMP,
     mime_type     VARCHAR(255) NOT NULL,

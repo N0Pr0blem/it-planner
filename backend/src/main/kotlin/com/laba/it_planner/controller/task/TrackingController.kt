@@ -12,11 +12,11 @@ import java.security.Principal
 
 @RestController
 @RequestMapping("/api/v1")
-class TrekkingController(
+class TrackingController(
     private val trackingService: TrackingService,
     private val trackingMapper: TrackingMapper
 ) {
-    @Operation(summary = "Create trekking for task")
+    @Operation(summary = "Create tracking for task")
     @PostMapping("/trekking")
     fun add(
         @RequestBody trackingCreationDto: TrackingCreationDto,
@@ -26,7 +26,7 @@ class TrekkingController(
         return ResponseEntity.ok(trackingMapper.toDto(res))
     }
 
-    @Operation(summary = "Get all trekking for task")
+    @Operation(summary = "Get all tracking for task")
     @GetMapping("/task/{taskId}/trekking")
     fun getAll(
         @PathVariable("taskId") taskId: Long,
@@ -36,7 +36,7 @@ class TrekkingController(
         return ResponseEntity.ok(res)
     }
 
-    @Operation(summary = "Delete trekking of task")
+    @Operation(summary = "Delete tracking of task")
     @DeleteMapping("/trekking/{trekkingId}")
     fun delete(
         @PathVariable("trekkingId") trekkingId: Long,

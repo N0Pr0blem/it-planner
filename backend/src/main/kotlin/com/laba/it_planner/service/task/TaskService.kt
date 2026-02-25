@@ -6,6 +6,7 @@ import com.laba.it_planner.dto.task.TaskInfoListing
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.model.task.Task
 import java.security.Principal
+import java.util.Locale
 
 interface TaskService {
     fun get(id: Long, principal: Principal): Task
@@ -13,7 +14,7 @@ interface TaskService {
     fun add(createTaskInfoRequestDto: CreateTaskInfoRequestDto, principal: Principal): Task
     fun update(taskId: Long, updateTaskInfoRequestDto: UpdateTaskInfoRequestDto, principal: Principal): Task
     fun delete(id: Long, principal: Principal)
-    fun assignToMe(taskId: Long, projectId: Long, principal: Principal)
+    fun assignToMe(taskId: Long, projectId: Long, principal: Principal,locale: Locale): String
     fun getDescription(taskId: Long, principal: Principal): MessageResponseDto
     fun getMy(principal: Principal): List<TaskInfoListing>?
     fun assignToEmployee(taskId: Long, projectId: Long, employeeId: Long, principal: Principal)

@@ -11,7 +11,6 @@ import com.laba.it_planner.model.task.Task
 import com.laba.it_planner.model.task.enum_old.TaskStatus
 import com.laba.it_planner.repository.projection.TaskListingProjection
 import com.laba.it_planner.repository.task.TaskRepository
-import com.laba.it_planner.service.*
 import com.laba.it_planner.service.mail.MailService
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
@@ -19,6 +18,7 @@ import com.laba.it_planner.service.storage.FileService
 import com.laba.it_planner.service.storage.StorageService
 import com.laba.it_planner.service.task.TaskService
 import jakarta.transaction.Transactional
+import org.springframework.context.MessageSource
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.security.Principal
@@ -35,6 +35,7 @@ class TaskServiceImpl(
     private val taskDescriptionMapper: TaskDescriptionMapper,
     private val mailService: MailService,
     private val storageService: StorageService,
+    private val messageSource: MessageSource,
 ) : TaskService {
     override fun get(id: Long, principal: Principal): Task {
         val taskInfoOpt = taskRepository.findById(id)
@@ -89,7 +90,7 @@ class TaskServiceImpl(
                     fromUser = employee,
                     toUser = null,
                     descriptionFile = fileService.createDescriptionFileForTask(
-                        path.replace("/storage", ""),
+                        path,
                         principal,
                         taskUUID,
                         createTaskInfoRequestDto.description
@@ -103,7 +104,7 @@ class TaskServiceImpl(
     }
 
     private fun fromProjectStorage(taskName: String, storage: Storage): String {
-        return storage.path.replace("/storage/", "/tasks/${taskName}/storage")
+        return storage.path.replace("/storage", "/tasks/${taskName}/storage")
     }
 
     override fun update(
@@ -118,7 +119,7 @@ class TaskServiceImpl(
         if (updateTaskInfoRequestDto.status != null) task.status = updateTaskInfoRequestDto.status!!
         if (updateTaskInfoRequestDto.description != null) {
             fileService.updateFile(
-                toDescriptionPath(taskId, task.descriptionFile!!),
+                "${task.storage!!.path}/${task.descriptionFile!!}",
                 updateTaskInfoRequestDto.description
             )
         }
@@ -132,20 +133,23 @@ class TaskServiceImpl(
         }
     }
 
-    override fun assignToMe(taskId: Long, projectId: Long, principal: Principal) {
+    override fun assignToMe(taskId: Long, projectId: Long, principal: Principal, locale: Locale): String {
         val taskOpt = taskRepository.findById(taskId)
         val employee = employeeService.getByUserNameAndProjectId(principal.name, projectId)
         if (taskOpt.isPresent) {
             val task = taskOpt.get()
             task.toUser = employee
             save(task)
+            return messageSource.getMessage("message.task.assign.successful", arrayOf(""), locale)
         }
+
+        return messageSource.getMessage("message.task.assign.exception", arrayOf(""), locale)
     }
 
     override fun getDescription(taskId: Long, principal: Principal): MessageResponseDto {
         val task = get(taskId, principal)
         if (task.descriptionFile != null) {
-            val message = taskDescriptionMapper.toDto(toDescriptionPath(taskId, task.descriptionFile!!))
+            val message = taskDescriptionMapper.toDto("${task.storage!!.path}/${task.descriptionFile!!}")
             return MessageResponseDto(message = message)
         } else return MessageResponseDto("")
     }
@@ -170,15 +174,6 @@ class TaskServiceImpl(
             } else "null",
             status = projection.getStatus(),
         )
-    }
-
-    fun toDescriptionPath(taskId: Long, taskFolder: String): String {
-        return getTaskFolderPath(taskId, taskFolder) + "/description.txt"
-    }
-
-    fun getTaskFolderPath(taskId: Long, taskFolder: String): String {
-        val project = projectService.getByTaskId(taskId)
-        return "projects/${project.name}/${taskFolder}"
     }
 
     override fun assignToEmployee(
