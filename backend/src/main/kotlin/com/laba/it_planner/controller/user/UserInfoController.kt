@@ -3,7 +3,7 @@ package com.laba.it_planner.controller.user
 import com.laba.it_planner.dto.userInfo.UserInfoPatchDto
 import com.laba.it_planner.dto.userInfo.UserInfoResponseDto
 import com.laba.it_planner.mapper.user.UserInfoMapper
-import com.laba.it_planner.service.UserInfoService
+import com.laba.it_planner.service.user.UserInfoService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*

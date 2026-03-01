@@ -8,4 +8,5 @@ interface TaskListingProjection {
     fun getSecondName(): String
     fun getProfileImage(): String?
     fun getStatus(): String?
+    fun getUserId(): Long
 }

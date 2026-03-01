@@ -5,9 +5,9 @@ import com.laba.it_planner.model.project.Employee
 import com.laba.it_planner.model.user.OauthUser
 import com.laba.it_planner.model.user.ProjectRole
 import com.laba.it_planner.repository.project.EmployeeRepository
-import com.laba.it_planner.service.storage.FileService
-import com.laba.it_planner.service.UserInfoService
 import com.laba.it_planner.service.project.EmployeeService
+import com.laba.it_planner.service.storage.FileService
+import com.laba.it_planner.service.user.UserInfoService
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.security.Principal
@@ -30,7 +30,7 @@ class EmployeeServiceImpl(
         val user = userInfoService.getUserInfo(principal)
         val result = employeeRepository.findAllByProjectId(projectId)
         if (isContainUser(result, user)) {
-            result.forEach { e -> e.user.profileImage = setImage(e.user.profileImage) }
+            result.forEach { e -> e.user.profileImage = setImage(e.user.id!!, e.user.profileImage) }
             return result
         } else {
             throw DataException("error.employee.access", "")
@@ -72,7 +72,7 @@ class EmployeeServiceImpl(
         val result = employeeRepository.findAllByProjectId(projectId)
         if (isContainUser(result, user) && isContainEmployee(result, employeeId)) {
             val employee = result.stream().filter { employee -> employee.id == employeeId }.findFirst().get()
-            employee.user.profileImage = setImage(employee.user.profileImage)
+            employee.user.profileImage = setImage(employee.user.id!!, employee.user.profileImage)
             return employee
         } else {
             throw DataException("error.employee.access", "")
@@ -98,9 +98,9 @@ class EmployeeServiceImpl(
         return false
     }
 
-    fun setImage(path: String?): String {
+    fun setImage(id: Long, path: String?): String {
         if (path != null) {
-            val image = fileService.getFile(path)
+            val image = fileService.getFile("users/user_${id}/profile/${path}")
             val encoded: ByteArray = Base64.getEncoder().encode(image)
             return String(encoded, StandardCharsets.UTF_8)
         } else return ""

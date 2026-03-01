@@ -1,4 +1,4 @@
-package com.laba.it_planner.service
+package com.laba.it_planner.service.user
 
 import com.laba.it_planner.dto.userInfo.UserInfoPatchDto
 import com.laba.it_planner.model.user.UserInfo

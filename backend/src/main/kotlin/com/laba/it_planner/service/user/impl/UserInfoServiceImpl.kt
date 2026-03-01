@@ -4,7 +4,7 @@ import com.laba.it_planner.dto.userInfo.UserInfoPatchDto
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.user.UserInfo
 import com.laba.it_planner.repository.user.UserInfoRepository
-import com.laba.it_planner.service.UserInfoService
+import com.laba.it_planner.service.user.UserInfoService
 import com.laba.it_planner.service.storage.FileService
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -30,8 +30,7 @@ class UserInfoServiceImpl(
             if (userInfoPatchDto.secondName != null) userInfo.secondName = userInfoPatchDto.secondName
             if (userInfoPatchDto.lastName != null) userInfo.lastName = userInfoPatchDto.lastName
             if (multipartFile != null) {
-                val extension = multipartFile.originalFilename!!.substringAfterLast(".")
-                val path = "users/user_${userInfo.id}/profile/avatar_${LocalDate.now()}.${extension}"
+                val path = "users/user_${userInfo.id}/profile"
                 userInfo.profileImage = fileService.saveFile(path, multipartFile);
             }
             return userInfoRepository.save(userInfo)
@@ -61,7 +60,7 @@ class UserInfoServiceImpl(
         if (userInfoOpt.isPresent) {
             val userInfo = userInfoOpt.get()
             if (userInfo.profileImage != null) {
-                val image = fileService.getFile(userInfo.profileImage!!)
+                val image = fileService.getFile("users/user_${userInfo.id}/profile/${userInfo.profileImage!!}")
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
                 userInfo.profileImage = String(encoded, StandardCharsets.UTF_8)
             }

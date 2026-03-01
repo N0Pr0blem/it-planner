@@ -15,5 +15,6 @@ interface TaskInfoMapper: Mappable<Task, TaskInfoResponseDto> {
     @Mapping(target = "urgency", source = "urgency.title")
     @Mapping(target = "status", source = "status")
     @Mapping(target = "complexity", source = "complexity.title")
+    @Mapping(target = "storageId", source = "storage.id")
     override fun toDto(entity: Task): TaskInfoResponseDto
 }

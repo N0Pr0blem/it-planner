@@ -168,7 +168,7 @@ class TaskServiceImpl(
             isCompleted = projection.getIsCompleted() ?: false,
             assignBy = "${projection.getFirstName()} ${projection.getSecondName()}",
             assignByImage = if (projection.getProfileImage() != null) {
-                val image = fileService.getFile(projection.getProfileImage()!!)
+                val image = fileService.getFile("users/user_${projection.getUserId()}/profile/${projection.getProfileImage()!!}")
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
                 String(encoded, StandardCharsets.UTF_8)
             } else "null",

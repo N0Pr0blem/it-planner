@@ -14,6 +14,7 @@ import com.laba.it_planner.service.mail.MailService
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
 import com.laba.it_planner.service.storage.StorageService
+import com.laba.it_planner.service.user.UserInfoService
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 import java.security.Principal
@@ -137,10 +138,14 @@ class ProjectServiceImpl(
     }
 
     override fun getStorage(storageId: Long, principal: Principal): Storage {
-        val projects = getAllUsersProjects(principal.name)
-        val res = projects.find { project -> project.storage!!.id == storageId }
-        if(res==null) throw DataException("error.storage.file.permission", "")
-        return res.storage!!
+        val usersProjects = getAllUsersProjects(principal.name)
+        val storageProject = storageService.getStoragesProject(storageId)
+        val isMatch = usersProjects.find { project -> project.id == storageProject.id }
+        if(isMatch==null) throw DataException("error.storage.file.permission", "")
+        else {
+            val res = storageService.get(storageId);
+            return res
+        }
     }
 
     override fun getAllUsersProjects(username: String): List<Project> {

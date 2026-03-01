@@ -16,5 +16,6 @@ data class TaskInfoResponseDto(
     var projectId: Long,
     var status: String,
     val assignedBy: UserInfoForTaskDto?,
-    val assignedTo: UserInfoForTaskDto?
+    val assignedTo: UserInfoForTaskDto?,
+    val storageId : Long,
 )

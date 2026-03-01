@@ -16,7 +16,8 @@ interface TaskRepository: JpaRepository<Task, Long> {
        ui.first_name as firstName,
        ui.second_name as secondName,
        t.status as status,
-       ui.profile_image as profileImage
+       ui.profile_image as profileImage,
+       ui.id as userId
 from task t
          left join employee e on e.id = t.to_user_id
          left join user_info ui on e.user_id = ui.id
@@ -30,7 +31,8 @@ where t.project_id = :project_id
            t.is_completed as isCompleted,
            ui.first_name as firstName,
            ui.second_name as secondName,
-           ui.profile_image as profileImage
+           ui.profile_image as profileImage,
+           ui.id as userId
     from task t
              left join employee e on e.id = t.to_user_id
              left join user_info ui on e.user_id = ui.id

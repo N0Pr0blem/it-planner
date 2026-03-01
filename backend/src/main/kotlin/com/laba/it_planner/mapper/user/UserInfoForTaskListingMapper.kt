@@ -15,7 +15,7 @@ class UserInfoForTaskListingMapper(
         val result = UserInfoForTaskDto()
         if(entity != null) {
             if (entity.profileImage != null) {
-                val image = fileService.getFile(entity.profileImage!!)
+                val image = fileService.getFile("users/user_${entity.id}/profile/${entity.profileImage!!}")
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
                 result.profileImage = String(encoded, StandardCharsets.UTF_8)
             }

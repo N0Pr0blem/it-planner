@@ -2,6 +2,7 @@ package com.laba.it_planner.service.storage.impl
 
 import com.laba.it_planner.dto.storage.StorageFileDataDto
 import com.laba.it_planner.exception.DataException
+import com.laba.it_planner.model.project.Project
 import com.laba.it_planner.model.storage.Storage
 import com.laba.it_planner.model.storage.StorageFile
 import com.laba.it_planner.repository.storage.StorageFileRepository
@@ -88,6 +89,21 @@ class StorageServiceImpl(
         fileService.deleteFile(path)
 
         return messageSource.getMessage("message.storage.successfully_delete", arrayOf(fileId), locale)
+    }
+
+    override fun getStoragesProject(storageId: Long): Project {
+        val res = storageRepository.getProjectByStorageId(storageId);
+
+        if (res == null) {
+            throw DataException("error.project_not_found", storageId.toString())
+        }
+
+        return res
+    }
+
+    override fun get(storageId: Long) : Storage{
+        return storageRepository.findById(storageId)
+            .orElseThrow{ DataException("error.project_not_found", storageId.toString())}
     }
 
     private fun getAbsolutePath(storage: Storage, file: StorageFile): String {
