@@ -55,4 +55,7 @@ class Task(
     @OneToOne
     @JoinColumn(name = "to_user_id")
     var toUser: Employee? = null,
+
+    @OneToMany(mappedBy = "task", cascade = [CascadeType.ALL], orphanRemoval = true)
+    var comments: MutableList<Comment>? = null
 )

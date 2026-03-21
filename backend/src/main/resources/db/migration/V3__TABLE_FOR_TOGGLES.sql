@@ -6,4 +6,5 @@ CREATE TABLE feature_toggles
     enabled     BOOLEAN default false
 );
 
-INSERT INTO feature_toggles values (1, 'email.sending', 'Activate sending verification code', false);
+INSERT INTO feature_toggles
+values (1, 'email.sending', 'Activate sending verification code', false);
