@@ -7,21 +7,26 @@ import com.laba.it_planner.dto.comment.CommentUpdateDto
 import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.mapper.task.CommentMapper
 import com.laba.it_planner.model.task.Comment
+import com.laba.it_planner.model.task.Comment_.author
 import com.laba.it_planner.model.task.Task
 import com.laba.it_planner.model.user.UserInfo
 import com.laba.it_planner.repository.task.CommentRepository
+import com.laba.it_planner.service.storage.FileService
 import com.laba.it_planner.service.task.CommentService
 import org.slf4j.LoggerFactory
 import org.springframework.context.MessageSource
 import org.springframework.stereotype.Service
+import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
+
 
 @Service
 class CommentServiceImpl(
     private val commentRepository: CommentRepository,
     private val commentMapper: CommentMapper,
-    private val messageSource: MessageSource
+    private val messageSource: MessageSource,
+    private val fileService: FileService
 ) : CommentService {
     private val logger = LoggerFactory.getLogger(CommentServiceImpl::class.java.name)
 
@@ -45,8 +50,18 @@ class CommentServiceImpl(
     override fun getAll(task: Task): List<CommentInfoDto> {
         val comments = commentRepository.findAllByTaskId(task.id)
         logger.info("Successfully got {} comments", comments.size)
-
+        setProfileImageByPath(comments)
         return commentMapper.toDtos(comments)
+    }
+
+    private fun setProfileImageByPath(comments: List<Comment>) {
+        comments.stream().forEach { comment ->
+            if (comment.author.profileImage != null) {
+                val image = fileService.getFile("users/user_${comment.author.id}/profile/${comment.author.profileImage!!}")
+                val encoded: ByteArray = Base64.getEncoder().encode(image)
+                comment.author.profileImage = String(encoded, StandardCharsets.UTF_8)
+            }
+        }
     }
 
     override fun update(
