@@ -1,6 +1,5 @@
 package com.laba.it_planner.controller.project
 
-import com.laba.it_planner.controller.task.CommentController
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.employee.EmployeeInviteDto
 import com.laba.it_planner.dto.employee.EmployeeResponseDto

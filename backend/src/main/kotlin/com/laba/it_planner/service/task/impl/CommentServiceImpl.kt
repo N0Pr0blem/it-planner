@@ -56,7 +56,7 @@ class CommentServiceImpl(
 
     private fun setProfileImageByPath(comments: List<Comment>) {
         comments.stream().forEach { comment ->
-            if (comment.author.profileImage != null) {
+            if (comment.author.profileImage != null && comment.author.profileImage!!.length<41) {
                 val image = fileService.getFile("users/user_${comment.author.id}/profile/${comment.author.profileImage!!}")
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
                 comment.author.profileImage = String(encoded, StandardCharsets.UTF_8)
