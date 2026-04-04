@@ -12,6 +12,7 @@ import com.laba.it_planner.model.task.enum_old.TaskStatus
 import com.laba.it_planner.repository.projection.TaskListingProjection
 import com.laba.it_planner.repository.task.TaskRepository
 import com.laba.it_planner.service.mail.MailService
+import com.laba.it_planner.service.mail.impl.MailServiceImpl
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
 import com.laba.it_planner.service.storage.FileService
@@ -24,6 +25,7 @@ import java.nio.charset.StandardCharsets
 import java.security.Principal
 import java.time.LocalDateTime
 import java.util.*
+import java.util.logging.Logger
 import java.util.stream.Collectors
 
 @Service
@@ -37,6 +39,8 @@ class TaskServiceImpl(
     private val storageService: StorageService,
     private val messageSource: MessageSource,
 ) : TaskService {
+    private val logger: Logger = Logger.getLogger(TaskServiceImpl::class.java.name)
+
     override fun get(id: Long, principal: Principal): Task {
         val taskInfoOpt = taskRepository.findById(id)
         if (taskInfoOpt.isPresent) {
@@ -57,7 +61,7 @@ class TaskServiceImpl(
     ): List<TaskInfoListing> {
         if (employeeService.checkPermission(projectId, principal)) {
             val dbResponse = taskRepository.findAllByProjectId(projectId)
-            dbResponse.forEach { taskInfo -> println("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
+            dbResponse.forEach { taskInfo -> logger.info("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
             return dbResponse.stream().map { projection -> fromProjection(projection) }
                 .collect(Collectors.toList())
         } else {

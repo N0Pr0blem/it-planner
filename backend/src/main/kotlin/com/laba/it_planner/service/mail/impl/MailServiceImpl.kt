@@ -16,6 +16,7 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.logging.Logger
 
 @Service
 class MailServiceImpl(
@@ -36,10 +37,12 @@ class MailServiceImpl(
 ) : MailService {
 
     private lateinit var emailExecutor: ExecutorService
+    private lateinit var logger: Logger
 
     @PostConstruct
     fun init() {
-        emailExecutor = Executors.newFixedThreadPool(COUNT_OF_THREADS_FOR_MAIL_SERVICE);
+        emailExecutor = Executors.newFixedThreadPool(COUNT_OF_THREADS_FOR_MAIL_SERVICE)
+        logger = Logger.getLogger(MailServiceImpl::class.java.name)
     }
 
     private fun fillCodeInTemplate(template: String, code: String): String {
@@ -60,7 +63,7 @@ class MailServiceImpl(
                 StreamUtils.copyToString(inputStream, StandardCharsets.UTF_8)
             }
         } catch (e: IOException) {
-            println("Failed to load template from path: $relativePath \n\n$e")
+            logger.warning("Failed to load template from path: $relativePath \n\n$e")
             throw IllegalArgumentException("Template not found or cannot be read: $relativePath", e)
         }
     }
@@ -81,12 +84,15 @@ class MailServiceImpl(
                     }
 
                     mailSender.send(message)
-                    println("Activation code email sent to: $to")
+                    logger.info("Activation code email sent to: $to")
                 } catch (e: Exception) {
-                    println("Failed to send activation code email to: $to \n\n $e")
+                    logger.warning("Failed to send activation code email to: $to \n\n $e")
                     throw DataException("error.mail.failed_to_send", to)
                 }
             }
+        }
+        else{
+            logger.warning("Failed to send activation code email to: $to. Feature is disabled")
         }
     }
 
@@ -106,12 +112,14 @@ class MailServiceImpl(
                     }
 
                     mailSender.send(message)
-                    println("Information email sent to: $to")
+                    logger.info("Information email sent to: $to")
                 } catch (e: Exception) {
-                    println("Failed to send information email to: $to\n\n$e")
+                    logger.warning("Failed to send information email to: $to\n\n$e")
                     throw DataException("errors.mail.failed_to_send", to)
                 }
             }
+        }else{
+            logger.warning("Failed to send activation code email to: $to. Feature is disabled")
         }
     }
 
@@ -128,11 +136,13 @@ class MailServiceImpl(
                     }
 
                     mailSender.send(message)
-                    println("Email sent successfully to: $to")
+                    logger.info("Email sent successfully to: $to")
                 } catch (e: Exception) {
-                    println("Failed to send email to: $to \n\n" + e.message)
+                    logger.warning("Failed to send email to: $to \n\n" + e.message)
                 }
             }
+        }else{
+            logger.warning("Failed to send activation code email to: $to. Feature is disabled")
         }
     }
 
