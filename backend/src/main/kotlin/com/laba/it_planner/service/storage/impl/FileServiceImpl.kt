@@ -77,12 +77,13 @@ class FileServiceImpl(
             if (!tmpDir.exists()) tmpDir.mkdirs()
 
             val tempFile = File(tmpDir, "update_${System.currentTimeMillis()}.txt")
-
+            deleteFile(descriptionFile)
+            val path = descriptionFile.substringBeforeLast("/")
             try {
                 tempFile.writeText(description, Charsets.UTF_8)
                 val multipartFile = SimpleMultipartFile(tempFile)
 
-                return saveFile(descriptionFile, multipartFile)
+                return saveFile(path, multipartFile)
 
             } finally {
                 tempFile.delete()

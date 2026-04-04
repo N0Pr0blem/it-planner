@@ -72,3 +72,12 @@ management:
     export:
       simple:
         enabled: true
+
+ai:
+  defaultLimitPerDay: ${REQUEST_LIMIT_PER_DAY}
+  minRequestLength: ${MIN_AI_REQUEST_LENGTH}
+  openai:
+    api:
+      url: ${OPEN_AI_API_URL}
+      model: ${OPEN_AI_API_MODEL}
+      key: ${OPEN_AI_API_KEY}

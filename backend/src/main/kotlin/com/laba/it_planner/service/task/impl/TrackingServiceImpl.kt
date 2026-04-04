@@ -2,6 +2,7 @@ package com.laba.it_planner.service.task.impl
 
 import com.laba.it_planner.dto.trekking.AllTrekkingResponse
 import com.laba.it_planner.dto.tracking.TrackingCreationDto
+import com.laba.it_planner.dto.tracking.TrackingResponseDto
 import com.laba.it_planner.mapper.task.TrackingMapper
 import com.laba.it_planner.model.task.Tracking
 import com.laba.it_planner.repository.task.TrackingRepository
@@ -50,5 +51,16 @@ class TrackingServiceImpl(
         if(trackingRepository.existsById(trekkingId)) {
             trackingRepository.deleteById(trekkingId)
         }
+    }
+
+    override fun getAllUsersTracking(principal: Principal):AllTrekkingResponse {
+        val trekkingList = trackingRepository.findAllByUsername(principal.name)
+
+        val hourSum = trekkingList.sumOf { it.hours }
+
+        return AllTrekkingResponse(
+            trekkingList = trackingMapper.toDtos(trekkingList),
+            hourSum = hourSum,
+        )
     }
 }

@@ -10,8 +10,18 @@ interface TrackingRepository : JpaRepository<Tracking, Long> {
         """
         SELECT tt.* FROM task_tracking tt
                     LEFT JOIN task t ON t.id = tt.task_id
-        WHERE tt.id = :task_id
+        WHERE t.id = :task_id
     """, nativeQuery = true
     )
     fun findAllByTaskId(@Param("task_id") taskId: Long):List<Tracking>
+
+    @Query(
+        """
+        SELECT tt.* FROM task_tracking tt
+                     LEFT JOIN employee e ON e.id = tt.employee_id
+                     LEFT JOIN user_info ui ON ui.id = e.user_id
+        WHERE ui.email = :name
+    """, nativeQuery = true
+    )
+    fun findAllByUsername(@Param("name") name: String):List<Tracking>
 }

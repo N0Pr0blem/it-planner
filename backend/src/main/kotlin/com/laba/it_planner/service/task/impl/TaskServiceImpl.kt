@@ -122,7 +122,7 @@ class TaskServiceImpl(
         if (updateTaskInfoRequestDto.urgency != null) task.urgency = updateTaskInfoRequestDto.urgency!!
         if (updateTaskInfoRequestDto.status != null) task.status = updateTaskInfoRequestDto.status!!
         if (updateTaskInfoRequestDto.description != null) {
-            fileService.updateFile(
+            task.descriptionFile = fileService.updateFile(
                 "${task.storage!!.path}/${task.descriptionFile!!}",
                 updateTaskInfoRequestDto.description
             )

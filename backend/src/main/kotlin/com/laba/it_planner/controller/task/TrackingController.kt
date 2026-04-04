@@ -54,4 +54,13 @@ class TrackingController(
         logger.info("EVENT_DELETE_TRACKING | Ending deleting tracking for task")
         return ResponseEntity.ok("Successfully deleted")
     }
+
+    @Operation(summary="Get all users tracking")
+    @GetMapping("/profile/tracking")
+    fun getUsersTracking(principal: Principal): ResponseEntity<AllTrekkingResponse> {
+        logger.info("EVENT_GET_TRACKING | Start getting tracking for task")
+        val res = trackingService.getAllUsersTracking(principal);
+        logger.info("EVENT_GET_TRACKING | Ending getting tracking for task")
+        return ResponseEntity.ok(res);
+    }
 }
