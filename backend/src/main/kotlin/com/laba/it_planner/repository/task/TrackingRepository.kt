@@ -10,7 +10,7 @@ interface TrackingRepository : JpaRepository<Tracking, Long> {
         """
         SELECT tt.* FROM task_tracking tt
                     LEFT JOIN task t ON t.id = tt.task_id
-        WHERE tt.id = :task_id
+        WHERE t.id = :task_id
     """, nativeQuery = true
     )
     fun findAllByTaskId(@Param("task_id") taskId: Long):List<Tracking>

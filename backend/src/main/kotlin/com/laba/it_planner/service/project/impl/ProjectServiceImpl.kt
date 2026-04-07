@@ -138,7 +138,7 @@ class ProjectServiceImpl(
     }
 
     override fun getStorage(storageId: Long, principal: Principal): Storage {
-        val usersProjects = getAllUsersProjects(principal.name)
+        val usersProjects = getAllUsersWorkProjects(principal.name)
         val storageProject = storageService.getStoragesProject(storageId)
         val isMatch = usersProjects.find { project -> project.id == storageProject.id }
         if(isMatch==null) throw DataException("error.storage.file.permission", "")
@@ -151,6 +151,9 @@ class ProjectServiceImpl(
     override fun getAllUsersProjects(username: String): List<Project> {
         val user = oauthService.getByUsername(username)
         return projectRepository.findAllByCreatedUser(user)
+    }
+    fun getAllUsersWorkProjects(username: String): List<Project> {
+        return projectRepository.getAllUsersProjectsByUsername(username)
     }
 
 }

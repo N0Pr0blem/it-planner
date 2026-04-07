@@ -2,51 +2,55 @@ package com.laba.it_planner.service.ai.impl
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.laba.it_planner.config.AIConfig
 import com.laba.it_planner.dto.ai.AIRequestDto
 import com.laba.it_planner.dto.ai.AIRequestResponseDto
+import com.laba.it_planner.exception.DataException
 import com.laba.it_planner.model.ai.AIRequest
 import com.laba.it_planner.model.ai.AIRequestPattern
 import com.laba.it_planner.repository.ai.AIRequestRepository
 import com.laba.it_planner.service.ai.AIRequestService
 import com.laba.it_planner.service.user.UserInfoService
-import okhttp3.*
+import com.laba.it_planner.utils.feature.FeatureToggleService
 import okhttp3.MediaType.Companion.toMediaType
-import org.springframework.beans.factory.annotation.Value
+import okhttp3.Request
+import okhttp3.RequestBody
 import org.springframework.stereotype.Service
 import java.io.IOException
-import java.net.InetSocketAddress
-import java.net.Proxy
 import java.security.Principal
 import java.time.LocalDateTime
-import java.util.concurrent.TimeUnit
 import java.util.logging.Logger
 
 @Service
 class AIRequestServiceImpl(
     private val aiRequestRepository: AIRequestRepository,
     private val userInfoService: UserInfoService,
-
-    @Value("\${openai.api.key}")
-    private val openAiApiKey: String
+    private val aiConfig: AIConfig,
+    private val featureToggleService: FeatureToggleService
 ) : AIRequestService {
 
     private val logger: Logger = Logger.getLogger(AIRequestServiceImpl::class.java.name)
     private val gson = Gson()
 
-    // 👉 Настройка клиента с увеличенными таймаутами
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .proxy(Proxy(Proxy.Type.HTTP, InetSocketAddress("127.0.0.1", 8081)))
-        .connectTimeout(30, TimeUnit.SECONDS)   // Время на установку соединения
-        .writeTimeout(30, TimeUnit.SECONDS)     // Время на отправку запроса
-        .readTimeout(60, TimeUnit.SECONDS)      // Время на чтение ответа (OpenAI может думать долго)
-        .callTimeout(90, TimeUnit.SECONDS)      // Общее время на весь вызов
-        .retryOnConnectionFailure(true)          // Повторять при сбоях соединения
-        .build()
-
     override fun sendRequest(
         aIRequestDto: AIRequestDto,
         principal: Principal
     ): AIRequestResponseDto {
+
+        if (aIRequestDto.request.length < aiConfig.minRequestLength) {
+            logger.warning("Count of ai request symbols ${aIRequestDto.request.length}")
+            throw DataException("error.ai.symbols.count", "");
+        }
+
+        if(!featureToggleService.isEnabled("ai.sending")){
+            return AIRequestResponseDto(
+                requestId = 0,
+                response = aIRequestDto.request,
+                pattern = aIRequestDto.pattern,
+                originalRequest = aIRequestDto.request,
+                processingTimeMs = 0
+            )
+        }
 
         val startTime = System.currentTimeMillis()
 
@@ -77,11 +81,8 @@ class AIRequestServiceImpl(
     }
 
     private fun sendToOpenAI(prompt: String): String {
-
-        val url = "https://api.openai.com/v1/responses"
-
         val payload = mapOf(
-            "model" to "gpt-5-nano",
+            "model" to aiConfig.openAiApiModel,
             "input" to listOf(
                 mapOf(
                     "role" to "system",
@@ -106,15 +107,15 @@ class AIRequestServiceImpl(
         )
 
         val request = Request.Builder()
-            .url(url)
+            .url(aiConfig.openAiApiUrl)
             .post(requestBody)
-            .addHeader("Authorization", "Bearer $openAiApiKey")
+            .addHeader("Authorization", "Bearer ${aiConfig.openAiApiKey}")
             .addHeader("Content-Type", "application/json")
             .build()
 
         return try {
             logger.info("Sending request to OpenAI via proxy 127.0.0.1:8081...")
-            client.newCall(request).execute().use { response ->
+            aiConfig.client().newCall(request).execute().use { response ->
 
                 val responseBody = response.body?.string()
                     ?: throw RuntimeException("Empty response from OpenAI")
