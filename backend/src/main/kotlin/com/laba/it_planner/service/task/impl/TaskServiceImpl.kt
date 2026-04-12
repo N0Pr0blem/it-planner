@@ -1,8 +1,12 @@
 package com.laba.it_planner.service.task.impl
 
+import TaskPageRequest
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
+import com.laba.it_planner.dto.task.TaskArchiveDto
+import com.laba.it_planner.dto.task.TaskDeleteDto
 import com.laba.it_planner.dto.task.TaskInfoListing
+import com.laba.it_planner.dto.task.TaskListingResponse
 import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
 import com.laba.it_planner.exception.AccessException
 import com.laba.it_planner.mapper.task.TaskDescriptionMapper
@@ -12,7 +16,6 @@ import com.laba.it_planner.model.task.enum_old.TaskStatus
 import com.laba.it_planner.repository.projection.TaskListingProjection
 import com.laba.it_planner.repository.task.TaskRepository
 import com.laba.it_planner.service.mail.MailService
-import com.laba.it_planner.service.mail.impl.MailServiceImpl
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
 import com.laba.it_planner.service.storage.FileService
@@ -57,13 +60,30 @@ class TaskServiceImpl(
 
     override fun getAll(
         projectId: Long,
+        pageRequest: TaskPageRequest,
         principal: Principal
-    ): List<TaskInfoListing> {
+    ): TaskListingResponse {
         if (employeeService.checkPermission(projectId, principal)) {
-            val dbResponse = taskRepository.findAllByProjectId(projectId)
+            val archived = pageRequest.archive;
+            var pages = 0
+            val dbResponse = if (archived) {
+                val page = taskRepository.findAllByProjectIdWithPagination(projectId, true, pageRequest.toPageable())
+                pages = page.totalPages
+                page.stream().collect(Collectors.toList())
+            } else {
+                taskRepository.findAllByProjectId(projectId, false)
+            }
             dbResponse.forEach { taskInfo -> logger.info("${taskInfo.getId()} ${taskInfo.getName()} ${taskInfo.getFirstName()} ${taskInfo.getProfileImage()}") }
-            return dbResponse.stream().map { projection -> fromProjection(projection) }
+            val tasks = dbResponse.stream().map { projection -> fromProjection(projection) }
                 .collect(Collectors.toList())
+
+            return TaskListingResponse(
+                tasks = tasks,
+                pageNumber = if (archived) pageRequest.page else 0,
+                size = if (archived) pageRequest.size else 0,
+                archived = archived,
+                pages = pages
+            )
         } else {
             throw AccessException("error.access.denied", "")
         }
@@ -172,7 +192,8 @@ class TaskServiceImpl(
             isCompleted = projection.getIsCompleted() ?: false,
             assignBy = "${projection.getFirstName()} ${projection.getSecondName()}",
             assignByImage = if (projection.getProfileImage() != null) {
-                val image = fileService.getFile("users/user_${projection.getUserId()}/profile/${projection.getProfileImage()!!}")
+                val image =
+                    fileService.getFile("users/user_${projection.getUserId()}/profile/${projection.getProfileImage()!!}")
                 val encoded: ByteArray = Base64.getEncoder().encode(image)
                 String(encoded, StandardCharsets.UTF_8)
             } else "null",
@@ -206,5 +227,41 @@ class TaskServiceImpl(
 
     override fun save(task: Task): Task {
         return taskRepository.save(task)
+    }
+
+    fun save(tasks: List<Task>){
+        taskRepository.saveAll(tasks)
+    }
+
+    override fun hideTask(
+        archiveDto: TaskArchiveDto,
+        locale: Locale
+    ): String {
+        val tasks = taskRepository.findAllById(archiveDto.ids)
+        if (tasks.isNotEmpty()) {
+            tasks.forEach {it->it.hide=archiveDto.archive}
+            save(tasks)
+        }
+
+        return messageSource.getMessage("message.task.hide.successful", arrayOf(""), locale)
+    }
+
+    override fun deleteAll(deleteDto: TaskDeleteDto, principal: Principal) {
+        val deleteTasks = taskRepository.findAllById(deleteDto.ids)
+        taskRepository.deleteAll(deleteTasks)
+    }
+
+    override fun hideTask(
+        taskId: Long,
+        locale: Locale
+    ): String {
+        val taskOpt = taskRepository.findById(taskId)
+        if (taskOpt.isPresent) {
+            val task = taskOpt.get()
+            task.hide = false
+            save(task)
+        }
+
+        return messageSource.getMessage("message.task.hide.successful", arrayOf(""), locale)
     }
 }

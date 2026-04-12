@@ -1,8 +1,7 @@
 package com.laba.it_planner.service.task
 
-import com.laba.it_planner.dto.trekking.AllTrekkingResponse
+import com.laba.it_planner.dto.tracking.AllTrekkingResponse
 import com.laba.it_planner.dto.tracking.TrackingCreationDto
-import com.laba.it_planner.dto.tracking.TrackingResponseDto
 import com.laba.it_planner.model.task.Tracking
 import java.security.Principal
 

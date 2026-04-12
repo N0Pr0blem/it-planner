@@ -57,5 +57,8 @@ class Task(
     var toUser: Employee? = null,
 
     @OneToMany(mappedBy = "task", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var comments: MutableList<Comment>? = null
+    var comments: MutableList<Comment>? = null,
+
+    @Column(name = "hide")
+    var hide: Boolean? = false
 )

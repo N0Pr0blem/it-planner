@@ -11,5 +11,6 @@ interface TrackingMapper : Mappable<Tracking, TrackingResponseDto> {
     @Mapping(target = "employeeFirstName", source = "employee.user.firstName")
     @Mapping(target = "employeeSecondName", source = "employee.user.secondName")
     @Mapping(target = "taskDetailsId", source = "taskDetails.id")
+    @Mapping(target = "taskName", source = "taskDetails.name")
     override fun toDto(entity: Tracking): TrackingResponseDto
 }

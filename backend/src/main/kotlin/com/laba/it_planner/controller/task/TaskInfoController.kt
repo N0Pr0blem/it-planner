@@ -1,18 +1,15 @@
 package com.laba.it_planner.controller.task
 
-import com.laba.it_planner.controller.storage.StorageController
+import TaskPageRequest
 import com.laba.it_planner.dto.MessageResponseDto
-import com.laba.it_planner.dto.task.CreateTaskInfoRequestDto
-import com.laba.it_planner.dto.task.TaskInfoListing
-import com.laba.it_planner.dto.task.TaskInfoResponseDto
-import com.laba.it_planner.dto.task.UpdateTaskInfoRequestDto
+import com.laba.it_planner.dto.task.*
 import com.laba.it_planner.mapper.task.TaskInfoMapper
 import com.laba.it_planner.service.task.TaskService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
-import java.util.Locale
+import java.util.*
 import java.util.logging.Logger
 
 @RestController
@@ -27,10 +24,11 @@ class TaskInfoController(
     @GetMapping("/project/{projectId}/browse")
     fun getAll(
         @PathVariable(name = "projectId") projectId: Long,
+        pageRequest: TaskPageRequest,
         principal: Principal
-    ): ResponseEntity<List<TaskInfoListing>> {
+    ): ResponseEntity<TaskListingResponse> {
         logger.info("EVENT_GET_ALL_TASKS | Start getting all tasks")
-        val res = taskService.getAll(projectId, principal)
+        val res = taskService.getAll(projectId, pageRequest, principal)
         logger.info("EVENT_GET_ALL_TASKS | Ending getting all tasks")
         return ResponseEntity.ok(res)
     }
@@ -98,9 +96,18 @@ class TaskInfoController(
     @Operation(summary = "Delete task of project")
     @DeleteMapping("/task/{taskId}")
     fun delete(@PathVariable(name = "taskId") taskId: Long, principal: Principal): ResponseEntity<String> {
-        logger.info("EVENT_DELETE_PROJECT | Start deleting project")
+        logger.info("EVENT_DELETE_TASK | Start deleting task")
         taskService.delete(taskId, principal)
-        logger.info("EVENT_DELETE_PROJECT | Ending deleting project")
+        logger.info("EVENT_DELETE_TASK | Ending deleting task")
+        return ResponseEntity.ok("Successfully deleted the task")
+    }
+
+    @Operation(summary = "Delete task of project")
+    @PostMapping("/task/delete")
+    fun deleteAll(@RequestBody deleteDto: TaskDeleteDto, principal: Principal): ResponseEntity<String> {
+        logger.info("EVENT_DELETE_TASKS | Start deleting tasks")
+        taskService.deleteAll(deleteDto, principal)
+        logger.info("EVENT_DELETE_TASKS | Ending deleting tasks")
         return ResponseEntity.ok("Successfully deleted the task")
     }
 
@@ -113,7 +120,7 @@ class TaskInfoController(
         locale: Locale
     ): ResponseEntity<MessageResponseDto> {
         logger.info("EVENT_ASSIGN_TASK_INFO | Start assigning project to login user")
-        val res =MessageResponseDto(taskService.assignToMe(taskId, projectId, principal,locale))
+        val res = MessageResponseDto(taskService.assignToMe(taskId, projectId, principal, locale))
         logger.info("EVENT_ASSIGN_TASK_INFO | Ending assigning project to login user")
         return ResponseEntity.ok(res)
     }
@@ -130,5 +137,31 @@ class TaskInfoController(
         taskService.assignToEmployee(taskId, projectId, employeeId, principal)
         logger.info("EVENT_ASSIGN_TASK_INFO | Ending assigning project to someone employee")
         return ResponseEntity.ok("Successfully assign the task")
+    }
+
+    @Operation(summary = "Hide task to archive")
+    @PostMapping("/task/archive")
+    fun hideTask(
+        @RequestBody archiveDto: TaskArchiveDto,
+        locale: Locale
+    ): ResponseEntity<MessageResponseDto> {
+        logger.info("EVENT_HIDE_TASK | Start hide tasks")
+        val res = MessageResponseDto(taskService.hideTask(archiveDto, locale))
+        logger.info("EVENT_HIDE_TASK | Ending hide tasks")
+
+        return ResponseEntity.ok(res)
+    }
+
+    @Operation(summary = "Hide task to archive")
+    @PutMapping("/task/{taskId}")
+    fun hideTask(
+        @PathVariable(name = "taskId") taskId: Long,
+        locale: Locale
+    ): ResponseEntity<MessageResponseDto> {
+        logger.info("EVENT_HIDE_TASK | Start hide task")
+        val res = MessageResponseDto(taskService.hideTask(taskId, locale))
+        logger.info("EVENT_HIDE_TASK | Ending hide task")
+
+        return ResponseEntity.ok(res)
     }
 }

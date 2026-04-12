@@ -11,5 +11,6 @@ data class TrackingResponseDto(
     var hours: Double,
     var employeeFirstName: String?,
     var employeeSecondName: String?,
-    var taskDetailsId: Long
+    var taskDetailsId: Long,
+    var taskName: String
 )
