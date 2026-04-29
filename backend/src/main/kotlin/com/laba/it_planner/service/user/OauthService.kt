@@ -1,4 +1,4 @@
-package com.laba.it_planner.service
+package com.laba.it_planner.service.user
 
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.oauth.AuthRequestDto
@@ -15,4 +15,8 @@ interface OauthService {
     fun authenticate(oauthRequestDto: AuthRequestDto): TokenDetails
 
     fun verify(username: String, code: String): MessageResponseDto
+    
+    fun recoverCode(username: String) : MessageResponseDto
+
+    fun recoverPassword(username: String, code: String, password: String) : MessageResponseDto
 }

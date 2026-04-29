@@ -1,5 +1,6 @@
 package com.laba.it_planner.service.user.impl
 
+import com.laba.it_planner.controller.user.OauthController
 import com.laba.it_planner.dto.MessageResponseDto
 import com.laba.it_planner.dto.oauth.AuthRequestDto
 import com.laba.it_planner.dto.oauth.RegisterRequestDto
@@ -13,12 +14,14 @@ import com.laba.it_planner.repository.user.OauthUserRepository
 import com.laba.it_planner.repository.user.UserInfoRepository
 import com.laba.it_planner.security.TokenDetails
 import com.laba.it_planner.service.mail.MailService
-import com.laba.it_planner.service.OauthService
+import com.laba.it_planner.service.user.OauthService
 import com.laba.it_planner.service.SecurityService
 import com.laba.it_planner.utils.feature.FeatureToggleService
+import jakarta.transaction.Transactional
 import org.apache.commons.lang3.RandomStringUtils
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
+import java.util.logging.Logger
 
 @Service
 class OauthServiceImpl(
@@ -28,6 +31,7 @@ class OauthServiceImpl(
     private val mailService: MailService,
     private val toggleService: FeatureToggleService
 ) : OauthService {
+    private val logger: Logger = Logger.getLogger(OauthServiceImpl::class.java.name)
 
     override fun getByUsername(username: String): OauthUser {
         return oauthRepository.findByUsername(username)
@@ -77,7 +81,38 @@ class OauthServiceImpl(
             user.verificationCode = null
             user.enabled = true
             oauthRepository.save(user)
+            logger.info("$username successfully verified by code $code")
+
             "$username successfully verified"
+        } else throw AccessException("error.user.verification_code", "")
+
+        return MessageResponseDto(message = result)
+    }
+
+    @Transactional
+    override fun recoverCode(username: String): MessageResponseDto {
+        val user = getByUsername(username)
+        if(!user.enabled) {
+            throw AuthException("error.user.disabled", "")
+        }
+        user.verificationCode = generate4DigitCode()
+        mailService.sendActivationCodeForm(user.username!!, user.verificationCode!!)
+        logger.info("Successfully send recover code for user ${user.username}")
+
+        return MessageResponseDto(message = "Successfully send recover code for user ${user.username}")
+    }
+
+    @Transactional
+    override fun recoverPassword(username: String, code: String, password: String)  : MessageResponseDto {
+        val user = getByUsername(username)
+        val result = if (user.verificationCode == code) {
+            user.verificationCode = null
+            user.password = securityService.hashPassword(password)
+            oauthRepository.save(user)
+            logger.info("$username successfully change password")
+            mailService.sendInformationForm(user.username!!, "You successfully change password")
+
+            "$username successfully change password"
         } else throw AccessException("error.user.verification_code", "")
 
         return MessageResponseDto(message = result)

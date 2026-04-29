@@ -2,7 +2,7 @@ package com.laba.it_planner.security;
 
 import com.laba.it_planner.exception.AuthException;
 import com.laba.it_planner.model.user.OauthUser;
-import com.laba.it_planner.service.OauthService;
+import com.laba.it_planner.service.user.OauthService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;

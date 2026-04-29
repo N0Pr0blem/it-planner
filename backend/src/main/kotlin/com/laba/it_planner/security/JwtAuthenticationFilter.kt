@@ -1,6 +1,6 @@
 package com.laba.it_planner.security
 
-import com.laba.it_planner.service.OauthService
+import com.laba.it_planner.service.user.OauthService
 import com.laba.it_planner.service.SecurityService
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest

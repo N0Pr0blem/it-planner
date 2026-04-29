@@ -9,11 +9,11 @@ import com.laba.it_planner.model.project.Project
 import com.laba.it_planner.model.storage.Storage
 import com.laba.it_planner.model.user.ProjectRole
 import com.laba.it_planner.repository.project.ProjectRepository
-import com.laba.it_planner.service.*
 import com.laba.it_planner.service.mail.MailService
 import com.laba.it_planner.service.project.EmployeeService
 import com.laba.it_planner.service.project.ProjectService
 import com.laba.it_planner.service.storage.StorageService
+import com.laba.it_planner.service.user.OauthService
 import com.laba.it_planner.service.user.UserInfoService
 import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
