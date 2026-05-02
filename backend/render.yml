@@ -27,13 +27,9 @@ services:
     runtime: docker
     dockerfilePath: ./Dockerfile
     envVars:
-      # База данных — URL берётся из postgres-user
+      # База данных — собираем URL из отдельных частей
       - key: SPRING_DATASOURCE_URL
-        fromService:
-          type: pserv
-          name: postgres-user
-          property: connectionString
-      # Данные для входа в БД (заполните вручную такие же, как в postgres-user)
+        value: jdbc:postgresql://postgres-user:5432/planner_db
       - key: SPRING_DATASOURCE_USERNAME
         sync: false
       - key: SPRING_DATASOURCE_PASSWORD
@@ -58,7 +54,7 @@ services:
         sync: false
       - key: JWT_EXPIRATION
         sync: false
-      # MinIO — адрес берётся из сервиса minio
+      # MinIO
       - key: MINIO_ENDPOINT
         fromService:
           type: web
