@@ -88,7 +88,7 @@ services:
       - key: SERVER_PORT
         value: "8080"
 
-    # ========================================
+  # ========================================
   # 3. MinIO (временно Web Service для настройки)
   # ========================================
   - type: web
@@ -102,9 +102,9 @@ services:
       - key: MINIO_ROOT_PASSWORD
         sync: false
       - key: MINIO_BROWSER_REDIRECT_URL
-        value: ""  # Отключаем редирект, чтобы консоль работала
+        value: ""
+    dockerCommand: server /data --console-address ":10000"
     disk:
       name: minio-data
       mountPath: /data
       sizeGB: 10
-    command: server /data --console-address ":10000"
