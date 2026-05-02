@@ -1,0 +1,110 @@
+services:
+  # ========================================
+  # 1. База данных PostgreSQL
+  # ========================================
+  - type: pserv
+    name: postgres-user
+    runtime: image
+    image:
+      url: postgres:15
+    envVars:
+      - key: POSTGRES_USER
+        sync: false
+      - key: POSTGRES_PASSWORD
+        sync: false
+      - key: POSTGRES_DB
+        value: planner_db
+      - key: PGUSER
+        fromEnvVar: POSTGRES_USER
+    disk:
+      name: postgres-data
+      mountPath: /var/lib/postgresql/data
+      sizeGB: 10
+
+  # ========================================
+  # 2. Java-бэкенд (Spring Boot)
+  # ========================================
+  - type: web
+    name: backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    # Если Dockerfile в корне, можно указать просто "."
+    # dockerContext: .
+    envVars:
+      # База данных
+      - key: SPRING_DATASOURCE_URL
+        fromService:
+          type: pserv
+          name: postgres-user
+          property: jdbcURL
+      - key: SPRING_DATASOURCE_USERNAME
+        fromEnvVar: POSTGRES_USER
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromEnvVar: POSTGRES_PASSWORD
+      # Почта
+      - key: SPRING_MAIL_USERNAME
+        sync: false
+      - key: SPRING_MAIL_PASSWORD
+        sync: false
+      - key: SPRING_MAIL_THREAD_COUNT
+        sync: false
+      - key: SPRING_MAIL_EMAIL_FROM
+        sync: false
+      - key: SPRING_MAIL_PATH_VERIFICATION_FORM
+        sync: false
+      - key: SPRING_MAIL_PATH_INFORMATION_FORM
+        sync: false
+      # JWT
+      - key: JWT_PASSWORD_SECRET
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRATION
+        sync: false
+      # MinIO
+      - key: MINIO_ENDPOINT
+        fromService:
+          type: pserv
+          name: minio
+          property: hostport
+      - key: MINIO_ACCESS_KEY
+        sync: false
+      - key: MINIO_SECRET_KEY
+        sync: false
+      - key: MINIO_BUCKET_NAME
+        value: it-planner
+      # AI
+      - key: REQUEST_LIMIT_PER_DAY
+        sync: false
+      - key: MIN_AI_REQUEST_LENGTH
+        sync: false
+      - key: OPEN_AI_API_URL
+        sync: false
+      - key: OPEN_AI_API_MODEL
+        sync: false
+      - key: OPEN_AI_API_KEY
+        sync: false
+      # Сервер
+      - key: SERVER_PORT
+        value: "8080"
+
+    # ========================================
+  # 3. MinIO (временно Web Service для настройки)
+  # ========================================
+  - type: web
+    name: minio
+    runtime: image
+    image:
+      url: minio/minio
+    envVars:
+      - key: MINIO_ROOT_USER
+        sync: false
+      - key: MINIO_ROOT_PASSWORD
+        sync: false
+      - key: MINIO_BROWSER_REDIRECT_URL
+        value: ""  # Отключаем редирект, чтобы консоль работала
+    disk:
+      name: minio-data
+      mountPath: /data
+      sizeGB: 10
+    command: server /data --console-address ":10000"
