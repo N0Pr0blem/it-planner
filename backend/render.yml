@@ -14,8 +14,6 @@ services:
         sync: false
       - key: POSTGRES_DB
         value: planner_db
-      - key: PGUSER
-        fromEnvVar: POSTGRES_USER
     disk:
       name: postgres-data
       mountPath: /var/lib/postgresql/data
@@ -28,19 +26,18 @@ services:
     name: backend
     runtime: docker
     dockerfilePath: ./Dockerfile
-    # Если Dockerfile в корне, можно указать просто "."
-    # dockerContext: .
     envVars:
-      # База данных
+      # База данных — URL берётся из postgres-user
       - key: SPRING_DATASOURCE_URL
         fromService:
           type: pserv
           name: postgres-user
-          property: jdbcURL
+          property: connectionString
+      # Данные для входа в БД (заполните вручную такие же, как в postgres-user)
       - key: SPRING_DATASOURCE_USERNAME
-        fromEnvVar: POSTGRES_USER
+        sync: false
       - key: SPRING_DATASOURCE_PASSWORD
-        fromEnvVar: POSTGRES_PASSWORD
+        sync: false
       # Почта
       - key: SPRING_MAIL_USERNAME
         sync: false
@@ -61,10 +58,10 @@ services:
         sync: false
       - key: JWT_EXPIRATION
         sync: false
-      # MinIO
+      # MinIO — адрес берётся из сервиса minio
       - key: MINIO_ENDPOINT
         fromService:
-          type: pserv
+          type: web
           name: minio
           property: hostport
       - key: MINIO_ACCESS_KEY
@@ -89,7 +86,7 @@ services:
         value: "8080"
 
   # ========================================
-  # 3. MinIO (временно Web Service для настройки)
+  # 3. MinIO (Web Service для первичной настройки)
   # ========================================
   - type: web
     name: minio
@@ -101,8 +98,6 @@ services:
         sync: false
       - key: MINIO_ROOT_PASSWORD
         sync: false
-      - key: MINIO_BROWSER_REDIRECT_URL
-        value: ""
     dockerCommand: server /data --console-address ":10000"
     disk:
       name: minio-data
